@@ -28,6 +28,6 @@ Examples: show the same buttons and fields for rounded versus squared controls; 
 
 After every answer, update the tree and remove resolved questions. A canceled or unanswered question remains pending; do not replace it with a derived checkpoint to evade the missing answer. Derive only decisions that were never put to the user or that their later instructions explicitly resolve.
 
-Direction, foundations, and components are checkpoints. Use reviewType: choice only for a planned question. Use reviewType: derived with one candidate and a derivation rationale when no question is needed. Record complete rules even if the specimen illustrates only one branch.
+Direction, foundations, and components are checkpoints. Use reviewType: choice only for a planned question. Questions need not be distributed evenly across stages: set continueStage: true on a choice round when the next planned decision belongs to the same stage. Keep previously selected rules fixed in subsequent candidates. Use reviewType: derived with one candidate and a derivation rationale when no question is needed. Record complete rules even if the specimen illustrates only one branch.
 
 The full-page stage uses reviewType: presentation with one integrated design. Preference discovery has ended. Invite freeform corrections or confirmation without another choice popup. If feedback reopens a branch, update only affected rules and questions; explicit feedback usually permits a derived revision without another preference question.

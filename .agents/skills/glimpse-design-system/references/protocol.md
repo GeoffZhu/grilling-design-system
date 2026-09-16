@@ -1,16 +1,24 @@
 # Local session protocol
 
+- [Files](#files)
+- [Tokens](#tokens)
+- [Boards](#boards)
+- [Publish](#publish)
+- [Generator](#generator)
+
 ## Files
 
 - session/inspiration.*: original input.
 - session/session.json: state, accepted choices, history, approval; written by studio.py.
 - session/rounds/: immutable published specs.
 - session/candidates/: agent-authored tokens, HTML and content. Use new paths each revision.
-- library/: component source, tokens.json, DESIGN.md, registry.json, public/r/all.json.
+- LIBRARY: final component module or standalone app selected by project-output.md.
+- DESIGN_DOC: Web application root/DESIGN.md in integrated mode; LIBRARY/DESIGN.md in standalone mode.
+- PROJECT/project-context.json: inspected environment and output paths; PROJECT holds session/, cache/, and evidence/.
 - evidence/: available screenshots, source observations, and explicit verification limitations.
 - decision-tree.md: planned visual branches, dependencies, question budget, choices, and derived rules.
 
-Python scripts use the standard library. library.py downloads the official new-york-v4 registry and runs npm. Local serving binds 127.0.0.1. No account or hosted backend is required.
+Python scripts use the standard library. library.py scaffolds standalone React/Vite apps and uses npm only in that mode. In Web projects, --sources-only fetches upstream inputs without scaffolding; follow project-output.md to integrate with the host framework and tooling. Local serving binds 127.0.0.1. No account or hosted backend is required.
 
 ## Tokens
 
@@ -55,7 +63,7 @@ Switch uses an independent transparent hit area (at least 44×44) around its vis
 python3 "$SKILL/scripts/board.py" --tokens tokens.json --content content.json --output "$PROJECT/session/candidates/r1-a.html"
 ~~~
 
-content.json requires language (for example zh-CN or en), title, headline, description and either bodyHtml or cards [{title,description,tone}]. tone defaults to card and must have a semantic foreground pair. Supply bodyHtml for composition derived from the image, css for its layout/type/icon rules, and optional extraHtml. No habit tracker, generic slogans or equal saturated cards are inserted automatically. Never interpolate raw feedback into HTML. Later reviews use actual React components.
+content.json requires language (for example zh-CN or en), title, headline, description and either bodyHtml or cards [{title,description,tone}]. tone defaults to card and must have a semantic foreground pair. Supply bodyHtml for composition derived from the image, css for its layout/type/icon rules, and optional extraHtml. No habit tracker, generic slogans or equal saturated cards are inserted automatically. Never interpolate raw feedback into HTML. Later reviews use actual components in the target framework.
 
 ## Publish
 
@@ -84,6 +92,8 @@ Stage must match nextStage. Choose the review type according to decision-tree.md
 
 For derived checkpoints, include a nonempty derivation explaining the reference, prior choices, or explicit feedback supporting the result. History records action: derive and source: agent-derived. Do not use this to resolve a pending question without a response. Historical rounds remain readable; new submissions accept at most one option ID.
 
+Set continueStage: true only on a choice round when another planned high-impact question belongs to the same stage. Selecting saves that candidate and keeps nextStage unchanged. Later candidates must preserve its settled rules. Omit continueStage on the last question, or publish a derived checkpoint to finish the stage if the answer resolved all remaining uncertainty. All questions still count toward the shared initial budget.
+
 Replace empty tokens with complete objects. Foundations require covers: ["color","typography","spacing","shape","icons","motion"]; this is specification coverage, not six user questions. Components/preview use tokenHash instead of tokens; compute studio.digest(accepted foundation tokens). Translate titles and descriptions into the user's language. For non-English sessions, supply all English studio-copy.json keys as a flat translated uiCopy object or initialize with --ui-copy. Saved translations remain available on resume.
 
 Choice/derived options may set viewports to one or two objects with device: specimen, desktop, or mobile and width/height between 160 and 2400 pixels. Default: one 960 by 540 specimen. Use matching viewports across alternatives; choose dimensions for the components being compared. Complete pages are optional. The integrated presentation omits viewports and always shows Desktop at 1440 by 810 and Mobile at 390 by 693.333. Each document must apply antialiased font smoothing; parent CSS does not cross iframe boundaries.
@@ -107,7 +117,7 @@ Expand observations to cover reference, typography, spacing, shape, icons, state
 
 If no usable browser/image capture capability exists, use method: source-inspection, screenshots: [], and a nonempty limitations array describing the unavailable checks. Record source files and actual observations instead of inventing screenshots, focus tests, or visual approval. Missing verification belongs in limitations; known defects belong in unresolved and must be repaired. See verification.md.
 
-Preview is a session-relative path or localhost URL. Prefer immutable builds: copy the complete dist into session/candidates/rN-preview/ and reference index.html. Vite uses a relative base. Never replace files behind a confirmed preview.
+Preview is a session-relative path or localhost URL. For standalone previews, copy immutable dist builds into session/candidates/rN-preview/ and reference index.html. For Web integration, use the host preview URL or its supported export format, preserving the tested source revision. Never replace files behind a confirmed preview.
 
 The integrated presentation requires checks for build, desktop, mobile, keyboard, and contrast. Record actual commands, observations, and evidence paths; use an explicit "Not run: capability unavailable" explanation for checks that could not run. These keys document evidence and limitations, not automatic passing grades.
 
@@ -120,7 +130,9 @@ Record native single-select tool answers or plain chat responses with roundId, o
 
 ## Generator
 
-Draft uses --tokens and core shadcn sources plus a neutral starter. --full preflights the entire snapshot. --deliver reads approved foundations from --session and requires --build. Reuse library directory; App.tsx and custom files remain.
+Resolve paths with project-output.md first. These generator details apply to standalone delivery. Draft uses --tokens and core shadcn sources plus a neutral starter. --full preflights the entire snapshot. --deliver reads approved foundations from --session and requires --build. Use --output LIBRARY directly, without a library/ wrapper; App.tsx and custom files remain. Never run this scaffold in a host Web project. Integrated delivery uses native source, host checks, and studio.py finish with actual delivery evidence.
+
+DESIGN.md is drafted from assets/DESIGN.template.md with all 13 numbered sections. scripts/design_document.py fills facts available from tokens and existing paths, preserving evidence within sections 8 and 13. Complete the remaining fields from actual source and accepted choices before delivering. Preserve an edited DESIGN.md before regeneration, then reapply completed values and translations. Follow design-document.md and run its completion check; generating source artifacts alone does not complete the document.
 
 Upstream: https://ui.shadcn.com/r/styles/new-york-v4/*.json. shadcn-snapshot.json records hashes and names. Gallery lazily imports upstream examples. Next image/link examples adapt to React HTML for Vite; Tabler example icons adapt to Lucide. Sonner observes the document color-mode class through a local hook. Seven supplemental demos cover current UI items without an upstream example; add further demos if the snapshot grows. SHADCN-LICENSE.txt accompanies source and registry.
 
@@ -128,4 +140,4 @@ Known fixed-color Checkbox, Badge and Toggle examples are translated into semant
 
 Keep custom CSS under src/components/custom/ and import it from custom TSX, or use src/theme-overrides.css. These files are preserved and distributed. Fontsource imports must be backed by package.json dependencies; those are preserved across generation. Avoid manual edits to generated main.tsx or index.css. Copy scripts' output artifacts into source control as appropriate; omit node_modules and build caches.
 
-Registry: public/r/all.json. Serve public/ and install the URL via npx shadcn@4.21.0 add into React + Tailwind 4 with initialized shadcn configuration and src/ root. Include required custom fonts/assets in the registry. This is source distribution; publishing/deployment is not implied.
+Standalone registry: LIBRARY/public/r/all.json. Serve public/ and install the URL via npx shadcn@4.21.0 add into React + Tailwind 4 with initialized shadcn configuration and src/ root. Include required custom fonts/assets in the registry. This is source distribution; publishing/deployment is not implied.

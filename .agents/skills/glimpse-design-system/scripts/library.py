@@ -12,8 +12,10 @@ import time
 from urllib.request import urlopen, Request
 
 from studio import read, write, digest, save
-from theme import validate, css, contrast, geometry
+from theme import validate, css, contrast
+from design_document import document
 from language import translated_copy
+from project import resolve_project, find_web_project
 
 ASSETS = Path(__file__).resolve().parents[1] / 'assets'
 ORIGIN = 'https://ui.shadcn.com/r/styles/new-york-v4/'
@@ -114,57 +116,6 @@ def scaffold(output, language='en', title='Glimpse Design System'):
     write(output/'tsconfig.json',{'compilerOptions':{'target':'ES2022','lib':['ES2022','DOM','DOM.Iterable'],'module':'ESNext','moduleResolution':'Bundler','jsx':'react-jsx','strict':True,'skipLibCheck':True,'allowSyntheticDefaultImports':True,'esModuleInterop':True,'resolveJsonModule':True,'noEmit':True,'baseUrl':'.','paths':{'@/*':['./src/*']}},'include':['src','vite.config.ts']})
     write(output/'components.json',{'$schema':'https://ui.shadcn.com/schema.json','style':'new-york','rsc':False,'tsx':True,'tailwind':{'config':'','css':'src/index.css','baseColor':'neutral','cssVariables':True,'prefix':''},'iconLibrary':'lucide','aliases':{'components':'@/components','utils':'@/lib/utils','ui':'@/components/ui','lib':'@/lib','hooks':'@/hooks'}})
 
-def document(output,t,state,snapshot,checks):
-    lines=['# '+t['name']+' — Design standard','',
-           'Status: '+('SIMULATED APPROVAL (validation only)' if state and state['simulation'] else 'Approved' if state else 'Draft'),'',
-           '## Source and intent','',t.get('rationale','Image-derived style; see the interpretation and saved review rounds.'),'',
-           'Input: session/inspiration image. UI references preserve visible visual language and extend observed components. Non-UI references translate visual characteristics.','',
-           '## Platforms and modes','',
-           'PC Web: core specimen targets 1440 × 900. Mobile Web: verify 390 px and 360 px, allow vertical scrolling. Breakpoint: 768 px. Full gallery may scroll.','',
-           'Primary mode: '+t['mode']+'. '+('Explicitly requested alternate mode: '+t['alternate']['mode'] if t.get('alternate') else 'No alternate mode is included.'),'',
-           '## Color tokens','', '| Token | Value |','| --- | --- |']
-    lines += ['| --'+k+' | '+v+' |' for k,v in t['colors'].items()]
-    if t.get('alternate'):
-        lines+=['','### Alternate mode','','| Token | Value |','| --- | --- |']+['| --'+k+' | '+v+' |' for k,v in t['alternate']['colors'].items()]
-    lines+=['','## Typography, spacing, shape and icons','',
-            '- Body font: '+t['font']['family']+'; '+str(t['font']['bodySize'])+' px.',
-            '- Heading font: '+t['font']['heading']+'; weight '+str(t['font']['headingWeight'])+'.',
-            '- Spacing base: '+str(t['spacing']['unit'])+' px; use multiples for component and layout rhythm.',
-            '- Control height: '+str(t['spacing']['controlHeight'])+' px. Touch targets at least 44 × 44 px; never shrink content just to fit a specimen.',
-            '- Radius base: '+str(t['radius'])+' px. Control '+str(geometry(t)['controlRadius'])+' px; surface '+str(geometry(t)['surfaceRadius'])+' px; overlay '+str(geometry(t)['overlayRadius'])+' px. Shadow: '+t['shadow']+'.',
-            '- Body leading '+str(geometry(t)['bodyLineHeight'])+'; heading leading '+str(geometry(t)['headingLineHeight'])+'; heading tracking '+str(geometry(t)['headingTracking'])+' em; label weight '+str(geometry(t)['labelWeight'])+'.',
-            '- Control inline padding '+str(geometry(t)['controlPadding'])+' px; icon gap '+str(geometry(t)['iconGap'])+' px. Compact shadcn sizes retain their proportions; coarse-pointer targets are at least 44 px.',
-            '- Switch: default track 44 × 24 px with 18 px thumb; small track 36 × 20 px with 14 px thumb. Both use 3 px insets and a separate transparent hit area of at least 44 × 44 px. Reserve room for the hit area; do not stretch the track using generic touch minimum sizes.',
-            '- Icon family: '+t['icons']['family']+'; '+str(t['icons']['size'])+' px; stroke '+str(t['icons']['stroke'])+'. Icons share geometry and optical weight. Decorative illustrations are separate from action icons.',
-            '- Animation: '+str(t['motion']['duration'])+' ms, '+t['motion']['easing']+'. Honor prefers-reduced-motion.',
-            '- Use semantic color variables; do not hardcode image colors in reusable components.','',
-            '## Components and states','',
-            'Official shadcn items use their upstream public API and accessible primitives. Apply the shared semantic theme; preserve labels, keyboard navigation, focus management and disabled/invalid semantics.','',
-            'Validate default, hover, focus, active, disabled, invalid and loading where applicable. Forms pair visible labels with error descriptions. Dialogs trap and return focus; icon buttons require accessible names.','',
-            'Registry snapshot: '+snapshot['url']+'; fetched '+snapshot['fetchedAt']+'.','',
-            '| Component | Source |','| --- | --- |']
-    lines += ['| '+n+' | shadcn/ui |' for n in snapshot['ui']]
-    custom=sorted(p.stem for p in (output/'src/components/custom').glob('*.tsx')) if (output/'src/components/custom').exists() else []
-    lines += ['| '+n+' | Image-derived custom component |' for n in custom]
-    lines+=['','## Accessibility evidence','','Numeric checks below cover token pairs, not blanket WCAG certification. Browser evidence must also cover labels, keyboard, focus and layout.','','| Mode | Pair | Ratio | Minimum | Result |','| --- | --- | --- | --- | --- |']
-    lines += ['| '+r['mode']+' | '+r['pair']+' | '+str(r['ratio'])+' | '+str(r['minimum'])+' | '+('Pass' if r['passAA'] else 'FAIL')+' |' for r in contrast(t)]
-    lines+=['','## Verification','']+[ '- '+k+': '+str(v) for k,v in checks.items()]
-    lines+=['','## Usage and maintenance','',
-            'Run npm install, then npm run dev. Build with npm run build. Open the core specimen and the full component gallery.','',
-            'Copy src/components, src/hooks and src/lib with their dependencies, and import src/index.css once. Or serve public/r over HTTP and run npx shadcn@4.21.0 add <base-url>/all.json in a Tailwind 4 shadcn project. The registry adds src/glimpse-theme.css and imports it into the configured CSS.','',
-            'The registry and tokens describe the same theme as this document. Keep tokens.json as the parameter source; regenerate code and this file after approved changes. Do not hand-edit DESIGN.md to disguise a divergence.','',
-            'When changing color, font, spacing, radius, icons or motion: reopen the saved session, identify affected components, revise foundations, review key components, and approve a fresh integrated preview. Preserve revision history.','',
-            '## Decisions','']
-    if state:
-        lines += ['- '+h['stage']+' / '+h['action']+': '+str(h.get('optionId') or '')+' '+h.get('feedback','')+' '+h.get('combination','')+' '+h.get('derivation','') for h in state['history']]
-    if (output/'IMAGE-COMPONENTS.md').exists():
-        lines+=['','## Image-specific components','','See IMAGE-COMPONENTS.md for the preserved component APIs, usage and image-specific design rules.']
-    if (output/'design-notes.md').exists():
-        lines+=['','## Additional approved rules','',(output/'design-notes.md').read_text()]
-    if (output/'design-intent.md').exists():
-        lines+=['','## Visual intent','',(output/'design-intent.md').read_text()]
-    (output/'DESIGN.md').write_text('\n'.join(lines)+'\n')
-
 def registry(output,items,t,package):
     files=[]
     files.append({'path':'SHADCN-LICENSE.txt','target':'SHADCN-LICENSE.txt','type':'registry:file','content':(ASSETS/'SHADCN-LICENSE.txt').read_text()})
@@ -185,7 +136,17 @@ def registry(output,items,t,package):
     write(output/'registry.json',{'$schema':'https://ui.shadcn.com/schema/registry.json','name':'glimpse','homepage':'https://ui.shadcn.com','items':[item]})
 
 def build(args):
-    output=args.output.resolve(); cache=args.cache.resolve(); cache.mkdir(parents=True,exist_ok=True)
+    context = resolve_project(Path.cwd(), args.output)
+    output = Path(context['output'])
+    destination_root, _, _ = find_web_project(output)
+    generated = False
+    if (output/'package.json').is_file():
+        generated = (read(output/'package.json').get('name') == 'glimpse-design-system'
+                     and (output/'shadcn-snapshot.json').is_file())
+    if not generated and (context['mode'] == 'integrated' or destination_root):
+        raise ValueError('Existing Web project detected. Integrate components using references/project-output.md; '
+                         'this generator creates a standalone Vite application. Use --sources-only to fetch upstream inputs.')
+    cache=args.cache.resolve(); cache.mkdir(parents=True,exist_ok=True)
     state=read(args.session/'session.json') if args.session else None
     language=args.language or (state or {}).get('language')
     if not language: raise ValueError('Pass --language using the user’s main language')
@@ -295,7 +256,7 @@ def build(args):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--output',type=Path,required=True)
+    p.add_argument('--output',type=Path,help='Standalone root; defaults to ./design-system outside Web projects')
     p.add_argument('--cache',type=Path,default=Path('.glimpse-cache'))
     p.add_argument('--tokens',type=Path)
     p.add_argument('--session',type=Path)
@@ -303,10 +264,24 @@ def main():
     p.add_argument('--deliver',action='store_true')
     p.add_argument('--install',action='store_true')
     p.add_argument('--build',action='store_true')
+    p.add_argument('--sources-only',action='store_true',help='Fetch official inputs for native integration without scaffolding')
     p.add_argument('--language', help='User language; defaults to the saved session language')
     p.add_argument('--ui-copy', type=Path, help='Translated library-copy.json keys for another language')
     args=p.parse_args()
-    try: build(args)
+    try:
+        if args.sources_only:
+            if args.install or args.build or args.deliver:
+                raise ValueError('--sources-only cannot install, build, or mark delivery')
+            cache=args.cache.resolve(); cache.mkdir(parents=True,exist_ok=True)
+            upstream=fetch('registry',cache)
+            names=[item['name'] for item in upstream['items'] if item['type']=='registry:ui'] if args.full else CORE
+            items=collect(names,cache)
+            write(cache/'source-manifest.json',{'url':ORIGIN+'registry.json',
+                  'fetchedAt':time.strftime('%Y-%m-%d',time.gmtime()), 'sha256':digest(upstream),
+                  'ui':names,'items':{name:digest(item) for name,item in items.items()}})
+            print(json.dumps({'cache':str(cache),'components':len(names),'mode':'sources-only'},indent=2))
+        else:
+            build(args)
     except (ValueError,RuntimeError,subprocess.CalledProcessError) as e: p.exit(1,str(e)+'\n')
 
 if __name__=='__main__':main()

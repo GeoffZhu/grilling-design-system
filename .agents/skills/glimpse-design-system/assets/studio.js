@@ -14,11 +14,12 @@ function devicePreview(option, viewport) {
   const section=node('section',null,'device-preview'), bar=node('div',null,'preview-bar');
   const title=device==='specimen'?option.title:t(device), link=node('a',t('open'));
   link.href=option.preview.startsWith('http')?option.preview:'/files/'+option.preview;
-  link.target='_blank';link.rel='noopener';link.setAttribute('aria-label',option.title+' · '+t(device)+' · '+t('open'));
+  const previewTitle=device==='specimen'?option.title:option.title+' · '+title;
+  link.target='_blank';link.rel='noopener';link.setAttribute('aria-label',previewTitle+' · '+t('open'));
   bar.append(node('strong',title),link);
   const wrap=node('div',null,'frame-wrap'), canvas=node('div',null,'frame-canvas'), frame=node('iframe');
-  wrap.tabIndex=0;wrap.setAttribute('aria-label',option.title+' · '+title);
-  frame.title=option.title+' · '+title;frame.src=link.href;frame.style.width=width+'px';frame.style.height=height+'px';
+  wrap.tabIndex=0;wrap.setAttribute('aria-label',previewTitle);
+  frame.title=previewTitle;frame.src=link.href;frame.style.width=width+'px';frame.style.height=height+'px';
   frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms allow-popups');
   canvas.append(frame);wrap.append(canvas);
   let scale=1, fitting=true;
@@ -63,14 +64,15 @@ function render(s) {
   $('counter').textContent=t('round',{n:s.revision});
   $('title').textContent=awaiting?r.title:t(s.status==='needs-agent'?'waiting':s.status==='approved'?'approved':'delivered');
   $('description').textContent=awaiting?r.description:t('saved');$('interpretation').textContent=awaiting?(r.interpretation||''):'';
-  $('notice').textContent=awaiting?(r.stage==='preview'?r.description:t('previewHint')):s.status==='needs-agent'?t('next',{stage:t(s.nextStage)}):t('approvedVersion');
+  $('notice').textContent=awaiting?(r.stage==='preview'?'':t('previewHint')):s.status==='needs-agent'?t('next',{stage:t(s.nextStage)}):t('approvedVersion');
   if(!r) return;
   r.options.forEach(o=>{
     const card=node('article',null,'option'), heading=node('div',null,'option-heading');
     card.id='option-'+o.id;heading.append(node('h2',o.title),node('p',o.description));
     const viewports=o.viewports||(r.stage==='preview'?[{device:'desktop',width:1440,height:810},{device:'mobile',width:390,height:390*16/9}]:[{device:'specimen',width:960,height:540}]);
     const previews=node('div',null,'device-grid');
-    previews.style.gridTemplateColumns=viewports.map(v=>'minmax(0,'+v.width+'fr)').join(' ');
+    previews.dataset.count=String(viewports.length);
+    previews.style.setProperty('--preview-columns',viewports.map(v=>'minmax(0,'+v.width+'fr)').join(' '));
     previews.append(...viewports.map(v=>devicePreview(o,v)));
     card.append(heading,previews);$('options').append(card);
   });

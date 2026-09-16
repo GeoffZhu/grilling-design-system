@@ -5,7 +5,9 @@ description: Derive a PC and Mobile Web design system from an inspiration image 
 
 # Glimpse design system
 
-Deliver both a working shadcn/ui component library and DESIGN.md that describes its final specification. These are mandatory outputs; a preview, token sheet, or design proposal alone is incomplete. Preserve confirmed preferences and distinguish user choices from agent-derived rules. Never treat silence, a timeout, or a preselected answer as approval.
+Deliver both a working shadcn/ui design system adapted to the project framework and DESIGN.md that describes its final specification. These are mandatory outputs; a preview, token sheet, or design proposal alone is incomplete. Preserve confirmed preferences and distinguish user choices from agent-derived rules. Never treat silence, a timeout, or a preselected answer as approval.
+
+Use [DESIGN.template.md](assets/DESIGN.template.md) for DESIGN.md. Preserve its 13 numbered sections and required fields. Read [design-document.md](references/design-document.md) for evidence-based completion, API mappings, and the final completeness check.
 
 ## Language and communication
 
@@ -33,7 +35,7 @@ If a stage has no important unresolved choice, publish one derived specimen with
 
 ## Start
 
-Resolve this skill directory as SKILL and a separate output directory as PROJECT. Store images, candidates, decisions, and runtime translations in PROJECT. Requirements: Python 3.10+, Node 20.19+, and npm; network is needed for the first official shadcn download. Read [protocol.md](references/protocol.md) before using scripts, and [design-rules.md](references/design-rules.md) plus [frontend-craft.md](references/frontend-craft.md) before designing. No particular browser CLI or browser installation is required. Use available host capabilities for visual checks; record unavailable checks honestly as described in [verification.md](references/verification.md).
+Read [project-output.md](references/project-output.md) first. Resolve SKILL, the final component destination LIBRARY, the design document path DESIGN_DOC, and the separate working directory PROJECT before generating code. A user-specified directory has first priority. Always inspect whether the current application is a Web project, including when an output directory was specified. In a Web project, default LIBRARY to the actual source root/design-system and DESIGN_DOC to the Web application root/DESIGN.md; adapt to its build and code conventions. Outside a Web project, create a complete standalone app at the requested directory or cwd/design-system, with DESIGN.md at that app root. PROJECT stores sessions, candidates, decisions, translations, and caches under the resolved .glimpse working directory. Record and reuse PROJECT/project-context.json. Python 3.10+ is needed for helper scripts; Web integration uses the host runtime/package manager, while the standalone scaffold requires Node 20.19+ and npm. Network is needed for the first upstream download. Read [protocol.md](references/protocol.md) before using scripts, and [design-rules.md](references/design-rules.md) plus [frontend-craft.md](references/frontend-craft.md) before designing. No particular browser CLI or browser installation is required. Use available host capabilities for visual checks; record unavailable checks honestly as described in [verification.md](references/verification.md).
 
 1. Read PROJECT/session/session.json if present and resume nextStage. Never restart implicitly.
 2. View the actual input image with an available image tool. Locate attachments; never fabricate replacements. If a required image is inaccessible, request its local path while retaining any available analysis.
@@ -70,13 +72,13 @@ Show actual type and icon samples, including optical size, stroke, corners, and 
 
 ### Components and states
 
-Build a real React/TypeScript/Tailwind specimen from official shadcn components:
+Build real components in the resolved environment. In a Web project, follow project-output.md: reuse its framework, language, styling, primitives, aliases, package manager, and code style; expose a specimen through its existing preview mechanism. Fetch source inputs with library.py --sources-only when needed. The following scaffold command applies only outside an existing Web project:
 
 ~~~sh
-python3 "$SKILL/scripts/library.py" --tokens "$PROJECT/chosen-tokens.json" --output "$PROJECT/library" --cache "$PROJECT/cache" --language en --install --build
+python3 "$SKILL/scripts/library.py" --tokens "$PROJECT/chosen-tokens.json" --output "$LIBRARY" --cache "$PROJECT/cache" --language en --install --build
 ~~~
 
-Set --language from the conversation and supply translated library copy via --ui-copy when needed. Customize library/src/App.tsx and add image-specific components in library/src/components/custom/. The starter is scaffolding. Preserve shadcn APIs, semantic variables, accessible primitives, and real interactions. Record custom dependencies in package.json before registry generation.
+For the standalone generator, set --language from the conversation and supply --ui-copy when needed. Customize LIBRARY/src/App.tsx and LIBRARY/src/components/custom/. For an integrated module, use host-native paths and preview components under LIBRARY; do not add another app scaffold or lockfile. Preserve compatible shadcn APIs, semantic roles, accessibility, and real interactions. Record required dependencies with the host package manager and preserve existing versions. For non-React projects, use compatible framework-native components and document the adaptation.
 
 Only create two component alternatives if a remaining important visual choice needs them. Otherwise show one derived specimen. Design type weights, control/container radii, density, icon alignment, and purposeful state changes. Include applicable default, hover, focus, selected, disabled, invalid, and loading states. Prioritize representative components from the image. Keep the accepted foundation token hash unchanged; foundation changes return to that checkpoint.
 
@@ -94,19 +96,19 @@ Read state before publishing. If awaiting-user, wait or yield. If needs-agent, r
 
 ### Mandatory delivery
 
-After confirmation, deliver all official registry:ui items at the recorded snapshot, plus image-derived components, and a complete DESIGN.md matching the final library. Official blocks and every example variant are outside "all UI components."
+After confirmation, deliver the full component inventory at the recorded source snapshot, plus image-derived components, and a complete DESIGN_DOC matching the final library. Use official registry:ui sources for compatible React environments and documented native equivalents for other frameworks. Official blocks and every example variant are outside "all UI components." In Web projects, finish the native integration and host verification from project-output.md; write DESIGN_DOC at the Web app root. The command below is only for a standalone application:
 
 ~~~sh
-python3 "$SKILL/scripts/library.py" --session "$PROJECT/session" --output "$PROJECT/library" --cache "$PROJECT/cache" --deliver --install --build
+python3 "$SKILL/scripts/library.py" --session "$PROJECT/session" --output "$LIBRARY" --cache "$PROJECT/cache" --deliver --install --build
 ~~~
 
-For non-English sessions, also pass the translated library --ui-copy file. The generator preserves App.tsx and custom files and writes official sources, theme, gallery, dependency lock, registry, snapshot, contrast report, and DESIGN.md. Inspect and translate generated gallery text and DESIGN.md before delivery. Recheck after regeneration. Store durable custom guidance in library/IMAGE-COMPONENTS.md or library/design-notes.md. Keep custom gallery panels in App.tsx around the generated FullGallery.
+For non-English standalone sessions, also pass the translated --ui-copy file. The standalone generator writes sources, theme, gallery, lockfile, registry, snapshot, contrast report, and a DESIGN.md draft at LIBRARY. In integrated mode, write adapted components at LIBRARY, reuse host tooling, and complete DESIGN_DOC at the Web application root without replacing existing standards. Complete every field from the final implementation and confirmed design; use a reasoned not-applicable entry for absent product features. Do not add a questionnaire to fill the template. Inspect and translate generated gallery text and DESIGN.md explanations, preserving the template headings. Run the design-document.md completion check before delivery. Recheck after regeneration. Store durable custom guidance in LIBRARY/IMAGE-COMPONENTS.md or LIBRARY/design-notes.md. Use host-native gallery components in integrated mode; in standalone mode keep custom panels in App.tsx around the generated FullGallery.
 
-Document visual intent, token roles, typography, geometry, icons, states, responsive behavior, motion, component usage, accessibility adjustments, decisions, and verification limits. Install the registry into a clean Tailwind 4 shadcn Vite project and build it. Inspect available representative families for visual drift. Verify tokens, CSS, registry, and DESIGN.md agree; rebuild after changes. Report the library and DESIGN.md paths together with the preview URL and actual verification results. Missing browser capabilities do not make source artifacts optional; identify checks that could not run without claiming full visual verification.
+Document visual intent, token roles, typography, geometry, icons, states, responsive behavior, motion, component usage, accessibility adjustments, decisions, and verification limits. Verify the module with the host build/typecheck/lint commands in integrated mode. For standalone delivery, install the registry into a clean Tailwind 4 shadcn Vite consumer and build it. Validate any integrated registry in a consumer matching its actual framework and styling versions. Inspect available representative families for visual drift. Verify tokens, CSS, registry, and DESIGN.md agree; rebuild after changes. Report the exact LIBRARY and DESIGN_DOC paths together with the preview URL and actual verification results. Missing browser capabilities do not make source artifacts optional; identify checks that could not run without claiming full visual verification.
 
 ## Maintain
 
-Read tokens, DESIGN.md, history, and snapshot first. Preserve source with a normal directory copy, excluding node_modules/dist, when overwriting would lose edits. Never use git worktrees.
+Read PROJECT/project-context.json, the root DESIGN_DOC, tokens, history, and snapshot first. Preserve the saved destination and host environment unless the user changes them. Preserve source with a normal directory copy, excluding node_modules/dist, when overwriting would lose edits. Never use git worktrees.
 
 ~~~sh
 python3 "$SKILL/scripts/studio.py" reopen --session "$PROJECT/session" --feedback "Requested change and affected components"

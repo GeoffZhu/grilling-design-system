@@ -8,7 +8,7 @@ Keep known defects separate from unavailable verification. Fix defects before sh
 
 ## Per preview
 
-1. Build actual React source for component and integrated previews. Inspect focused HTML specimens for earlier decisions.
+1. Build target-framework source with host commands in Web projects and standalone commands otherwise. Inspect focused HTML specimens for earlier decisions.
 2. Serve locally. When browser capabilities exist, inspect the specimen at its declared viewport and the integrated page at 1440 by 900, 390 by 844, and 360 by 800.
 3. Check Mobile overflow, readable text, and touch targets. When device emulation exists, verify coarse-pointer behavior, Switch on/off and default/small sizes, thumb insets, and the independent hit area.
 4. Operate representative controls, a form, a custom component, and an overlay. Check keyboard focus, close/return focus, invalid states, and reduced motion where supported.
@@ -25,11 +25,13 @@ Cover a planned visual choice, the real available single-select tool when a huma
 ## Final delivery
 
 - Fetch all registry:ui items from one recorded snapshot; use its manifest rather than a permanently hardcoded count.
-- Include component sources, custom components, full gallery, tokens, CSS, dependency lock, installable registry, snapshot, licenses, and DESIGN.md. Both the library and its matching DESIGN.md are required.
+- Verify the requested output directory takes priority. In Web projects put the module there or under the actual source root/design-system, and DESIGN.md at the application root. Outside Web projects put the complete app and DESIGN.md at the selected app root.
+- Include components, gallery, tokens, native styles, snapshot, licenses, and DESIGN_DOC. Web integration reuses the host manifest/lockfile and includes a compatible registry where supported. Standalone delivery includes its own manifest/lockfile and registry. Both components and DESIGN_DOC are mandatory.
 - Build the library. Where browser access exists, inspect lazy gallery rendering, runtime errors, and visual consistency across forms, navigation, overlays, charts, and feedback components.
-- Serve library/public; install public/r/all.json with npx shadcn@4.21.0 add into a clean initialized React + Tailwind 4 consumer and build it. Check theme imports and custom dependencies.
+- In Web projects verify host build/typecheck/lint, imports, framework boundaries, formatting, aliases, and dependencies. Test any registry in a consumer matching that stack. For standalone delivery, serve LIBRARY/public and install r/all.json into a clean React + Tailwind 4 consumer, then build and check theme imports.
 - Verify registry includes source imports, dependency versions, theme files, and required assets/fonts.
 - Check DESIGN.md, tokens.json, CSS, registry, and the confirmed token hash agree. Include actual limitations; source generation is not proof of visual verification.
+- Verify DESIGN.md follows assets/DESIGN.template.md with all 13 sections and required rules. Fill every placeholder and empty field, check real paths, and record absent product features as not applicable with reasons. Run scripts/design_document.py --check on the completed document. See design-document.md.
 
 ## Choice, presentation, and language checks
 

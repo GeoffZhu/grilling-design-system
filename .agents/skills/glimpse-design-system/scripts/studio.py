@@ -130,6 +130,8 @@ def publish(root, spec):
         raise ValueError(f'{review_type} requires exactly {expected_count} option(s)')
     if review_type == 'derived' and (not isinstance(spec.get('derivation'), str) or not spec['derivation'].strip()):
         raise ValueError('Derived checkpoints need a rationale based on existing evidence')
+    if type(spec.get('continueStage', False)) is not bool or (spec.get('continueStage') and review_type != 'choice'):
+        raise ValueError('continueStage is a boolean for planned choice rounds only')
     if stage == 'foundations':
         required = {'color', 'typography', 'spacing', 'shape', 'icons', 'motion'}
         if not required.issubset(set(spec.get('covers', []))):
@@ -235,7 +237,7 @@ def decide(root, data):
                                  at=event['at'], simulation=state['simulation'])
     else:
         state['accepted'][stage] = selected
-        state['nextStage'] = STAGES[STAGES.index(stage) + 1]
+        state['nextStage'] = stage if current.get('continueStage') else STAGES[STAGES.index(stage) + 1]
         state['status'] = 'needs-agent'
     save(root, state)
     return state
@@ -249,6 +251,39 @@ def reopen(root, feedback):
     state['status'], state['nextStage'], state['approval'] = 'needs-agent', 'foundations', None
     state['accepted'] = {k:v for k,v in state['accepted'].items() if k == 'direction'}
     save(root, state)
+
+def finish(root, evidence):
+    """Record native integration after actual host checks and document completion."""
+    from design_document import completion_errors
+    state = read(root / 'session.json')
+    if state['status'] not in ['approved', 'delivered']:
+        raise ValueError('Delivery requires confirmation of the current presentation')
+    expected = digest(state['accepted']['foundations']['tokens'])
+    if evidence.get('tokenHash') != expected or state['approval']['tokenHash'] != expected:
+        raise ValueError('Delivery token hash is stale')
+    for key in ['path', 'designDoc']:
+        path = Path(evidence.get(key, ''))
+        if not path.is_absolute() or not path.exists():
+            raise ValueError('Delivery requires an existing absolute ' + key)
+    if not Path(evidence['path']).is_dir() or not Path(evidence['designDoc']).is_file():
+        raise ValueError('Delivery requires a component directory and DESIGN.md file')
+    context_path = root.parent / 'project-context.json'
+    if not context_path.is_file():
+        raise ValueError('Native delivery requires project-context.json beside the session')
+    context = read(context_path)
+    if context.get('mode') != 'integrated' or Path(evidence['path']).resolve() != Path(context['output']).resolve() or Path(evidence['designDoc']).resolve() != Path(context['webRoot']).resolve()/'DESIGN.md':
+        raise ValueError('Delivery paths must match the integrated project context')
+    errors = completion_errors(Path(evidence['designDoc']).read_text())
+    if errors:
+        raise ValueError('Complete DESIGN.md before delivery: ' + '; '.join(errors))
+    if not isinstance(evidence.get('checks'), dict) or not evidence['checks'].get('build'):
+        raise ValueError('Record the actual host build result')
+    if type(evidence.get('componentCount')) is not int or evidence['componentCount'] < 1 or not evidence.get('snapshotHash'):
+        raise ValueError('Record component coverage and the source snapshot hash')
+    state['status'] = 'delivered'
+    state['delivery'] = {**evidence, 'mode': 'integrated'}
+    save(root, state)
+    return state
 
 def serve(root, port):
     class Handler(BaseHTTPRequestHandler):
@@ -297,7 +332,7 @@ def serve(root, port):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest='cmd', required=True)
-    for command in ['init', 'publish', 'status', 'serve', 'wait', 'reopen', 'decide']:
+    for command in ['init', 'publish', 'status', 'serve', 'wait', 'reopen', 'decide', 'finish']:
         s = sub.add_parser(command)
         s.add_argument('--session', required=True, type=Path)
         if command == 'init':
@@ -310,6 +345,7 @@ def main():
         if command == 'serve': s.add_argument('--port', type=int, default=4310)
         if command == 'wait': s.add_argument('--timeout', type=int, default=45)
         if command == 'reopen': s.add_argument('--feedback', required=True)
+        if command == 'finish': s.add_argument('--evidence', required=True, type=Path)
         if command == 'decide':
             s.add_argument('--decision', required=True, type=Path, help='Actual user response mapped to the decision format')
             s.add_argument('--url', required=True, help='Running studio URL; shares its submission lock')
@@ -320,6 +356,7 @@ def main():
         elif args.cmd == 'publish': publish(root, read(args.spec))
         elif args.cmd == 'serve': return serve(root, args.port)
         elif args.cmd == 'reopen': reopen(root, args.feedback)
+        elif args.cmd == 'finish': finish(root, read(args.evidence))
         elif args.cmd == 'decide':
             if urlparse(args.url).hostname not in ['localhost', '127.0.0.1']:
                 raise ValueError('Use the local studio URL')

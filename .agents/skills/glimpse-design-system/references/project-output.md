@@ -1,0 +1,69 @@
+# Project detection, output paths, and native integration
+
+Resolve the destination before generating code. Directory selection and project compatibility are separate decisions: a user-specified directory always wins, and the current Web project's environment still applies. Do not ask the user to choose a framework or delivery format.
+
+## Output rules
+
+| Current context | User-specified directory | Component output | DESIGN.md |
+| --- | --- | --- | --- |
+| Web project | Present | That exact directory | Web application root/DESIGN.md |
+| Web project | Absent | Actual source root/design-system/ | Web application root/DESIGN.md |
+| No Web project | Present | Complete standalone application at that directory | That directory/DESIGN.md |
+| No Web project | Absent | Complete standalone application at cwd/design-system/ | cwd/design-system/DESIGN.md |
+
+Resolve relative user paths against the invocation working directory. Do not append library/, src/, or design-system/ to an explicitly requested destination. Determine Web context from the current or explicitly targeted application, not from whether the output directory is empty. A Web project's custom destination may be outside src or outside the repository; retain it and configure imports/build inclusion according to existing workspace conventions.
+
+Use the owning Web application's root, not an arbitrary ancestor or a sibling app. In a monorepo, resolve the application from the current path, user context, source, and workspace scripts. Follow the workspace package manager and lockfile. If several applications remain equally plausible, request only the missing target path; do not turn this into a visual preference question. Inspect existing destination files too: if the chosen directory already contains an application, integrate with that application instead of overwriting it with a new scaffold.
+
+## Inspect the environment
+
+Read AGENTS.md, package manifests, lockfiles, build scripts/config, route entries, components.json, tsconfig/jsconfig aliases, formatter/linter rules, stylesheets, and representative nearby components. Recognize React/Next/Remix, Vue/Nuxt, Svelte, Angular, Astro, and other browser applications; package.json alone is not proof of a Web project. Check server-rendered template applications and plain HTML projects too.
+
+Identify the actual source root from build entries and aliases. Common roots are src/, app/, resources/js/, client/, or the flat project root. Do not create src/ merely because the standalone starter uses it. Identify JS versus TS, JSX conventions, client/server boundaries, import paths, filename casing, exports, quotes, semicolons, formatting, CSS approach, framework/Tailwind versions, icon library, accessibility primitives, package manager, and verification commands.
+
+Use scripts/project.py for a read-only first pass:
+
+~~~sh
+python3 "$SKILL/scripts/project.py" --cwd "$PWD"
+python3 "$SKILL/scripts/project.py" --cwd "$PWD" --output /user/requested/path
+~~~
+
+Its detection is heuristic; confirm results from source/config. For a custom setup or targeted monorepo app, pass --web-root and --source-root after inspection. The script resolves paths but never creates files or changes project configuration.
+
+Record the confirmed result as PROJECT/project-context.json. Use LIBRARY for its output, DESIGN_DOC for its designDoc, and PROJECT for its workDir. PROJECT defaults to WEB_ROOT/.glimpse in integrated mode and LIBRARY/.glimpse in standalone mode. Keep sessions, candidates, caches, translations, and evidence there. Persist the selected paths and reuse them on resume unless the user changes them.
+
+## Existing Web project
+
+Implement a source module inside LIBRARY using the host framework and conventions. Use directories such as ui/, custom/, hooks/, and theme files only where they fit the host structure. Reuse existing canonical primitives and utilities via imports/re-exports when suitable. Add or adapt missing components under LIBRARY. Preserve existing package/build configuration and entry points; make only the changes needed to compile and expose the new module. Merge existing root DESIGN.md guidance rather than discarding unrelated standards.
+
+Do not run the standalone scaffold into the project or its source tree. library.py is a standalone React/Vite generator and cannot infer arbitrary project conventions. To fetch official shadcn inputs without writing a new app, use:
+
+~~~sh
+python3 "$SKILL/scripts/library.py" --sources-only --full --cache "$PROJECT/cache"
+~~~
+
+For compatible React projects, adapt official sources to the installed React, styling, and primitive versions. Respect Next/server rendering boundaries and existing image/link/theme providers. Tailwind 3 requires its own configuration conventions; never inject Tailwind 4 directives blindly. When the project uses another styling system, translate the accepted visual specification into that system without replacing its build pipeline. Install only required dependencies with the existing package manager and compatible versions.
+
+For non-React frameworks, use their compatible shadcn ecosystem or framework-native accessible equivalents for the same component inventory and design rules. Do not paste React TSX into Vue/Svelte/Angular code or add a second React runtime just for the gallery. Document adaptations and source attribution in DESIGN.md and the snapshot; do not label a framework port as unchanged official React source.
+
+Mount a gallery/specimen through the host's existing route, story, demo, or preview mechanism. It must import the actual delivered module. Run the existing build/typecheck/lint commands and relevant interaction checks. Do not create a nested package.json, Vite app, or second lockfile solely to preview the design system. Generate a registry only when it is compatible with the host ecosystem, using actual paths and installed dependency versions. Validate its consumer in that same environment; do not require a Tailwind 4 Vite consumer for a different stack.
+
+Write tokens, attribution/snapshot, applicable registry, and custom guidance with the module. Write the completed 13-section DESIGN.md to WEB_ROOT/DESIGN.md. Paths in that document are relative to WEB_ROOT, including relative paths to an explicitly requested external component directory. Its Implementation section must name actual host tooling and commands. Existing root standards must be merged with the new system.
+
+For a generated documentation draft, scripts/design_document.py accepts --context with project-context.json. Add inspected fields framework, styling, componentLibrary, apiMapping, buildInstructions, and path mappings implementationPaths, referencePaths, and canonicalPaths; resolve path mappings from WEB_ROOT. implementationPaths uses the template labels UI components, Shared components, Domain components, and Design tokens. referencePaths uses App shell, List page, Detail page, Form page, and Settings. canonicalPaths uses Button, Input, Select, Dialog, Table, Tabs, and Toast. Do not fill these with assumed Vite/src paths. When root DESIGN.md exists, merge an intermediate draft into it.
+
+~~~sh
+python3 "$SKILL/scripts/design_document.py" --context "$PROJECT/project-context.json" --tokens "$LIBRARY/tokens.json" --snapshot "$LIBRARY/shadcn-snapshot.json" --checks "$PROJECT/checks.json" --session "$PROJECT/session"
+~~~
+
+Only finalize delivery after the integrated build, available visual checks, component coverage, and DESIGN_DOC completion check. Record integrated delivery through studio.py finish using an evidence JSON with absolute path, designDoc, tokenHash, componentCount, snapshotHash, and checks containing the actual host build result. This records evidence; it does not execute the build or prove visual quality.
+
+~~~sh
+python3 "$SKILL/scripts/studio.py" finish --session "$PROJECT/session" --evidence "$PROJECT/delivery.json"
+~~~
+
+## No Web project
+
+Create the full runnable React/TypeScript/Vite/Tailwind application at LIBRARY itself. Use library.py with --output LIBRARY, --cache PROJECT/cache, and the existing draft/delivery arguments. The app's package.json, src/, public/, and DESIGN.md belong directly under LIBRARY. Never add a library/ wrapper. The user's chosen path remains the application root.
+
+Use the standalone development/build commands and compatible shadcn registry consumer checks. Complete LIBRARY/DESIGN.md with the required template. If output already contains user work, inspect and preserve it before generating; an existing Web application takes the integration path.
