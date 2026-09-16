@@ -1,0 +1,4 @@
+interface:
+  display_name: "Glimpse Design System"
+  short_description: "Visual choices into shadcn/ui and DESIGN.md"
+  default_prompt: "Use $glimpse-design-system to derive a design system from this image, ask only key visual questions with native single-select tools, and deliver a complete shadcn/ui component library and matching DESIGN.md."
