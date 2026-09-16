@@ -71,16 +71,17 @@ content.json requires language (for example zh-CN or en), title, headline, descr
 {
   "stage": "direction",
   "reviewType": "choice",
-  "title": "Choose the control corners",
+  "title": "Choose your preferred control corners",
   "language": "en",
-  "description": "Compare the same buttons and fields.",
-  "interpretation": "Both treatments preserve the reference colors and type.",
+  "description": "Return to chat and choose A or B.",
   "options": [
     {"id":"a","title":"A: Rounded","description":"Rounder corners.","preview":"candidates/r1-a.html","tokens":{},"viewports":[{"device":"specimen","width":800,"height":400}]},
     {"id":"b","title":"B: Squared","description":"Straighter corners.","preview":"candidates/r1-b.html","tokens":{},"viewports":[{"device":"specimen","width":800,"height":400}]}
   ]
 }
 ~~~
+
+Use title for the intro's direct action. Omit description or leave it empty unless one short instruction is needed to explain where or how to respond. Keep background, interpretation, and rationale in PROJECT/interpretation.md or PROJECT/decision-tree.md; legacy interpretation fields are not displayed. Use option descriptions only for concise visible differences.
 
 Stage must match nextStage. Choose the review type according to decision-tree.md:
 

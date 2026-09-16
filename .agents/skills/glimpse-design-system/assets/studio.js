@@ -62,10 +62,9 @@ function render(s) {
   const actionNames={select:'select',revise:'reviseAction',approve:'approveAction'};
   $('history').replaceChildren(...s.history.map(h=>node('li',t(h.stage)+' · '+(h.action==='derive'?h.derivation:t(actionNames[h.action]))+' · '+(h.optionIds||[h.optionId]).filter(Boolean).join(', ')+' '+(h.feedback||'')+' '+(h.combination||'')+(h.simulation?t('testSuffix'):''))));
   const r=s.round, awaiting=s.status==='awaiting-user';$('options').replaceChildren();
-  $('counter').textContent=t('round',{n:s.revision});
   $('title').textContent=awaiting?r.title:t(s.status==='needs-agent'?'waiting':s.status==='approved'?'approved':'delivered');
-  $('description').textContent=awaiting?r.description:t('saved');$('interpretation').textContent=awaiting?(r.interpretation||''):'';
-  $('notice').textContent=awaiting?(r.stage==='preview'?'':t('previewHint')):s.status==='needs-agent'?t('next',{stage:t(s.nextStage)}):t('approvedVersion');
+  $('description').textContent=awaiting?(r.description||''):t('saved');
+  $('notice').textContent=awaiting?'':s.status==='needs-agent'?t('next',{stage:t(s.nextStage)}):t('approvedVersion');
   if(!r) return;
   r.options.forEach(o=>{
     const card=node('article',null,'option'), heading=node('div',null,'option-heading');

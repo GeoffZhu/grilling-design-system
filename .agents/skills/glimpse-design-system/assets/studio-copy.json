@@ -13,7 +13,6 @@
     "components": "Buttons, fields and more",
     "preview": "Full page preview",
     "delivery": "Design files",
-    "round": "Round {n}",
     "waiting": "Choices saved. Waiting for the next version",
     "approved": "Design confirmed. Preparing your files",
     "delivered": "Your design files are ready",
@@ -29,7 +28,6 @@
     "maintenance": "Further changes",
     "testSuffix": " (test)",
     "offline": "Connection lost. Retrying. Your submitted choices are saved.",
-    "previewsLabel": "Design previews",
-    "previewHint": "After viewing, return to the chat to choose or tell me what to change."
+    "previewsLabel": "Design previews"
   }
 }
