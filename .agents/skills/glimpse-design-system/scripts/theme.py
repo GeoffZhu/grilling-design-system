@@ -110,7 +110,7 @@ def contrast(t):
     for mode,colors in [(t['mode'],t['colors'])]+([(t['alternate']['mode'],t['alternate']['colors'])] if t.get('alternate') else []):
         pairs=[('foreground','background'),('card-foreground','card'),('primary-foreground','primary'),
                ('secondary-foreground','secondary'),('muted-foreground','muted'),
-               ('accent-foreground','accent'),('popover-foreground','popover'),('foreground','background'),
+               ('accent-foreground','accent'),('popover-foreground','popover'),
                ('destructive','background'),('sidebar-foreground','sidebar'),
                ('sidebar-primary-foreground','sidebar-primary'),('sidebar-accent-foreground','sidebar-accent'),
                ('ring','background'),('input','background')]

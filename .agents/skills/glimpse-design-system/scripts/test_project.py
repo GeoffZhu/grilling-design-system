@@ -96,6 +96,34 @@ class ProjectTest(unittest.TestCase):
         self.assertFalse(args.output.exists())
         self.assertFalse(args.cache.exists())
 
+    def test_failed_fetch_leaves_standalone_output_untouched(self):
+        tokens = self.root/'tokens.json'
+        from test_design_document import DesignDocumentTest
+        fixture = DesignDocumentTest(); fixture.setUp()
+        tokens.write_text(json.dumps(fixture.tokens)); fixture.tearDown()
+        output = self.root/'design-system'
+        args = argparse.Namespace(output=output, cache=self.root/'cache', session=None, tokens=tokens,
+                                  language='en', ui_copy=None, deliver=False, full=False, install=False, build=False)
+        with patch('library.Path.cwd', return_value=self.root/'empty'), \
+             patch('library.fetch', side_effect=RuntimeError('offline fixture')):
+            (self.root/'empty').mkdir()
+            with self.assertRaisesRegex(RuntimeError, 'offline'):
+                build(args)
+        self.assertFalse(output.exists())
+
+    def test_interrupted_generator_output_is_not_mistaken_for_a_host(self):
+        output = self.root/'design-system'
+        output.mkdir()
+        (output/'.glimpse-standalone').write_text('marker')
+        (output/'index.html').write_text('<div id="root"></div>')
+        (output/'vite.config.ts').write_text('export default {}')
+        args = argparse.Namespace(output=output, cache=self.root/'cache', session=None, tokens=None,
+                                  language='en', ui_copy=None, deliver=False, full=False, install=False, build=False)
+        with patch('library.Path.cwd', return_value=self.root/'empty'):
+            (self.root/'empty').mkdir()
+            with self.assertRaisesRegex(ValueError, 'Provide --tokens'):
+                build(args)
+
     def test_existing_requested_application_is_detected(self):
         app = self.web(self.root/'existing')
         result = resolve_project(self.root, app)

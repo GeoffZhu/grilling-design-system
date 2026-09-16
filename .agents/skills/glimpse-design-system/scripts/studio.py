@@ -253,7 +253,7 @@ def reopen(root, feedback):
     save(root, state)
 
 def finish(root, evidence):
-    """Record native integration after actual host checks and document completion."""
+    """Record delivery after actual build checks and DESIGN.md completion, in either output mode."""
     from design_document import completion_errors
     state = read(root / 'session.json')
     if state['status'] not in ['approved', 'delivered']:
@@ -267,12 +267,26 @@ def finish(root, evidence):
             raise ValueError('Delivery requires an existing absolute ' + key)
     if not Path(evidence['path']).is_dir() or not Path(evidence['designDoc']).is_file():
         raise ValueError('Delivery requires a component directory and DESIGN.md file')
+    output, design_doc = Path(evidence['path']).resolve(), Path(evidence['designDoc']).resolve()
     context_path = root.parent / 'project-context.json'
-    if not context_path.is_file():
-        raise ValueError('Native delivery requires project-context.json beside the session')
-    context = read(context_path)
-    if context.get('mode') != 'integrated' or Path(evidence['path']).resolve() != Path(context['output']).resolve() or Path(evidence['designDoc']).resolve() != Path(context['webRoot']).resolve()/'DESIGN.md':
-        raise ValueError('Delivery paths must match the integrated project context')
+    generated = state.get('generated')
+    if context_path.is_file():
+        context = read(context_path)
+        mode = context.get('mode')
+        if mode not in ['integrated', 'standalone']:
+            raise ValueError('project-context.json needs mode integrated or standalone')
+        doc_root = Path(context['webRoot'] if mode == 'integrated' else context['output']).resolve()
+        if output != Path(context['output']).resolve() or design_doc != doc_root / 'DESIGN.md':
+            raise ValueError('Delivery paths must match the ' + mode + ' project context')
+    elif generated:
+        mode = 'standalone'
+        if output != Path(generated['path']).resolve() or design_doc != output / 'DESIGN.md':
+            raise ValueError('Delivery paths must match the generated standalone library')
+    else:
+        raise ValueError('Delivery requires project-context.json beside the session or a library.py --deliver run')
+    if mode == 'standalone' and (not generated or Path(generated['path']).resolve() != output
+                                 or generated.get('tokenHash') != expected):
+        raise ValueError('Standalone delivery requires library.py --deliver for the approved tokens first')
     errors = completion_errors(Path(evidence['designDoc']).read_text())
     if errors:
         raise ValueError('Complete DESIGN.md before delivery: ' + '; '.join(errors))
@@ -281,7 +295,7 @@ def finish(root, evidence):
     if type(evidence.get('componentCount')) is not int or evidence['componentCount'] < 1 or not evidence.get('snapshotHash'):
         raise ValueError('Record component coverage and the source snapshot hash')
     state['status'] = 'delivered'
-    state['delivery'] = {**evidence, 'mode': 'integrated'}
+    state['delivery'] = {**evidence, 'mode': mode}
     save(root, state)
     return state
 

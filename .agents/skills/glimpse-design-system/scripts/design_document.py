@@ -9,6 +9,7 @@ from theme import contrast, geometry
 
 TEMPLATE = Path(__file__).resolve().parents[1] / 'assets' / 'DESIGN.template.md'
 FENCE = chr(96) * 3
+DRAFT_NOTICE = 'This is a generated documentation draft.'
 
 
 def document(output, tokens, state, snapshot, checks, context=None):
@@ -80,7 +81,7 @@ def document(output, tokens, state, snapshot, checks, context=None):
     status = 'SIMULATED APPROVAL (validation only)' if confirmed and state.get('simulation') else 'Approved' if confirmed else 'Draft'
     append(1, f'### Source and status\n\nName: {tokens["name"]}\n\nStatus: {status}\n\nMode: {tokens["mode"]}\n\n'
            + tokens.get('rationale', 'Use the image interpretation and recorded decisions.') + '\n\n'
-           'This is a generated documentation draft. Complete every placeholder and verify all rules against the final library before delivery. '
+           + DRAFT_NOTICE + ' Complete every placeholder and verify all rules against the final library before delivery. '
            'Infer missing documentation from the project and confirmed visual choices; do not turn template fields into a user questionnaire.')
     append(4, '### Public API mapping\n\n' + (context.get('apiMapping', '[fill here: map design roles to actual host component APIs]') if integrated else
            'Preserve shadcn/ui APIs. The design role primary maps to Button variant="default"; '
@@ -140,7 +141,8 @@ def document(output, tokens, state, snapshot, checks, context=None):
     append(13, '\n'.join(extra))
     result = parts[0] + ''.join(heading + body for heading, body in sections.values())
     destination = doc_root / 'DESIGN.md'
-    if integrated and destination.exists():
+    # Only an unedited generated draft may be replaced; completed or host documents get a separate draft.
+    if destination.exists() and (integrated or DRAFT_NOTICE not in destination.read_text()):
         draft_root = Path(context.get('workDir', doc_root / '.glimpse'))
         draft_root.mkdir(parents=True, exist_ok=True)
         destination = draft_root / 'DESIGN.draft.md'
@@ -170,7 +172,7 @@ def completion_errors(text):
     for marker in markers:
         if marker in text:
             errors.append('Complete template placeholder: ' + marker)
-    if 'This is a generated documentation draft.' in text:
+    if DRAFT_NOTICE in text:
         errors.append('Complete the draft and remove its draft notice')
     for block in re.findall(FENCE + 'txt' + chr(10) + '(.*?)' + FENCE, text, re.DOTALL):
         lines = block.strip().splitlines()

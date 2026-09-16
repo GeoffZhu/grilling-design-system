@@ -211,4 +211,23 @@ class WorkflowTest(unittest.TestCase):
         self.assertEqual(result['status'],'delivered')
         self.assertEqual(result['delivery']['mode'],'integrated')
 
+    def test_standalone_delivery_requires_generation_and_completed_document(self):
+        from test_design_document import DesignDocumentTest
+        self.advance();self.choose('approve')
+        library=Path(self.temp.name)/'design-system';library.mkdir()
+        doc=library/'DESIGN.md';doc.write_text('# DESIGN.md\n\nThis is a generated documentation draft.\n')
+        state=read(self.root/'session.json')
+        token_hash=state['approval']['tokenHash']
+        evidence={'path':str(library),'designDoc':str(doc),'tokenHash':token_hash,
+                  'componentCount':61,'snapshotHash':'fixture','checks':{'build':'Fixture build result'}}
+        with self.assertRaisesRegex(ValueError,'library.py --deliver'): finish(self.root,evidence)
+        state['generated']={'path':str(library),'tokenHash':token_hash,'componentCount':61,'snapshotHash':'fixture'}
+        write(self.root/'session.json',state)
+        with self.assertRaisesRegex(ValueError,'Complete DESIGN.md'): finish(self.root,evidence)
+        self.assertEqual(read(self.root/'session.json')['status'],'approved')
+        doc.write_text(DesignDocumentTest().completed_fixture())
+        result=finish(self.root,evidence)
+        self.assertEqual(result['status'],'delivered')
+        self.assertEqual(result['delivery']['mode'],'standalone')
+
 if __name__=='__main__':unittest.main()

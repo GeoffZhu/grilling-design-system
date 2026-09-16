@@ -92,6 +92,15 @@ class DesignDocumentTest(unittest.TestCase):
         self.assertEqual(draft,app/'.glimpse/DESIGN.draft.md')
         self.assertEqual(path.read_text(),'Existing project rules')
 
+    def test_completed_standalone_document_is_never_overwritten(self):
+        first = self.generate(self.state)
+        self.assertIn('This is a generated documentation draft.', first)
+        completed = self.completed_fixture()
+        (self.output/'DESIGN.md').write_text(completed)
+        draft = document(self.output, self.tokens, self.state, self.snapshot, {})
+        self.assertEqual(draft, self.output.resolve()/'.glimpse/DESIGN.draft.md')
+        self.assertEqual((self.output/'DESIGN.md').read_text(), completed)
+
     def completed_fixture(self):
         # A structural fixture only; this does not claim design/source validity.
         text = TEMPLATE.read_text()

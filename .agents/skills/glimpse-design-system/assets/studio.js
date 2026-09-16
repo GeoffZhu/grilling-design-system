@@ -1,4 +1,4 @@
-let stamp, observers = [], copy = {};
+let stamp, observers = [], resizers = [], scrolledHash = null, copy = {};
 const $ = id => document.getElementById(id);
 const stages = ['direction','foundations','components','preview','delivery'];
 const t = (key, values = {}) => Object.entries(values).reduce((text, [name, value]) => text.replaceAll('{'+name+'}', value), copy[key] || '');
@@ -24,7 +24,8 @@ function devicePreview(option, viewport) {
   canvas.append(frame);wrap.append(canvas);
   let scale=1, fitting=true;
   function resize() {
-    const available=Math.max(1,wrap.clientWidth), fit=available/width;
+    // Never enlarge beyond the designed size; only shrink to fit narrow columns.
+    const available=Math.max(1,wrap.clientWidth), fit=Math.min(1,available/width);
     if(fitting) scale=fit;
     // Keep the full device frame visible at fit size. Zoom changes the rendered
     // pixels, not the iframe viewport, so Desktop never becomes a Mobile layout.
@@ -51,11 +52,11 @@ function devicePreview(option, viewport) {
     try { frame.contentWindow.addEventListener('wheel',wheel,{passive:false}); } catch {}
   });
   section.append(bar,wrap);
-  const observer=new ResizeObserver(resize);observer.observe(wrap);observers.push(observer);
+  const observer=new ResizeObserver(resize);observer.observe(wrap);observers.push(observer);resizers.push(resize);
   return section;
 }
 function render(s) {
-  observers.forEach(o=>o.disconnect());observers=[];localize(s);
+  observers.forEach(o=>o.disconnect());observers=[];resizers=[];localize(s);
   $('session-name').textContent=s.name;$('simulation').hidden=!s.simulation;$('inspiration').src='/files/'+s.image;
   $('steps').replaceChildren(...stages.map(key=>node('span',t(key),key===s.nextStage?'active':'')));
   const actionNames={select:'select',revise:'reviseAction',approve:'approveAction'};
@@ -76,7 +77,16 @@ function render(s) {
     previews.append(...viewports.map(v=>devicePreview(o,v)));
     card.append(heading,previews);$('options').append(card);
   });
-  if(location.hash) requestAnimationFrame(()=>document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView());
+  // Size frames synchronously first; otherwise the target moves after scrolling.
+  resizers.forEach(fn=>fn());
+  scrollToHash();
 }
+function scrollToHash(){
+  // Scroll once per hash so periodic re-renders do not pull the reader back.
+  if(!location.hash || location.hash===scrolledHash) return;
+  const target=document.getElementById(decodeURIComponent(location.hash.slice(1)));
+  if(target){target.scrollIntoView();scrolledHash=location.hash;}
+}
+addEventListener('hashchange',()=>{scrolledHash=null;scrollToHash();});
 async function refresh(){try{const response=await fetch('/api/state');if(!response.ok)throw Error();const s=await response.json();const next=JSON.stringify([s.revision,s.status,s.history.length,s.language,s.uiCopy]);if(next!==stamp){render(s);stamp=next;}}catch{$('notice').textContent=t('offline');}}
 refresh();setInterval(refresh,1800);
