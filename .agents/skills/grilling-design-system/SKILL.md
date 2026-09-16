@@ -1,9 +1,9 @@
 ---
-name: glimpse-design-system
+name: grilling-design-system
 description: Derive a PC and Mobile Web design system from an inspiration image using a planned set of high-impact visual component choices, focused HTML previews, and the host agent's single-select question tool. Use to compare or revise UI styles and deliver a complete themed shadcn/ui component library with a matching DESIGN.md.
 ---
 
-# Glimpse design system
+# Grilling design system
 
 Deliver both a working shadcn/ui design system adapted to the project framework and DESIGN.md that describes its final specification. These are mandatory outputs; a preview, token sheet, or design proposal alone is incomplete. Preserve confirmed preferences and distinguish user choices from agent-derived rules. Never treat silence, a timeout, or a preselected answer as approval.
 

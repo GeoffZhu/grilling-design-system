@@ -1,12 +1,12 @@
-# Glimpse UI Design System
+# Grilling Design System
 
 从一张图片出发，只问少量关键的视觉问题，交付完整的 shadcn/ui 组件库和 DESIGN.md。
 
-Skill 入口：[.agents/skills/glimpse-design-system/SKILL.md](.agents/skills/glimpse-design-system/SKILL.md)。仓库同时提供 .claude/skills/glimpse-design-system 链接。复制整个 skill 目录到其他项目即可使用。
+Skill 入口：[.agents/skills/grilling-design-system/SKILL.md](.agents/skills/grilling-design-system/SKILL.md)。仓库同时提供 .claude/skills/grilling-design-system 链接。复制整个 skill 目录到其他项目即可使用。
 
 调用示例：
 
-> 使用 $glimpse-design-system，以这张图片为灵感，确认 PC Web 和 Mobile Web 的设计系统。
+> 使用 $grilling-design-system，以这张图片为灵感，确认 PC Web 和 Mobile Web 的设计系统。
 
 ## 流程
 
@@ -32,4 +32,4 @@ Skill 入口：[.agents/skills/glimpse-design-system/SKILL.md](.agents/skills/gl
 
 需要 Python 3.10+；独立应用还需要 Node 20.19+ 和 npm。首次获取 shadcn 源码和字体依赖需要网络。若系统代理拦截 TLS 导致证书校验失败，可用 `no_proxy='*'` 重试。
 
-所有说明和预览内容跟随用户的主语言，使用简短、容易理解的话。已融合 Anthropic frontend-design 的设计意图、构图与组件细节检查方法，见 [frontend-craft.md](.agents/skills/glimpse-design-system/references/frontend-craft.md)。组件与整合预览需要实际截图检查；没有浏览器能力时，如实记录未能执行的检查。构建通过不能代替视觉检查。
+所有说明和预览内容跟随用户的主语言，使用简短、容易理解的话。已融合 Anthropic frontend-design 的设计意图、构图与组件细节检查方法，见 [frontend-craft.md](.agents/skills/grilling-design-system/references/frontend-craft.md)。组件与整合预览需要实际截图检查；没有浏览器能力时，如实记录未能执行的检查。构建通过不能代替视觉检查。
