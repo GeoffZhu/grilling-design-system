@@ -3,11 +3,37 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
-from library import COMPONENT_CATEGORIES, component_title, examples_by_component, load_custom_components
+from library import COMPONENT_CATEGORIES, component_title, examples_by_component, load_custom_components, main_source, registry
 
 
 class LibraryGalleryTest(unittest.TestCase):
+    def test_registry_uses_model_authored_artifact_name(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            (root/'src').mkdir()
+            package={'dependencies':{'react':'19.1.0'}}
+            tokens={'name':'Northstar Atelier','slug':'northstar-atelier'}
+            with patch('library.css',return_value=':root{}'):
+                registry(root,{},tokens,package,[])
+            item=json.loads((root/'public/r/all.json').read_text())
+            catalog=json.loads((root/'registry.json').read_text())
+            self.assertEqual(catalog['name'],'northstar-atelier')
+            self.assertIn('@import "./northstar-atelier.css"',item['css'])
+            self.assertIn('src/northstar-atelier.css',[entry['path'] for entry in item['files']])
+
+    def test_main_source_mounts_global_component_hosts(self):
+        source = main_source({'mode': 'light'}, ['button', 'tooltip', 'sonner'])
+        self.assertIn('import { Toaster } from "@/components/ui/sonner";', source)
+        self.assertEqual(source.count('<Toaster />'), 1)
+        self.assertIn('<TooltipProvider><App /><Toaster /></TooltipProvider>', source)
+
+    def test_main_source_omits_unavailable_global_hosts(self):
+        source = main_source({'mode': 'light'}, ['button', 'tooltip'])
+        self.assertNotIn('@/components/ui/sonner', source)
+        self.assertNotIn('<Toaster />', source)
+
     def test_component_title(self):
         self.assertEqual(component_title('alert-dialog'), 'Alert Dialog')
         self.assertEqual(component_title('input-otp'), 'Input OTP')

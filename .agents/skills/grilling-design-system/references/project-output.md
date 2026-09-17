@@ -30,7 +30,7 @@ python3 "$SKILL/scripts/project.py" --cwd "$PWD" --output /user/requested/path
 
 Its detection is heuristic; confirm results from source/config. For a custom setup or targeted monorepo app, pass --web-root and --source-root after inspection. The script resolves paths but never creates files or changes project configuration.
 
-Record the confirmed result as PROJECT/project-context.json. Use LIBRARY for its output, DESIGN_DOC for its designDoc, and PROJECT for its workDir. PROJECT defaults to WEB_ROOT/.tmp/grilling-design-system in integrated mode and LIBRARY/.tmp/grilling-design-system in standalone mode. Keep sessions, candidates, caches, translations, drafts, and evidence there. Never use `.glimpse`. Reuse these paths while the workflow is active. A successful `studio.py finish` deletes PROJECT; only LIBRARY and DESIGN_DOC remain.
+Record the confirmed result as PROJECT/project-context.json. Use LIBRARY for its output, DESIGN_DOC for its designDoc, and PROJECT for its workDir. PROJECT defaults to WEB_ROOT/.tmp/grilling-design-system in integrated mode and LIBRARY/.tmp/grilling-design-system in standalone mode. Keep sessions, candidates, caches, translations, drafts, and evidence there. Never use a legacy working directory. Reuse these paths while the workflow is active. A successful `studio.py finish` deletes PROJECT; only LIBRARY and DESIGN_DOC remain.
 
 ## Existing Web project
 
@@ -67,6 +67,8 @@ On success, capture the command output for the handoff; the command removes PROJ
 ## No Web project
 
 Create the full runnable React/TypeScript/Vite/Tailwind application at LIBRARY itself. Use library.py with --output LIBRARY, --cache PROJECT/cache, and the existing draft/delivery arguments. The app's package.json, src/, public/, and DESIGN.md belong directly under LIBRARY. Never add a library/ wrapper. The user's chosen path remains the application root.
+
+Use the model-authored token `name` as the visible application and theme name. Use the model-authored token `slug` as the package name, registry name, and registry theme CSS filename (`src/<slug>.css`). Do not use the skill name or another fixed generator name for these artifacts.
 
 Use the standalone development/build commands and compatible shadcn registry consumer checks. Complete LIBRARY/DESIGN.md with the required template. Then record delivery with studio.py finish: evidence path is LIBRARY, designDoc is LIBRARY/DESIGN.md, tokenHash and snapshotHash come from session.generated, and checks.build holds the actual build result. Without project-context.json, finish validates against session.generated. If output already contains user work, inspect and preserve it before generating; an existing Web application takes the integration path.
 

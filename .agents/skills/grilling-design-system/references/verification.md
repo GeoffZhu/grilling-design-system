@@ -12,9 +12,10 @@ Keep known defects separate from unavailable verification. Fix defects before sh
 2. Serve locally. When browser capabilities exist, inspect the specimen at its declared viewport and the integrated page at 1440 by 900, 390 by 844, and 360 by 800.
 3. Check Mobile overflow, readable text, and touch targets. When device emulation exists, verify coarse-pointer behavior, Switch on/off and default/small sizes, thumb insets, and the independent hit area.
 4. Operate representative controls, a form, a custom component, and an overlay. Check keyboard focus, close/return focus, invalid states, and reduced motion where supported.
-5. Read contrast-report.json and inspect actual foreground/background combinations in source. Fix failures; semantic reports alone do not cover all rendered combinations.
-6. When screenshots are available, view them at actual size, including relevant component crops and states. Review reference fidelity, type hierarchy, spacing, shape, icons, composition, and copy; repair issues and recapture. See frontend-craft.md.
-7. Save visualReview per component candidate and integrated presentation with the accepted token hash, real observations, and no known unresolved defects. Record limitations separately. Preview checks must describe actual results or explicitly identify checks not run.
+5. Trigger every global feedback API represented in the gallery. For Sonner, click a `toast()` example and verify that a rendered toast appears in the accessibility tree and viewport; source inspection of the click handler alone is insufficient. Confirm each singleton host or provider is mounted once at the application root.
+6. Read contrast-report.json and inspect actual foreground/background combinations in source. Fix failures; semantic reports alone do not cover all rendered combinations.
+7. When screenshots are available, view them at actual size, including relevant component crops and states. Review reference fidelity, type hierarchy, spacing, shape, icons, states, composition, and copy; repair issues and recapture. See frontend-craft.md.
+8. Save visualReview per component candidate and integrated presentation with the accepted token hash, real observations, and no known unresolved defects. Record limitations separately. Preview checks must describe actual results or explicitly identify checks not run.
 
 ## Workflow validation
 

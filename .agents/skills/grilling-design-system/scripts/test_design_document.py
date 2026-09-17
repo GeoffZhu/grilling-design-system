@@ -7,7 +7,7 @@ import unittest
 
 from design_document import TEMPLATE, FENCE, completion_errors, document
 from studio import digest
-from theme import COLOR_KEYS
+from theme import COLOR_KEYS, validate
 
 
 class DesignDocumentTest(unittest.TestCase):
@@ -17,7 +17,7 @@ class DesignDocumentTest(unittest.TestCase):
         colors = {key: '#FFFFFF' if key.endswith('foreground') else '#222222' for key in COLOR_KEYS}
         colors.update(background='#FFFFFF', foreground='#222222', card='#FFFFFF')
         colors['card-foreground'] = '#222222'
-        self.tokens = dict(name='Fixture', mode='light', colors=colors, radius=10,
+        self.tokens = dict(name='Fixture', slug='fixture-theme', mode='light', colors=colors, radius=10,
             font=dict(family='system-ui', heading='system-ui', bodySize=16, headingWeight=700),
             spacing=dict(unit=4, controlHeight=44), icons=dict(family='Lucide', size=24, stroke=2),
             motion=dict(duration=160, easing='ease-out'), shadow='none')
@@ -46,8 +46,19 @@ class DesignDocumentTest(unittest.TestCase):
         self.assertIn('primary-hover: [fill here:', result)
         self.assertIn('variant="default"', result)
         self.assertIn('Not run: no browser fixture', result)
+        self.assertIn('src/fixture-theme.css', result)
         self.assertIn('SIMULATED APPROVAL', result)
         self.assertTrue(completion_errors(result))
+
+    def test_model_authored_names_are_required(self):
+        missing = copy.deepcopy(self.tokens)
+        del missing['slug']
+        with self.assertRaisesRegex(ValueError, 'Missing token group: slug'):
+            validate(missing)
+        invalid = copy.deepcopy(self.tokens)
+        invalid['slug'] = 'Fixed Theme.css'
+        with self.assertRaisesRegex(ValueError, 'model-authored kebab-case'):
+            validate(invalid)
 
     def test_regeneration_preserves_guidance_and_refreshes_facts(self):
         note = '# Custom guidance\n\nUse compact groups.\n\n' + FENCE + 'txt\n# Literal example\n' + FENCE

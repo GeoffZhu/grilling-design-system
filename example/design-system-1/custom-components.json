@@ -1,0 +1,40 @@
+{
+  "components": [
+    {
+      "name": "workshop-schedule",
+      "title": "工作坊排期",
+      "description": "带讲师、级别、日期与时间的响应式课程排期。",
+      "files": ["src/components/custom/workshop-schedule.tsx", "src/components/custom/organic-components.css"],
+      "preview": {"path": "src/components/custom/workshop-schedule.preview.tsx", "export": "default"},
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["button"]
+    },
+    {
+      "name": "engagement-chart",
+      "title": "参与度图表",
+      "description": "可切换周期、带文本等价信息的胶囊柱状图。",
+      "files": ["src/components/custom/engagement-chart.tsx", "src/components/custom/organic-components.css"],
+      "preview": {"path": "src/components/custom/engagement-chart.preview.tsx", "export": "default"},
+      "dependencies": [],
+      "registryDependencies": []
+    },
+    {
+      "name": "brand-focus-card",
+      "title": "品牌焦点卡",
+      "description": "以近黑绿承载高对比品牌内容和次级操作。",
+      "files": ["src/components/custom/brand-focus-card.tsx", "src/components/custom/organic-components.css"],
+      "preview": {"path": "src/components/custom/brand-focus-card.preview.tsx", "export": "default"},
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["button"]
+    },
+    {
+      "name": "ecosystem-dashboard",
+      "title": "生态课程仪表盘",
+      "description": "组合排期、品牌焦点和参与度的完整响应式页面。",
+      "files": ["src/components/custom/ecosystem-dashboard.tsx", "src/components/custom/workshop-schedule.tsx", "src/components/custom/engagement-chart.tsx", "src/components/custom/brand-focus-card.tsx", "src/components/custom/organic-components.css"],
+      "preview": {"path": "src/components/custom/ecosystem-dashboard.preview.tsx", "export": "default"},
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["button", "dialog"]
+    }
+  ]
+}

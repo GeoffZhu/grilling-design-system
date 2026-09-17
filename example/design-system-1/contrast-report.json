@@ -1,0 +1,93 @@
+[
+  {
+    "mode": "light",
+    "pair": "foreground/background",
+    "ratio": 10.39,
+    "minimum": 4.5,
+    "passAA": true
+  },
+  {
+    "mode": "light",
+    "pair": "card-foreground/card",
+    "ratio": 15.53,
+    "minimum": 4.5,
+    "passAA": true
+  },
+  {
+    "mode": "light",
+    "pair": "primary-foreground/primary",
+    "ratio": 5.97,
+    "minimum": 4.5,
+    "passAA": true
+  },
+  {
+    "mode": "light",
+    "pair": "secondary-foreground/secondary",
+    "ratio": 9.0,
+    "minimum": 4.5,
+    "passAA": true
+  },
+  {
+    "mode": "light",
+    "pair": "muted-foreground/muted",
+    "ratio": 4.54,
+    "minimum": 4.5,
+    "passAA": true
+  },
+  {
+    "mode": "light",
+    "pair": "accent-foreground/accent",
+    "ratio": 7.14,
+    "minimum": 4.5,
+    "passAA": true
+  },
+  {
+    "mode": "light",
+    "pair": "popover-foreground/popover",
+    "ratio": 16.25,
+    "minimum": 4.5,
+    "passAA": true
+  },
+  {
+    "mode": "light",
+    "pair": "destructive/background",
+    "ratio": 5.05,
+    "minimum": 4.5,
+    "passAA": true
+  },
+  {
+    "mode": "light",
+    "pair": "sidebar-foreground/sidebar",
+    "ratio": 14.95,
+    "minimum": 4.5,
+    "passAA": true
+  },
+  {
+    "mode": "light",
+    "pair": "sidebar-primary-foreground/sidebar-primary",
+    "ratio": 5.97,
+    "minimum": 4.5,
+    "passAA": true
+  },
+  {
+    "mode": "light",
+    "pair": "sidebar-accent-foreground/sidebar-accent",
+    "ratio": 8.32,
+    "minimum": 4.5,
+    "passAA": true
+  },
+  {
+    "mode": "light",
+    "pair": "ring/background",
+    "ratio": 3.82,
+    "minimum": 3,
+    "passAA": true
+  },
+  {
+    "mode": "light",
+    "pair": "input/background",
+    "ratio": 3.29,
+    "minimum": 3,
+    "passAA": true
+  }
+]

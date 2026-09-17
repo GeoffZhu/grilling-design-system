@@ -15,7 +15,7 @@
 - LIBRARY: final component module or standalone app selected by project-output.md.
 - DESIGN_DOC: Web application root/DESIGN.md in integrated mode; LIBRARY/DESIGN.md in standalone mode.
 - PROJECT/project-context.json: inspected environment and output paths; PROJECT is the owned `.tmp/grilling-design-system` namespace and holds session/, cache/, evidence/, drafts, translations, and other non-final artifacts.
-- A successful `studio.py finish` deletes PROJECT. A failed validation or pending user decision leaves it intact for resume. Never place temporary workflow files in `.glimpse` or elsewhere in LIBRARY.
+- A successful `studio.py finish` deletes PROJECT. A failed validation or pending user decision leaves it intact for resume. Never place temporary workflow files in a legacy working directory or elsewhere in LIBRARY.
 - Keep LIBRARY and DESIGN_DOC outside PROJECT. Stop the local Studio server before `finish`; its preview becomes unavailable when PROJECT is deleted.
 - evidence/: available screenshots, source observations, and explicit verification limitations.
 - decision-tree.md: planned visual branches, dependencies, question budget, choices, and derived rules.
@@ -28,7 +28,8 @@ Each direction/foundation option contains a complete object, not a patch. Colors
 
 ~~~json
 {
-  "name": "Example",
+  "name": "Northstar Atelier",
+  "slug": "northstar-atelier",
   "mode": "light",
   "colors": { "background": "#FFFFFF", "foreground": "#141414" },
   "radius": 16,
@@ -40,6 +41,8 @@ Each direction/foundation option contains a complete object, not a patch. Colors
   "rationale": "Observed qualities and intended emphasis."
 }
 ~~~
+
+The agent must invent both `name` and `slug` for the specific design. `name` is the visible theme name. `slug` is its unique kebab-case artifact name. The standalone package, registry, and registry theme CSS use `slug`; never substitute a skill name, generic fixed name, or generator default. Keep both values stable after foundations are accepted unless the user requests a rename.
 
 Expand colors to the complete required map: background, foreground, card, card-foreground, popover, popover-foreground, primary, primary-foreground, secondary, secondary-foreground, muted, muted-foreground, accent, accent-foreground, destructive, border, input, ring, chart-1…chart-5, sidebar, sidebar-foreground, sidebar-primary, sidebar-primary-foreground, sidebar-accent, sidebar-accent-foreground, sidebar-border, sidebar-ring. Add custom semantic colors as needed. See scripts/theme.py.
 

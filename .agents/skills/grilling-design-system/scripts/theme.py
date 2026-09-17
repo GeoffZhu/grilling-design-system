@@ -18,8 +18,12 @@ def geometry(t):
     return values
 
 def validate(t):
-    for k in ['name','mode','colors','radius','font','spacing','icons','motion','shadow']:
+    for k in ['name','slug','mode','colors','radius','font','spacing','icons','motion','shadow']:
         if k not in t: raise ValueError('Missing token group: '+k)
+    if not isinstance(t['name'],str) or not t['name'].strip():
+        raise ValueError('name must be a non-empty model-authored design name')
+    if not isinstance(t['slug'],str) or not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*',t['slug']):
+        raise ValueError('slug must be a model-authored kebab-case name')
     if t['mode'] not in ['light','dark']: raise ValueError('mode must be light or dark')
     if t.get('alternate') and (t['alternate'].get('mode') not in ['light','dark'] or t['alternate']['mode']==t['mode']):
         raise ValueError('alternate.mode must be the other mode')

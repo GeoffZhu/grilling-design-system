@@ -107,7 +107,7 @@ def document(output, tokens, state, snapshot, checks, context=None):
     append(9, '### Build and distribution\n\n' + (context.get('buildInstructions', '[fill here: actual host install, build, and preview commands]') if integrated else
            'Run npm install, npm run dev, and npm run build. Import src/index.css once. '
            'The installable registry is public/r/all.json; install it with npx shadcn@4.21.0 add <registry-url> '
-           'in an initialized React + Tailwind 4 project. It installs src/glimpse-theme.css. '
+           f'in an initialized React + Tailwind 4 project. It installs src/{tokens["slug"]}.css. '
            'Keep dependencies, custom components, fonts, assets, and SHADCN-LICENSE.txt with the library.'))
     fields(11, {name: source(path) for name, path in context.get('referencePaths', {}).items()} if integrated else {'App shell': source('src/App.tsx')})
     fields(12, {name: source(context.get('canonicalPaths', {}).get(name) if integrated else 'src/components/ui/' + file + '.tsx') for name, file in

@@ -43,6 +43,12 @@ SUPPLEMENTAL_PREVIEWS = {
     'form':'FormDemo','direction':'DirectionDemo','attachment':'AttachmentDemo','bubble':'BubbleDemo',
     'marker':'MarkerDemo','message':'MessageDemo','message-scroller':'MessageScrollerDemo',
 }
+GLOBAL_COMPONENT_HOSTS = {
+    'sonner': {
+        'import': 'import { Toaster } from "@/components/ui/sonner";',
+        'render': '<Toaster />',
+    },
+}
 MAX_VISUAL_EXAMPLES = 8
 VISUAL_VARIANTS = {
     'button':['default','secondary','destructive','outline','ghost','link','with-icon','loading'],
@@ -63,6 +69,23 @@ VISUAL_VARIANTS = {
 def component_title(name):
     special={'kbd':'KBD','input-otp':'Input OTP'}
     return special.get(name, ' '.join(part.capitalize() for part in name.split('-')))
+
+def main_source(tokens, component_names, has_theme_overrides=False):
+    """Render the entry point and mount singleton hosts required by included components."""
+    imports=['import React from "react";','import { createRoot } from "react-dom/client";','import { TooltipProvider } from "@/components/ui/tooltip";','import App from "./App";','import "./index.css";']
+    hosts=[]
+    for name, host in GLOBAL_COMPONENT_HOSTS.items():
+        if name in component_names:
+            imports.append(host['import'])
+            hosts.append(host['render'])
+    if has_theme_overrides:
+        imports.append('import "./theme-overrides.css";')
+    tree='<TooltipProvider><App />'+''.join(hosts)+'</TooltipProvider>'
+    imports += [
+        'document.documentElement.classList.add('+json.dumps(tokens['mode'])+');',
+        'createRoot(document.getElementById("root")!).render(<React.StrictMode>'+tree+'</React.StrictMode>);',
+    ]
+    return '\n'.join(imports)+'\n'
 
 def examples_by_component(names, available):
     """Select representative examples without confusing shared prefixes."""
@@ -209,7 +232,7 @@ def collect(names, cache):
         pending-=items.keys()
     return items
 
-def scaffold(output, language='en', title='Grilling Design System'):
+def scaffold(output, language, title):
     output.mkdir(parents=True,exist_ok=True)
     # Written first so an interrupted run is still recognized as this generator's output.
     (output/MARKER).parent.mkdir(parents=True, exist_ok=True)
@@ -221,6 +244,8 @@ def scaffold(output, language='en', title='Grilling Design System'):
     write(output/'components.json',{'$schema':'https://ui.shadcn.com/schema.json','style':'new-york','rsc':False,'tsx':True,'tailwind':{'config':'','css':'src/index.css','baseColor':'neutral','cssVariables':True,'prefix':''},'iconLibrary':'lucide','aliases':{'components':'@/components','utils':'@/lib/utils','ui':'@/components/ui','lib':'@/lib','hooks':'@/hooks'}})
 
 def registry(output,items,t,package,custom_components):
+    artifact_name=t['slug']
+    theme_file='src/'+artifact_name+'.css'
     delivered_paths={path for entry in custom_components for path in entry['files']}
     preview_paths={entry['preview']['path'] for entry in custom_components if entry['preview']['path'] not in delivered_paths}
     files=[]
@@ -234,11 +259,11 @@ def registry(output,items,t,package,custom_components):
         files.append({'path':rel,'type':kind,'target':rel,'content':path.read_text()})
     theme=css(t).replace('@import "tailwindcss";\n','').replace('@import "tw-animate-css";\n','').replace('@import "shadcn/tailwind.css";\n','')
     if (output/'src/theme-overrides.css').exists(): theme='@import "./theme-overrides.css";\n'+theme
-    files.append({'path':'src/glimpse-theme.css','target':'src/glimpse-theme.css','type':'registry:file','content':theme})
+    files.append({'path':theme_file,'target':theme_file,'type':'registry:file','content':theme})
     deps=[name+'@'+version for name,version in package['dependencies'].items() if name not in ['react','react-dom']]
     item={'$schema':'https://ui.shadcn.com/schema/registry-item.json','name':'all','type':'registry:block',
           'title':t['name'],'description':'Themed shadcn collection with custom components. See DESIGN.md for approval status.',
-          'dependencies':deps,'files':files,'css':{'@import "./glimpse-theme.css"':{},'@import "tw-animate-css"':{},'@import "shadcn/tailwind.css"':{}}}
+          'dependencies':deps,'files':files,'css':{'@import "./'+artifact_name+'.css"':{},'@import "tw-animate-css"':{},'@import "shadcn/tailwind.css"':{}}}
     catalog=[item]
     for entry in custom_components:
         custom_files=[]
@@ -254,17 +279,16 @@ def registry(output,items,t,package,custom_components):
         write(output/'public/r'/(entry['name']+'.json'),custom_item)
         catalog.append(custom_item)
     write(output/'public/r/all.json',item)
-    write(output/'registry.json',{'$schema':'https://ui.shadcn.com/schema/registry.json','name':'glimpse','homepage':'https://ui.shadcn.com','items':catalog})
+    write(output/'registry.json',{'$schema':'https://ui.shadcn.com/schema/registry.json','name':artifact_name,'homepage':'https://ui.shadcn.com','items':catalog})
 
 def build(args):
     context = resolve_project(Path.cwd(), args.output)
     output = Path(context['output'])
     destination_root, _, _ = find_web_project(output)
     generated = (output/MARKER).is_file()
-    # Keep recognizing standalone output created before the skill was renamed.
+    # Recognize a completed standalone output without relying on any generated name.
     if not generated and (output/'package.json').is_file():
-        generated = (read(output/'package.json').get('name') in {'grilling-design-system', 'glimpse-design-system'}
-                     and (output/'shadcn-snapshot.json').is_file())
+        generated = all((output/path).is_file() for path in ['tokens.json','registry.json','shadcn-snapshot.json'])
     if not generated and (context['mode'] == 'integrated' or destination_root):
         raise ValueError('Existing Web project detected. Integrate components using references/project-output.md; '
                          'this generator creates a standalone Vite application. Use --sources-only to fetch upstream inputs.')
@@ -308,7 +332,7 @@ def build(args):
                 demos.append(candidate)
     items=collect(names+demos,cache)
     previous=read(output/'package.json') if (output/'package.json').exists() else {}
-    scaffold(output, language, labels['Grilling Design System'])
+    scaffold(output, language, t['name'])
     (output/'src/review-copy.ts').write_text('export const text: Record<string, string> = '+json.dumps(labels,ensure_ascii=False)+';\n')
     shutil.copy2(ASSETS/'SHADCN-LICENSE.txt',output/'SHADCN-LICENSE.txt')
     # Examples are generated upstream inputs. Remove stale examples when the selected set changes.
@@ -341,17 +365,14 @@ def build(args):
     deps.update(dependencies({'dependencies':entry['dependencies']} for entry in custom_components))
     deps.update({'react':'^19.1.0','react-dom':'^19.1.0','class-variance-authority':'^0.7.1','lucide-react':'^0.468.0','cn':'latest','radix-ui':'latest','tw-animate-css':'latest','shadcn':'4.21.0'})
     deps.update(previous.get('dependencies',{}))
-    package={'name':'grilling-design-system','version':'0.1.0','private':True,'type':'module',
+    package={'name':t['slug'],'version':'0.1.0','private':True,'type':'module',
              'scripts':{'dev':'vite --host 127.0.0.1','build':'tsc --noEmit && vite build','preview':'vite preview --host 127.0.0.1'},
              'dependencies':deps,'devDependencies':{'typescript':'^5.8.3','vite':'^6.4.1','@vitejs/plugin-react':'^4.7.0','tailwindcss':'^4.1.0','@tailwindcss/vite':'^4.1.0','@types/react':'^19.1.0','@types/react-dom':'^19.1.0','@types/node':'^22.0.0'}}
     package['devDependencies'].update(previous.get('devDependencies',{}))
     package['scripts'].update(previous.get('scripts',{}))
     write(output/'package.json',package);write(output/'tokens.json',t)
     (output/'src/index.css').write_text(css(t))
-    imports=['import React from "react";','import { createRoot } from "react-dom/client";','import { TooltipProvider } from "@/components/ui/tooltip";','import App from "./App";','import "./index.css";']
-    if (output/'src/theme-overrides.css').exists(): imports.append('import "./theme-overrides.css";')
-    imports+=['document.documentElement.classList.add('+json.dumps(t['mode'])+');','createRoot(document.getElementById("root")!).render(<React.StrictMode><TooltipProvider><App /></TooltipProvider></React.StrictMode>);']
-    (output/'src/main.tsx').write_text('\n'.join(imports)+'\n')
+    (output/'src/main.tsx').write_text(main_source(t, names, (output/'src/theme-overrides.css').exists()))
     if not (output/'src/App.tsx').exists(): shutil.copy2(ASSETS/'App.tsx',output/'src/App.tsx')
     if not (output/'src/gallery.css').exists(): shutil.copy2(ASSETS/'gallery.css',output/'src/gallery.css')
     demo_imports=['import { Suspense, lazy } from "react";', 'import type { ComponentType, LazyExoticComponent } from "react";', 'import { text } from "./review-copy";']
