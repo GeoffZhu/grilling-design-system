@@ -69,3 +69,30 @@ On success, capture the command output for the handoff; the command removes PROJ
 Create the full runnable React/TypeScript/Vite/Tailwind application at LIBRARY itself. Use library.py with --output LIBRARY, --cache PROJECT/cache, and the existing draft/delivery arguments. The app's package.json, src/, public/, and DESIGN.md belong directly under LIBRARY. Never add a library/ wrapper. The user's chosen path remains the application root.
 
 Use the standalone development/build commands and compatible shadcn registry consumer checks. Complete LIBRARY/DESIGN.md with the required template. Then record delivery with studio.py finish: evidence path is LIBRARY, designDoc is LIBRARY/DESIGN.md, tokenHash and snapshotHash come from session.generated, and checks.build holds the actual build result. Without project-context.json, finish validates against session.generated. If output already contains user work, inspect and preserve it before generating; an existing Web application takes the integration path.
+
+### Custom component manifest
+
+Create `LIBRARY/custom-components.json` when the design requires components outside the standard shadcn inventory. Keep component and preview files under `src/components/custom/`. The gallery groups all entries under "Custom components"; give each entry a specific component name. Example:
+
+~~~json
+{
+  "components": [
+    {
+      "name": "metric-card",
+      "title": "Metric Card",
+      "description": "A compact metric surface for key values.",
+      "files": ["src/components/custom/metric-card.tsx"],
+      "preview": {
+        "path": "src/components/custom/metric-card.preview.tsx",
+        "export": "default"
+      },
+      "dependencies": [],
+      "registryDependencies": ["card"]
+    }
+  ]
+}
+~~~
+
+Use kebab-case unique names. `files` contains final consumer code; preview-only files are excluded from registry delivery unless also listed in `files`. `export` defaults to `default` and may name an exported preview component. The generator fails on missing files, paths outside `src/components/custom/`, duplicate names, or names colliding with official components.
+
+In an existing Web project, implement the equivalent manifest or route metadata using the host framework. The outcome is mandatory: every custom component must appear under the "Custom components" group on the component home page and navigation, and have its own specifically named visual detail view, delivered inventory entry, and applicable registry/package export.

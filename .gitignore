@@ -5,3 +5,4 @@ __pycache__/
 npm-debug.log*
 session/
 design-system/
+.tmp

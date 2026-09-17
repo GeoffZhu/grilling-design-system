@@ -1,57 +1,111 @@
-import { useState } from 'react'
-import { Plus, Search, Settings, Check, LoaderCircle } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import type { MouseEvent } from 'react'
+import { Menu, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Switch } from '@/components/ui/switch'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog'
-import { Toaster } from '@/components/ui/sonner'
-import { toast } from 'sonner'
-import FullGallery from './FullGallery'
+import { componentEntries, ComponentPreview } from './FullGallery'
 import tokens from '../tokens.json'
 import { text } from './review-copy'
 import './gallery.css'
 
-// Neutral review workbench. Replace with a composition derived from the input.
+function readComponent() {
+  return new URLSearchParams(window.location.search).get('component')
+}
+
+function go(component?: string) {
+  const url = component ? `?component=${encodeURIComponent(component)}` : window.location.pathname
+  window.history.pushState({}, '', url)
+  window.dispatchEvent(new PopStateEvent('popstate'))
+  window.scrollTo({ top: 0 })
+}
+
 export default function App() {
-  const [gallery, setGallery] = useState(location.hash === '#all')
-  const [reminders, setReminders] = useState(true)
-  const [name, setName] = useState('')
+  const [component, setComponent] = useState(readComponent)
+  const [query, setQuery] = useState('')
+  const [mobileNav, setMobileNav] = useState(false)
   const [mode, setMode] = useState(tokens.mode)
-  const colorNames: Record<string, string> = { primary: text['Primary color'], secondary: text['Secondary color'], accent: text['Accent color'], foreground: text['Text color'] }
   const alternate = (tokens as typeof tokens & { alternate?: { mode: string } }).alternate
-  return <div className="app-shell">
-    <header className="app-header"><a className="wordmark" href="#core" onClick={() => setGallery(false)}>{tokens.name}</a>
-      <nav className="header-actions" aria-label={text["Component views"]}>
-        {alternate && <Button variant="outline" onClick={() => { const next = mode === tokens.mode ? alternate.mode : tokens.mode; document.documentElement.classList.remove(mode); document.documentElement.classList.add(next); setMode(next) }}>{text[mode] || mode}</Button>}
-        <Button variant="ghost" onClick={() => { setGallery(!gallery); location.hash = gallery ? 'core' : 'all' }}>{gallery ? text["Core components"] : text["All components"]}</Button>
-      </nav>
-    </header>
-    {gallery ? <main className="full-gallery"><h1>{text["Component library"]}</h1><FullGallery /></main> : <main className="specimen">
-      <div className="specimen-title"><div><h1>{text["Core components"]}</h1><p>{text["A workbench for comparing type, geometry and interaction states."]}</p></div>
-        <div className="palette" aria-label={text["Theme palette"]}>{['primary', 'secondary', 'accent', 'foreground'].map(color => <span key={color} style={{ background: 'var(--' + color + ')' }} title={colorNames[color]} />)}</div>
-      </div>
-      <div className="specimen-grid">
-        <section className="specimen-section"><h2>{text["Actions"]}</h2><div className="form-stack">
-          <div className="row start"><Button onClick={() => toast.success(text["Changes saved"])}>{text["Save changes"]}</Button><Button variant="secondary">{text["Secondary"]}</Button><Button variant="outline">{text["Cancel"]}</Button></div>
-          <div className="row start"><Button size="sm">{text["Compact"]}</Button><Button size="icon" aria-label={text["Add item"]}><Plus /></Button><Button variant="ghost" size="icon" aria-label={text["Search"]}><Search /></Button></div>
-          <div className="row start"><Button disabled>{text["Unavailable"]}</Button><Button disabled variant="outline"><LoaderCircle aria-hidden="true" />{text["Saving changes"]}</Button></div>
-          <h3>{text["Icons"]}</h3><div className="row start">{[Plus, Search, Settings, Check].map((Icon, index) => <Icon key={index} style={{ width: tokens.icons.size, height: tokens.icons.size }} aria-hidden="true" />)}</div><p className="specimen-caption">{tokens.icons.family}</p>
-        </div></section>
-        <section className="specimen-section"><h2>{text["Form controls"]}</h2><div className="form-stack">
-          <Label htmlFor="name">{text["Name"]}</Label><Input id="name" value={name} onChange={e => setName(e.target.value)} placeholder={text["Enter a name"]} />
-          <Label htmlFor="email">{text["Email"]}</Label><Input id="email" type="email" aria-invalid="true" aria-describedby="email-error" defaultValue="example" /><p id="email-error" className="error">{text["Enter a complete email address, such as you@example.com."]}</p>
-          <div className="row"><Label htmlFor="reminders">{text["Reminders"]}</Label><Switch id="reminders" checked={reminders} onCheckedChange={setReminders} /></div>
-          <div className="row start"><Checkbox id="updates" /><Label htmlFor="updates">{text["Receive updates"]}</Label></div>
-        </div></section>
-        <section className="specimen-section"><h2>{text["Selection and overlays"]}</h2><div className="form-stack">
-          <Tabs defaultValue="week"><TabsList><TabsTrigger value="week">{text["Week"]}</TabsTrigger><TabsTrigger value="month">{text["Month"]}</TabsTrigger></TabsList><TabsContent value="week">{text["Weekly view"]}</TabsContent><TabsContent value="month">{text["Monthly view"]}</TabsContent></Tabs>
-          <Dialog><DialogTrigger asChild><Button variant="outline">{text["Edit preferences"]}</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>{text["Edit preferences"]}</DialogTitle><DialogDescription>{text["Choose which updates you receive."]}</DialogDescription></DialogHeader><div className="row start"><Checkbox id="dialog-updates" defaultChecked /><Label htmlFor="dialog-updates">{text["Receive updates"]}</Label></div><DialogFooter><DialogClose asChild><Button onClick={() => toast.success(text["Preferences saved"])}>{text["Save preferences"]}</Button></DialogClose></DialogFooter></DialogContent></Dialog>
-        </div></section>
-      </div>
-    </main>}
-    <Toaster containerAriaLabel={text["Notifications"]} />
+  const active = componentEntries.find(item => item.name === component)
+  const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase()
+    return needle ? componentEntries.filter(item => `${item.title} ${item.category}`.toLowerCase().includes(needle)) : componentEntries
+  }, [query])
+  const categories = useMemo(() => {
+    const standard = [text['Actions'],text['Inputs'],text['Navigation'],text['Overlays'],text['Feedback'],text['Data display'],text['Layout'],text['Messaging'],text['Utilities'],text['Custom components']]
+    const custom = Array.from(new Set(componentEntries.map(item => item.category))).filter(category => !standard.includes(category))
+    return [...standard.filter(category => componentEntries.some(item => item.category === category)), ...custom]
+  }, [])
+
+  useEffect(() => {
+    const sync = () => { setComponent(readComponent()); setMobileNav(false) }
+    window.addEventListener('popstate', sync)
+    return () => window.removeEventListener('popstate', sync)
+  }, [])
+
+  const navigate = (event: MouseEvent<HTMLAnchorElement>, name?: string) => {
+    event.preventDefault()
+    go(name)
+  }
+
+  const sidebar = <div className="catalog-sidebar-inner">
+    <div className="catalog-search"><Search aria-hidden="true"/><Input value={query} onChange={event => setQuery(event.target.value)} placeholder={text['Search components']} aria-label={text['Search components']} /></div>
+    <nav aria-label={text['Component navigation']}>
+      <a className={!active ? 'sidebar-link active' : 'sidebar-link'} href={window.location.pathname} onClick={event => navigate(event)}>{text['Components overview']}</a>
+      {categories.map(category => {
+        const items = filtered.filter(item => item.category === category)
+        if (!items.length) return null
+        return <section className="sidebar-group" key={category}><h2>{category}</h2>{items.map(item => <a className={active?.name === item.name ? 'sidebar-link active' : 'sidebar-link'} href={`?component=${item.name}`} onClick={event => navigate(event, item.name)} key={item.name}>{item.title}</a>)}</section>
+      })}
+      {!filtered.length && <p className="sidebar-empty">{text['No components found']}</p>}
+    </nav>
   </div>
+
+  return <div className="catalog-app">
+    <header className="catalog-header">
+      <button className="mobile-menu" type="button" onClick={() => setMobileNav(true)} aria-label={text['Open component navigation']}><Menu aria-hidden="true"/></button>
+      <a className="wordmark" href={window.location.pathname} onClick={event => navigate(event)}>{tokens.name}</a>
+      <div className="header-actions">
+        {alternate && <Button variant="ghost" size="sm" onClick={() => { const next = mode === tokens.mode ? alternate.mode : tokens.mode; document.documentElement.classList.remove(mode); document.documentElement.classList.add(next); setMode(next) }}>{text[mode] || mode}</Button>}
+        <span className="component-count">{componentEntries.length} {text['components']}</span>
+      </div>
+    </header>
+
+    <div className="catalog-layout">
+      <aside className="catalog-sidebar">{sidebar}</aside>
+      {mobileNav && <div className="mobile-nav-layer"><button className="mobile-nav-backdrop" onClick={() => setMobileNav(false)} aria-label={text['Close component navigation']} /><aside className="mobile-nav-panel"><div className="mobile-nav-header"><span>{text['Components']}</span><button type="button" onClick={() => setMobileNav(false)} aria-label={text['Close component navigation']}><X aria-hidden="true"/></button></div>{sidebar}</aside></div>}
+
+      <main className="catalog-main">
+        {active ? <ComponentPage entry={active} navigate={navigate} /> : <Overview navigate={navigate} />}
+      </main>
+    </div>
+  </div>
+}
+
+function Overview({ navigate }: { navigate: (event: MouseEvent<HTMLAnchorElement>, name?: string) => void }) {
+  return <>
+    <div className="page-heading">
+      <p className="eyebrow">{text['Design system']}</p>
+      <h1>{text['Components']}</h1>
+      <p>{text['Browse every component in this design system. Select one to inspect its visual treatment and interaction states.']}</p>
+    </div>
+    <section className="component-directory" aria-labelledby="all-components">
+      <div className="section-heading"><h2 id="all-components">{text['All components']}</h2><span>{componentEntries.length}</span></div>
+      <div className="component-index">{componentEntries.map(item => <a href={`?component=${item.name}`} onClick={event => navigate(event, item.name)} key={item.name}><span>{item.title}</span><small>{item.category}</small></a>)}</div>
+    </section>
+  </>
+}
+
+function ComponentPage({ entry, navigate }: { entry: (typeof componentEntries)[number], navigate: (event: MouseEvent<HTMLAnchorElement>, name?: string) => void }) {
+  const index = componentEntries.indexOf(entry)
+  const previous = componentEntries[index - 1]
+  const next = componentEntries[index + 1]
+  return <>
+    <nav className="breadcrumbs" aria-label={text['Breadcrumb']}><a href={window.location.pathname} onClick={event => navigate(event)}>{text['Components']}</a><span>/</span><span>{entry.title}</span></nav>
+    <div className="page-heading component-heading"><p className="eyebrow">{entry.category}</p><h1>{entry.title}</h1><p>{entry.description}</p></div>
+    <section className="component-demo" aria-labelledby="preview-heading"><div className="demo-heading"><h2 id="preview-heading">{text['Preview']}</h2><span>{text['Interactive']}</span></div><div className="demo-canvas"><ComponentPreview entry={entry} /></div></section>
+    <nav className="component-pagination" aria-label={text['Component pagination']}>
+      {previous ? <a href={`?component=${previous.name}`} onClick={event => navigate(event, previous.name)}><small>{text['Previous']}</small><span>{previous.title}</span></a> : <span />}
+      {next && <a className="next" href={`?component=${next.name}`} onClick={event => navigate(event, next.name)}><small>{text['Next']}</small><span>{next.title}</span></a>}
+    </nav>
+  </>
 }

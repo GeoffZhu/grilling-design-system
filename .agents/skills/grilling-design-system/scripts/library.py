@@ -23,6 +23,101 @@ TEMP_NAMESPACE = Path('.tmp') / 'grilling-design-system'
 MARKER = TEMP_NAMESPACE / 'standalone-owner'
 CORE = ['button','card','badge','input','label','checkbox','switch','tabs','dialog',
         'progress','avatar','select','slider','textarea','tooltip','sonner']
+COMPONENT_CATEGORIES = {
+    'button':'Actions','button-group':'Actions','toggle':'Actions','toggle-group':'Actions',
+    'input':'Inputs','input-group':'Inputs','input-otp':'Inputs','textarea':'Inputs','checkbox':'Inputs',
+    'radio-group':'Inputs','select':'Inputs','native-select':'Inputs','switch':'Inputs','slider':'Inputs',
+    'form':'Inputs','field':'Inputs','label':'Inputs',
+    'breadcrumb':'Navigation','menubar':'Navigation','navigation-menu':'Navigation','pagination':'Navigation',
+    'tabs':'Navigation','sidebar':'Navigation','command':'Navigation',
+    'alert-dialog':'Overlays','context-menu':'Overlays','dialog':'Overlays','drawer':'Overlays',
+    'dropdown-menu':'Overlays','hover-card':'Overlays','popover':'Overlays','sheet':'Overlays','tooltip':'Overlays',
+    'alert':'Feedback','empty':'Feedback','progress':'Feedback','skeleton':'Feedback','sonner':'Feedback','spinner':'Feedback',
+    'aspect-ratio':'Data display','attachment':'Data display','avatar':'Data display','badge':'Data display',
+    'bubble':'Messaging','marker':'Messaging','message':'Messaging','message-scroller':'Messaging',
+    'card':'Data display','chart':'Data display','item':'Data display','table':'Data display','calendar':'Data display',
+    'accordion':'Layout','carousel':'Layout','collapsible':'Layout','resizable':'Layout','scroll-area':'Layout','separator':'Layout',
+    'direction':'Utilities','kbd':'Utilities',
+}
+SUPPLEMENTAL_PREVIEWS = {
+    'form':'FormDemo','direction':'DirectionDemo','attachment':'AttachmentDemo','bubble':'BubbleDemo',
+    'marker':'MarkerDemo','message':'MessageDemo','message-scroller':'MessageScrollerDemo',
+}
+MAX_VISUAL_EXAMPLES = 8
+VISUAL_VARIANTS = {
+    'button':['default','secondary','destructive','outline','ghost','link','with-icon','loading'],
+    'badge':['default','secondary','destructive','outline'],
+    'input':['disabled','file','with-button','with-label','with-text'],
+    'textarea':['disabled','with-button','with-label','with-text'],
+    'input-otp':['pattern','separator','controlled'],
+    'toggle':['default','outline','disabled','size'],
+    'toggle-group':['default','outline','disabled','size'],
+    'spinner':['default','button','badge','input-group'],
+    'kbd':['default','group','button'],
+    'alert':['default','destructive'],
+    'checkbox':['default','disabled'],
+    'dialog':['close-button'],
+    'select':['scrollable'],
+}
+
+def component_title(name):
+    special={'kbd':'KBD','input-otp':'Input OTP'}
+    return special.get(name, ' '.join(part.capitalize() for part in name.split('-')))
+
+def examples_by_component(names, available):
+    """Select representative examples without confusing shared prefixes."""
+    result={name:[] for name in names}
+    candidates=[item['name'] for item in available.values() if item['type']=='registry:example']
+    for example in candidates:
+        owners=[name for name in names if example==name+'-demo' or example.startswith(name+'-')]
+        if not owners: continue
+        owner=max(owners,key=len)
+        suffix=example.removeprefix(owner+'-')
+        if suffix=='demo' or suffix in VISUAL_VARIANTS.get(owner,[]): result[owner].append(example)
+    for name, examples in result.items():
+        examples.sort(key=lambda item:(item!=name+'-demo', item))
+        result[name]=examples[:MAX_VISUAL_EXAMPLES]
+    return result
+
+def load_custom_components(output):
+    manifest=output/'custom-components.json'
+    if not manifest.exists(): return []
+    data=read(manifest)
+    if not isinstance(data,dict) or not isinstance(data.get('components'),list):
+        raise ValueError('custom-components.json must contain a components array')
+    result=[];seen=set();root=output.resolve()
+    for entry in data['components']:
+        if not isinstance(entry,dict): raise ValueError('Each custom component must be an object')
+        for key in ['name','title','description','files','preview']:
+            if not entry.get(key): raise ValueError('Custom component is missing '+key)
+        name=entry['name']
+        if not isinstance(name,str) or not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*',name):
+            raise ValueError('Custom component name must use kebab-case: '+str(name))
+        if name in seen: raise ValueError('Duplicate custom component '+name)
+        if 'category' in entry: raise ValueError('Custom components use the fixed Custom components category: '+name)
+        seen.add(name)
+        if not isinstance(entry['files'],list) or not entry['files']:
+            raise ValueError('Custom component files must be a non-empty array: '+name)
+        preview=entry['preview']
+        if not isinstance(preview,dict) or not preview.get('path'):
+            raise ValueError('Custom component preview requires path: '+name)
+        normalized={**entry,'export':preview.get('export','default'),
+                    'dependencies':entry.get('dependencies',[]),
+                    'registryDependencies':entry.get('registryDependencies',[])}
+        for path_text in entry['files']+[preview['path']]:
+            if not isinstance(path_text,str) or not path_text.startswith('src/components/custom/'):
+                raise ValueError('Custom component files must stay in src/components/custom/: '+str(path_text))
+            path=(output/path_text).resolve()
+            if not path.is_relative_to(root) or not path.is_file():
+                raise ValueError('Missing custom component file: '+path_text)
+        if normalized['export']!='default' and not re.fullmatch(r'[A-Za-z_$][A-Za-z0-9_$]*',normalized['export']):
+            raise ValueError('Invalid custom preview export: '+str(normalized['export']))
+        if not all(isinstance(value,str) and value for key in ['title','description'] for value in [entry[key]]):
+            raise ValueError('Custom component title and description must be strings: '+name)
+        if not all(isinstance(value,str) and value for value in normalized['dependencies']+normalized['registryDependencies']):
+            raise ValueError('Custom component dependencies must be strings: '+name)
+        result.append(normalized)
+    return result
 
 def fetch(name, cache):
     target=cache/(name+'.json')
@@ -125,12 +220,15 @@ def scaffold(output, language='en', title='Grilling Design System'):
     write(output/'tsconfig.json',{'compilerOptions':{'target':'ES2022','lib':['ES2022','DOM','DOM.Iterable'],'module':'ESNext','moduleResolution':'Bundler','jsx':'react-jsx','strict':True,'skipLibCheck':True,'allowSyntheticDefaultImports':True,'esModuleInterop':True,'resolveJsonModule':True,'noEmit':True,'baseUrl':'.','paths':{'@/*':['./src/*']}},'include':['src','vite.config.ts']})
     write(output/'components.json',{'$schema':'https://ui.shadcn.com/schema.json','style':'new-york','rsc':False,'tsx':True,'tailwind':{'config':'','css':'src/index.css','baseColor':'neutral','cssVariables':True,'prefix':''},'iconLibrary':'lucide','aliases':{'components':'@/components','utils':'@/lib/utils','ui':'@/components/ui','lib':'@/lib','hooks':'@/hooks'}})
 
-def registry(output,items,t,package):
+def registry(output,items,t,package,custom_components):
+    delivered_paths={path for entry in custom_components for path in entry['files']}
+    preview_paths={entry['preview']['path'] for entry in custom_components if entry['preview']['path'] not in delivered_paths}
     files=[]
     files.append({'path':'SHADCN-LICENSE.txt','target':'SHADCN-LICENSE.txt','type':'registry:file','content':(ASSETS/'SHADCN-LICENSE.txt').read_text()})
     for path in sorted((output/'src').rglob('*')):
         if not path.is_file() or path.suffix not in ['.tsx','.ts','.css','.svg','.json']: continue
         rel=path.relative_to(output).as_posix()
+        if rel in preview_paths: continue
         if not rel.startswith(('src/components/','src/hooks/','src/lib/','src/assets/')) and rel!='src/theme-overrides.css': continue
         kind='registry:file' if path.suffix not in ['.tsx','.ts'] else 'registry:ui' if '/ui/' in rel else 'registry:hook' if '/hooks/' in rel else 'registry:lib' if '/lib/' in rel else 'registry:component'
         files.append({'path':rel,'type':kind,'target':rel,'content':path.read_text()})
@@ -139,10 +237,24 @@ def registry(output,items,t,package):
     files.append({'path':'src/glimpse-theme.css','target':'src/glimpse-theme.css','type':'registry:file','content':theme})
     deps=[name+'@'+version for name,version in package['dependencies'].items() if name not in ['react','react-dom']]
     item={'$schema':'https://ui.shadcn.com/schema/registry-item.json','name':'all','type':'registry:block',
-          'title':t['name'],'description':'Themed shadcn collection with image-derived components. See DESIGN.md for approval status.',
+          'title':t['name'],'description':'Themed shadcn collection with custom components. See DESIGN.md for approval status.',
           'dependencies':deps,'files':files,'css':{'@import "./glimpse-theme.css"':{},'@import "tw-animate-css"':{},'@import "shadcn/tailwind.css"':{}}}
+    catalog=[item]
+    for entry in custom_components:
+        custom_files=[]
+        for rel in entry['files']:
+            path=output/rel
+            kind='registry:component' if path.suffix in ['.tsx','.ts'] else 'registry:file'
+            custom_files.append({'path':rel,'target':rel,'type':kind,'content':path.read_text()})
+        custom_item={'$schema':'https://ui.shadcn.com/schema/registry-item.json','name':entry['name'],
+                     'type':'registry:component','title':entry['title'],'description':entry['description'],
+                     'files':custom_files}
+        if entry['dependencies']: custom_item['dependencies']=entry['dependencies']
+        if entry['registryDependencies']: custom_item['registryDependencies']=entry['registryDependencies']
+        write(output/'public/r'/(entry['name']+'.json'),custom_item)
+        catalog.append(custom_item)
     write(output/'public/r/all.json',item)
-    write(output/'registry.json',{'$schema':'https://ui.shadcn.com/schema/registry.json','name':'glimpse','homepage':'https://ui.shadcn.com','items':[item]})
+    write(output/'registry.json',{'$schema':'https://ui.shadcn.com/schema/registry.json','name':'glimpse','homepage':'https://ui.shadcn.com','items':catalog})
 
 def build(args):
     context = resolve_project(Path.cwd(), args.output)
@@ -177,16 +289,30 @@ def build(args):
     upstream=fetch('registry',cache)
     names=[i['name'] for i in upstream['items'] if i['type']=='registry:ui'] if args.full or args.deliver else CORE
     available={i['name']:i for i in upstream['items']}
+    custom_components=load_custom_components(output)
+    custom_names={entry['name'] for entry in custom_components}
+    collisions=custom_names.intersection(names)
+    if collisions: raise ValueError('Custom component names collide with shadcn components: '+', '.join(sorted(collisions)))
     demos=[]
+    component_demos={name:[] for name in names}
     if args.full or args.deliver:
+        component_demos=examples_by_component(names,available)
+        if 'chart' in component_demos and not component_demos['chart'] and 'chart-bar-demo' in available:
+            component_demos['chart']=['chart-bar-demo']
+        demos=[example for name in names for example in component_demos[name]]
+    else:
         for name in names:
             candidate=name+'-demo' if name+'-demo' in available else 'chart-bar-demo' if name=='chart' else None
-            if candidate: demos.append(candidate)
+            if candidate:
+                component_demos[name]=[candidate]
+                demos.append(candidate)
     items=collect(names+demos,cache)
     previous=read(output/'package.json') if (output/'package.json').exists() else {}
     scaffold(output, language, labels['Grilling Design System'])
     (output/'src/review-copy.ts').write_text('export const text: Record<string, string> = '+json.dumps(labels,ensure_ascii=False)+';\n')
     shutil.copy2(ASSETS/'SHADCN-LICENSE.txt',output/'SHADCN-LICENSE.txt')
+    # Examples are generated upstream inputs. Remove stale examples when the selected set changes.
+    if generated and (output/'src/examples').exists(): shutil.rmtree(output/'src/examples')
     for item in items.values():
         for file in item.get('files',[]):
             if not file.get('content'): continue
@@ -212,6 +338,7 @@ def build(args):
     icon_map={'IconSearch':'Search','IconArrowUp':'ArrowUp','IconCheck':'Check','IconCopy':'Copy','IconCreditCard':'CreditCard','IconFolderCode':'FolderCode','IconInfoCircle':'Info','IconPlus':'Plus','IconBrandGithub':'Github'}
     (output/'src/lib/tabler-icons.tsx').write_text('export { '+', '.join(icon_map.get(n,'Circle')+' as '+n for n in sorted(icon_names))+' } from "lucide-react";\n')
     deps=dependencies(items.values())
+    deps.update(dependencies({'dependencies':entry['dependencies']} for entry in custom_components))
     deps.update({'react':'^19.1.0','react-dom':'^19.1.0','class-variance-authority':'^0.7.1','lucide-react':'^0.468.0','cn':'latest','radix-ui':'latest','tw-animate-css':'latest','shadcn':'4.21.0'})
     deps.update(previous.get('dependencies',{}))
     package={'name':'grilling-design-system','version':'0.1.0','private':True,'type':'module',
@@ -227,23 +354,49 @@ def build(args):
     (output/'src/main.tsx').write_text('\n'.join(imports)+'\n')
     if not (output/'src/App.tsx').exists(): shutil.copy2(ASSETS/'App.tsx',output/'src/App.tsx')
     if not (output/'src/gallery.css').exists(): shutil.copy2(ASSETS/'gallery.css',output/'src/gallery.css')
-    demo_imports=['import { Suspense, lazy } from "react";', 'import { text } from "./review-copy";']
-    demo_entries=[]
+    demo_imports=['import { Suspense, lazy } from "react";', 'import type { ComponentType, LazyExoticComponent } from "react";', 'import { text } from "./review-copy";']
+    preview_entries={name:[] for name in names}
     for i,name in enumerate(demos):
         item=items[name]
         path=next((f for f in item.get('files',[]) if 'export default' in f.get('content','')),None)
         if not path: continue
         file=filename(path['path'])[4:].removesuffix('.tsx')
         demo_imports.append('const D'+str(i)+'=lazy(()=>import("./'+file+'"));')
-        demo_entries.append('<section className="gallery-item" id="'+name+'"><h3>'+name.removesuffix('-demo')+'</h3><Suspense fallback={<p>{text["Loading…"]}</p>}><D'+str(i)+' /></Suspense></section>')
+        component_name=next((owner for owner, examples in component_demos.items() if name in examples),None)
+        if component_name:
+            suffix=name.removeprefix(component_name+'-')
+            title='Preview' if suffix=='demo' else component_title(suffix)
+            preview_entries[component_name].append('{title:'+json.dumps(title)+',Preview:D'+str(i)+'}')
     if args.full or args.deliver:
         shutil.copy2(ASSETS/'SupplementalGallery.tsx',output/'src/SupplementalGallery.tsx')
-        demo_imports.append('import SupplementalGallery from "./SupplementalGallery";')
-        demo_entries.append('<SupplementalGallery/>')
-    demo_imports.append('export default function FullGallery(){return <div className="gallery-grid">'+''.join(demo_entries)+'</div>;}')
+        supplemental=', '.join(SUPPLEMENTAL_PREVIEWS.values())
+        demo_imports.append('import { '+supplemental+' } from "./SupplementalGallery";')
+        for name,export in SUPPLEMENTAL_PREVIEWS.items():
+            if name in names and not preview_entries[name]:
+                preview_entries[name].append('{title:"Preview",Preview:'+export+'}')
+    for index,entry in enumerate(custom_components):
+        preview_path=entry['preview']['path']
+        import_path='@/'+preview_path.removeprefix('src/').rsplit('.',1)[0]
+        symbol='CustomPreview'+str(index)
+        if entry['export']=='default':
+            demo_imports.append('const '+symbol+'=lazy(()=>import('+json.dumps(import_path)+'));')
+        else:
+            demo_imports.append('const '+symbol+'=lazy(()=>import('+json.dumps(import_path)+').then(module=>({default:module.'+entry['export']+'})));')
+        preview_entries[entry['name']]=['{title:"Preview",Preview:'+symbol+'}']
+    entries=[{'name':name,'title':component_title(name),'category':labels[COMPONENT_CATEGORIES.get(name,'Utilities')],
+              'description':labels['Visual preview, variants and interaction states for this component.']} for name in names]
+    entries.extend({'name':entry['name'],'title':entry['title'],'category':labels['Custom components'],'description':entry['description']} for entry in custom_components)
+    demo_imports.append('export const componentEntries = '+json.dumps(entries,ensure_ascii=False)+' as const;')
+    preview_map=','.join(json.dumps(name)+':['+','.join(preview_entries[name])+']' for name in preview_entries if preview_entries[name])
+    demo_imports.append('type PreviewEntry={title:string,Preview:ComponentType|LazyExoticComponent<ComponentType>};')
+    demo_imports.append('const previews: Record<string, PreviewEntry[]> = {'+preview_map+'};')
+    demo_imports.append('export function ComponentPreview({entry}:{entry:(typeof componentEntries)[number]}){const examples=previews[entry.name]||[];if(!examples.length)return <p className="demo-empty">{text["Preview unavailable"]}</p>;return <div className="component-previews">{examples.map(({title,Preview})=><section className="visual-example" key={title}><h3>{title}</h3><div className="visual-example-canvas"><Suspense fallback={<p className="demo-empty">{text["Loading…"]}</p>}><Preview/></Suspense></div></section>)}</div>}')
+    demo_imports.append('export default function FullGallery(){return <div className="gallery-grid">{componentEntries.map(entry=><section className="gallery-item" id={entry.name} key={entry.name}><h3>{entry.title}</h3><ComponentPreview entry={entry}/></section>)}</div>;}')
     (output/'src/FullGallery.tsx').write_text('\n'.join(demo_imports))
-    snapshot={'url':ORIGIN+'registry.json','fetchedAt':time.strftime('%Y-%m-%d',time.gmtime()),'sha256':digest(upstream),'ui':names,'demos':demos,
-              'items':{n:digest(items[n]) for n in sorted(items)}}
+    custom_hashes={entry['name']:digest({path:(output/path).read_text() for path in entry['files']}) for entry in custom_components}
+    snapshot={'url':ORIGIN+'registry.json','fetchedAt':time.strftime('%Y-%m-%d',time.gmtime()),'sha256':digest(upstream),'ui':names,'custom':[entry['name'] for entry in custom_components],
+              'customItems':custom_hashes,'demos':demos,'items':{n:digest(items[n]) for n in sorted(items)}}
+    snapshot['deliverySha256']=digest(snapshot)
     write(output/'shadcn-snapshot.json',snapshot)
     checks=state['round'].get('checks',{}) if state else {}
     write(output/'contrast-report.json',contrast(t))
@@ -257,15 +410,15 @@ def build(args):
             if resolved: package['dependencies'][dep]=resolved
         write(output/'package.json',package)
         subprocess.run(['npm','install','--package-lock-only','--no-audit','--no-fund'],cwd=output,check=True)
-    registry(output,items,t,package)
+    registry(output,items,t,package,custom_components)
     if args.build: subprocess.run(['npm','run','build'],cwd=output,check=True)
-    result={'output':str(output),'components':len(names),'tokenHash':digest(t),'demos':len(demos),'designDocument':str(design_doc)}
+    result={'output':str(output),'components':len(names)+len(custom_components),'officialComponents':len(names),'customComponents':len(custom_components),'tokenHash':digest(t),'demos':len(demos),'designDocument':str(design_doc)}
     if design_doc!=output/'DESIGN.md':
         result['notice']='Existing completed DESIGN.md was preserved; merge the refreshed draft into it.'
     if args.deliver:
         if not args.build: raise ValueError('Delivery requires --build')
         # Generation is not delivery: studio.py finish records it after DESIGN.md is complete.
-        state['generated']={'path':str(output),'tokenHash':digest(t),'componentCount':len(names),'snapshotHash':snapshot['sha256'],
+        state['generated']={'path':str(output),'tokenHash':digest(t),'componentCount':len(names)+len(custom_components),'snapshotHash':snapshot['deliverySha256'],
                             'at':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
         save(args.session,state)
         result['next']='Complete DESIGN.md, then run studio.py finish with delivery evidence.'

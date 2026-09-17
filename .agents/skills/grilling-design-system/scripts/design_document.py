@@ -118,7 +118,7 @@ def document(output, tokens, state, snapshot, checks, context=None):
     inventory_source = context.get('componentLibrary', 'shadcn-derived; verify host adaptation') if integrated else 'shadcn/ui'
     extra += [f'| {name} | {inventory_source} |' for name in snapshot['ui']]
     custom_root = doc_root / implementation['Domain components'] if integrated and implementation.get('Domain components') else output / ('custom' if integrated else 'src/components/custom')
-    extra += [f'| {source(path)} | Image-derived component |' for path in sorted(custom_root.rglob('*'))
+    extra += [f'| {source(path)} | Custom component |' for path in sorted(custom_root.rglob('*'))
               if path.is_file() and path.suffix in ['.tsx', '.jsx', '.vue', '.svelte']]
     extra += ['', '### Decisions', '']
     if state:
