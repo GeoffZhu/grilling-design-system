@@ -358,6 +358,17 @@ Design tokens:
 [path]
 ```
 
+### Usage
+
+```txt
+Working directory:
+Start or install:
+Global styles:
+Root providers:
+Public imports:
+Gallery or docs:
+```
+
 Before creating a component:
 
 1. Search existing components.

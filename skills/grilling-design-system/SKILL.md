@@ -1,13 +1,13 @@
 ---
 name: grilling-design-system
-description: Derive a PC and Mobile Web design system from an inspiration image using a planned set of high-impact visual component choices, focused HTML previews, and the host agent's single-select question tool. Use to compare or revise UI styles and deliver a complete themed shadcn/ui component library with a matching DESIGN.md.
+description: Derive a PC and Mobile Web design system from an inspiration image using a planned set of high-impact visual component choices, focused HTML previews, and the host agent's single-select question tool. Use to compare or revise UI styles and deliver a complete themed shadcn/ui component library, a matching DESIGN.md, and repository-specific usage instructions.
 ---
 
 # Grilling design system
 
 Deliver both a working shadcn/ui design system adapted to the project framework and DESIGN.md that describes its final specification. These are mandatory outputs; a preview, token sheet, or design proposal alone is incomplete. Preserve confirmed preferences and distinguish user choices from agent-derived rules. Never treat silence, a timeout, or a preselected answer as approval.
 
-Use [DESIGN.template.md](assets/DESIGN.template.md) for DESIGN.md. Preserve its 13 numbered sections and required fields. Read [design-document.md](references/design-document.md) for evidence-based completion, API mappings, and the final completeness check.
+Use [DESIGN.template.md](assets/DESIGN.template.md) for DESIGN.md. Preserve its 13 numbered sections and required fields. Read [design-document.md](references/design-document.md) for evidence-based completion, API mappings, and the final completeness check. Read [usage-handoff.md](references/usage-handoff.md) before final delivery; a repository-specific usage handoff in the final reply is mandatory.
 
 ## Language and communication
 
@@ -112,7 +112,7 @@ Build the final gallery as component documentation, following the shadcn compone
 
 For standalone output, create `LIBRARY/custom-components.json` before the final library generation whenever custom components exist. List every custom component with `name`, localized `title`, localized `description`, delivered `files`, and a `preview` module. Keep all listed files under `src/components/custom/`. Do not add a custom category per component: the generator groups every entry under the localized "Custom components" section while preserving its specific component title. The preview may be a separate non-delivery module in the same directory. The generator validates the manifest and automatically adds each entry to the home directory, sidebar, detail page, snapshot, component count, aggregate registry, and an individual `registry:component` item. See [project-output.md](references/project-output.md) for the manifest shape.
 
-Document visual intent, token roles, typography, geometry, icons, states, responsive behavior, motion, component usage, accessibility adjustments, decisions, and verification limits. Verify the module with the host build/typecheck/lint commands in integrated mode. For standalone delivery, install the registry into a clean Tailwind 4 shadcn Vite consumer and build it. Validate any integrated registry in a consumer matching its actual framework and styling versions. Inspect available representative families for visual drift. Verify tokens, CSS, registry, and DESIGN.md agree; rebuild after changes. In both modes, record delivery only after the completion check passes:
+Document visual intent, token roles, typography, geometry, icons, states, responsive behavior, motion, component usage, accessibility adjustments, decisions, and verification limits. Verify the module with the host build/typecheck/lint commands in integrated mode. For standalone delivery, install the registry into a clean Tailwind 4 shadcn Vite consumer and build it. Validate any integrated registry in a consumer matching its actual framework and styling versions. Inspect available representative families for visual drift. Verify tokens, CSS, registry, and DESIGN.md agree; rebuild after changes. Reinspect the final repository and prepare the exact usage handoff required by usage-handoff.md; do not rely on scaffold defaults or earlier project detection. In both modes, record delivery only after the completion check passes:
 
 ~~~sh
 python3 "$SKILL/scripts/studio.py" finish --session "$PROJECT/session" --evidence "$PROJECT/delivery.json"
@@ -120,7 +120,7 @@ python3 "$SKILL/scripts/studio.py" finish --session "$PROJECT/session" --evidenc
 
 `finish` validates the final library and DESIGN_DOC, records the result in its command output, then deletes PROJECT. Do not copy session state, candidates, screenshots, caches, drafts, or other working artifacts into the final library.
 
-Report the exact LIBRARY and DESIGN_DOC paths and actual verification results. State that the temporary preview was retired during cleanup; do not report its now-invalid URL. Missing browser capabilities do not make source artifacts optional; identify checks that could not run without claiming full visual verification.
+Report the exact LIBRARY and DESIGN_DOC paths and actual verification results. Include a "How to use" section that follows usage-handoff.md and contains repository-valid commands and a minimal working component example. State that the temporary preview was retired during cleanup; do not report its now-invalid URL. Missing browser capabilities do not make source artifacts optional; identify checks that could not run without claiming full visual verification.
 
 ## Maintain
 

@@ -47,6 +47,8 @@ class DesignDocumentTest(unittest.TestCase):
         self.assertIn('variant="default"', result)
         self.assertIn('Not run: no browser fixture', result)
         self.assertIn('src/fixture-theme.css', result)
+        self.assertIn('Working directory: .', result)
+        self.assertIn('Public imports: @/components/ui/<component>', result)
         self.assertIn('SIMULATED APPROVAL', result)
         self.assertTrue(completion_errors(result))
 
@@ -88,6 +90,9 @@ class DesignDocumentTest(unittest.TestCase):
         context = {'mode':'integrated','webRoot':str(app),'output':str(library),
                    'workDir':str(app/'.tmp/grilling-design-system'),'framework':'Nuxt + Vue',
                    'styling':'Existing scoped CSS','buildInstructions':'Run pnpm build.',
+                   'workingDirectory':'.','startOrInstall':'pnpm install; pnpm dev',
+                   'globalStyles':'app/assets/main.css in nuxt.config.ts','rootProviders':'Nuxt app root plugin',
+                   'publicImports':'~/design-system/ui/Button.vue','galleryDocs':'pnpm dev; /design-system',
                    'implementationPaths':{'UI components':'app/design-system/ui','Design tokens':'app/design-system/tokens.json'},
                    'canonicalPaths':{'Button':'app/design-system/ui/Button.vue'}}
         path = document(library,self.tokens,None,self.snapshot,{},context)
@@ -96,6 +101,8 @@ class DesignDocumentTest(unittest.TestCase):
         self.assertIn('Framework: Nuxt + Vue',result)
         self.assertIn('Button: app/design-system/ui/Button.vue',result)
         self.assertIn('Run pnpm build.',result)
+        self.assertIn('Start or install: pnpm install; pnpm dev',result)
+        self.assertIn('Public imports: ~/design-system/ui/Button.vue',result)
         self.assertNotIn('Run npm install',result)
         self.assertFalse((library/'DESIGN.md').exists())
         path.write_text('Existing project rules')

@@ -103,7 +103,13 @@ def document(output, tokens, state, snapshot, checks, context=None):
                'UI components': source(implementation.get('UI components') if integrated else 'src/components/ui'),
                'Shared components': source(implementation.get('Shared components') if integrated else 'src/components/shared'),
                'Domain components': source(implementation.get('Domain components') if integrated else 'src/components/custom'),
-               'Design tokens': source(implementation.get('Design tokens') if integrated else 'tokens.json')})
+               'Design tokens': source(implementation.get('Design tokens') if integrated else 'tokens.json'),
+               'Working directory': context.get('workingDirectory', '[fill here: repository-relative command directory]') if integrated else '.',
+               'Start or install': context.get('startOrInstall', '[fill here: exact host start or install command]') if integrated else 'npm install; npm run dev to browse locally',
+               'Global styles': context.get('globalStyles', '[fill here: exact stylesheet import and entry file]') if integrated else 'src/main.tsx imports src/index.css once; registry consumers install the generated theme CSS import',
+               'Root providers': context.get('rootProviders', '[fill here: required providers or None]') if integrated else 'TooltipProvider wraps the app; mount one Toaster when using toast()',
+               'Public imports': context.get('publicImports', '[fill here: verified public import convention]') if integrated else '@/components/ui/<component> after registry installation',
+               'Gallery or docs': context.get('galleryDocs', '[fill here: exact command and route, or Not applicable with reason]') if integrated else 'npm run dev; open the root route'})
     append(9, '### Build and distribution\n\n' + (context.get('buildInstructions', '[fill here: actual host install, build, and preview commands]') if integrated else
            'Run npm install, npm run dev, and npm run build. Import src/index.css once. '
            'The installable registry is public/r/all.json; install it with npx shadcn@4.21.0 add <registry-url> '

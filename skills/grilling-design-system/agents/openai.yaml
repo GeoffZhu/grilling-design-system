@@ -1,0 +1,4 @@
+interface:
+  display_name: "Grilling Design System"
+  short_description: "Image to usable shadcn/ui system and guide"
+  default_prompt: "Use $grilling-design-system to derive a design system from this image, ask only key visual questions with native single-select tools, and deliver the complete library, DESIGN.md, and verified repository-specific usage instructions."
