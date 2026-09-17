@@ -75,7 +75,7 @@ class DesignDocumentTest(unittest.TestCase):
         (library/'ui/Button.vue').write_text('<button />')
         (library/'tokens.json').write_text('{}')
         context = {'mode':'integrated','webRoot':str(app),'output':str(library),
-                   'workDir':str(app/'.glimpse'),'framework':'Nuxt + Vue',
+                   'workDir':str(app/'.tmp/grilling-design-system'),'framework':'Nuxt + Vue',
                    'styling':'Existing scoped CSS','buildInstructions':'Run pnpm build.',
                    'implementationPaths':{'UI components':'app/design-system/ui','Design tokens':'app/design-system/tokens.json'},
                    'canonicalPaths':{'Button':'app/design-system/ui/Button.vue'}}
@@ -89,7 +89,7 @@ class DesignDocumentTest(unittest.TestCase):
         self.assertFalse((library/'DESIGN.md').exists())
         path.write_text('Existing project rules')
         draft = document(library,self.tokens,None,self.snapshot,{},context)
-        self.assertEqual(draft,app/'.glimpse/DESIGN.draft.md')
+        self.assertEqual(draft,app/'.tmp/grilling-design-system/DESIGN.draft.md')
         self.assertEqual(path.read_text(),'Existing project rules')
 
     def test_completed_standalone_document_is_never_overwritten(self):
@@ -98,7 +98,7 @@ class DesignDocumentTest(unittest.TestCase):
         completed = self.completed_fixture()
         (self.output/'DESIGN.md').write_text(completed)
         draft = document(self.output, self.tokens, self.state, self.snapshot, {})
-        self.assertEqual(draft, self.output.resolve()/'.glimpse/DESIGN.draft.md')
+        self.assertEqual(draft, self.output.resolve()/'.tmp/grilling-design-system/DESIGN.draft.md')
         self.assertEqual((self.output/'DESIGN.md').read_text(), completed)
 
     def completed_fixture(self):

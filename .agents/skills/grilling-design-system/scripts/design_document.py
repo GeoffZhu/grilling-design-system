@@ -143,7 +143,7 @@ def document(output, tokens, state, snapshot, checks, context=None):
     destination = doc_root / 'DESIGN.md'
     # Only an unedited generated draft may be replaced; completed or host documents get a separate draft.
     if destination.exists() and (integrated or DRAFT_NOTICE not in destination.read_text()):
-        draft_root = Path(context.get('workDir', doc_root / '.glimpse'))
+        draft_root = Path(context.get('workDir', doc_root / '.tmp' / 'grilling-design-system'))
         draft_root.mkdir(parents=True, exist_ok=True)
         destination = draft_root / 'DESIGN.draft.md'
     destination.write_text(result)

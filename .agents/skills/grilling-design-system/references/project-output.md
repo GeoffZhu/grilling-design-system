@@ -30,7 +30,7 @@ python3 "$SKILL/scripts/project.py" --cwd "$PWD" --output /user/requested/path
 
 Its detection is heuristic; confirm results from source/config. For a custom setup or targeted monorepo app, pass --web-root and --source-root after inspection. The script resolves paths but never creates files or changes project configuration.
 
-Record the confirmed result as PROJECT/project-context.json. Use LIBRARY for its output, DESIGN_DOC for its designDoc, and PROJECT for its workDir. PROJECT defaults to WEB_ROOT/.glimpse in integrated mode and LIBRARY/.glimpse in standalone mode. Keep sessions, candidates, caches, translations, and evidence there. Persist the selected paths and reuse them on resume unless the user changes them.
+Record the confirmed result as PROJECT/project-context.json. Use LIBRARY for its output, DESIGN_DOC for its designDoc, and PROJECT for its workDir. PROJECT defaults to WEB_ROOT/.tmp/grilling-design-system in integrated mode and LIBRARY/.tmp/grilling-design-system in standalone mode. Keep sessions, candidates, caches, translations, drafts, and evidence there. Never use `.glimpse`. Reuse these paths while the workflow is active. A successful `studio.py finish` deletes PROJECT; only LIBRARY and DESIGN_DOC remain.
 
 ## Existing Web project
 
@@ -61,6 +61,8 @@ Only finalize delivery after the integrated build, available visual checks, comp
 ~~~sh
 python3 "$SKILL/scripts/studio.py" finish --session "$PROJECT/session" --evidence "$PROJECT/delivery.json"
 ~~~
+
+On success, capture the command output for the handoff; the command removes PROJECT and all non-delivery artifacts. On failure, PROJECT remains intact for correction and resume.
 
 ## No Web project
 

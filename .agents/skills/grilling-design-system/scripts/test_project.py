@@ -40,6 +40,7 @@ class ProjectTest(unittest.TestCase):
         self.assertEqual(native['mode'], 'integrated')
         self.assertEqual(native['output'], str(self.root/'src/design-system'))
         self.assertEqual(native['designDoc'], str(self.root/'DESIGN.md'))
+        self.assertEqual(native['workDir'], str(self.root/'.tmp/grilling-design-system'))
         explicit = resolve_project(self.root, Path('chosen'))
         self.assertEqual(explicit['mode'], 'integrated')
         self.assertEqual(explicit['output'], str(self.root/'chosen'))
@@ -88,7 +89,7 @@ class ProjectTest(unittest.TestCase):
     def test_standalone_scaffold_refuses_host_before_mutating(self):
         self.web()
         before = (self.root/'package.json').read_bytes()
-        args = argparse.Namespace(output=self.root/'src/design-system', cache=self.root/'.glimpse/cache')
+        args = argparse.Namespace(output=self.root/'src/design-system', cache=self.root/'.tmp/grilling-design-system/cache')
         with patch('library.Path.cwd', return_value=self.root):
             with self.assertRaisesRegex(ValueError, 'Existing Web project'):
                 build(args)
@@ -114,7 +115,9 @@ class ProjectTest(unittest.TestCase):
     def test_interrupted_generator_output_is_not_mistaken_for_a_host(self):
         output = self.root/'design-system'
         output.mkdir()
-        (output/'.glimpse-standalone').write_text('marker')
+        marker = output/'.tmp/grilling-design-system/standalone-owner'
+        marker.parent.mkdir(parents=True)
+        marker.write_text('marker')
         (output/'index.html').write_text('<div id="root"></div>')
         (output/'vite.config.ts').write_text('export default {}')
         args = argparse.Namespace(output=output, cache=self.root/'cache', session=None, tokens=None,

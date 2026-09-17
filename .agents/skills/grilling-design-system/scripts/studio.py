@@ -19,6 +19,8 @@ from language import translated_copy
 ASSETS = Path(__file__).resolve().parents[1] / 'assets'
 STAGES = ['direction', 'foundations', 'components', 'preview']
 LOCK = threading.RLock()
+TEMP_NAMESPACE = 'grilling-design-system'
+TEMP_MARKER = '.temporary-workspace'
 
 class DecisionError(ValueError):
     def __init__(self, code):
@@ -46,6 +48,14 @@ def digest(value):
 
 def save(root, state):
     write(root / 'session.json', state)
+
+def temporary_project(root):
+    """Return the owned .tmp namespace for a canonical session path."""
+    root = Path(root).resolve()
+    project = root.parent
+    if root.name != 'session' or project.name != TEMP_NAMESPACE or project.parent.name != '.tmp':
+        raise ValueError('Session must be PROJECT/session under .tmp/grilling-design-system')
+    return project
 
 def contained(root, rel):
     path = (root / rel).resolve()
@@ -93,6 +103,7 @@ def validate_visual_review(root, option, token_hash):
 
 def init(root, source, name, simulation=False, language='en', ui_copy=None):
     labels = translated_copy(language, ui_copy)
+    project = temporary_project(root)
     root.mkdir(parents=True, exist_ok=True)
     if (root / 'session.json').exists():
         raise ValueError('Session exists. Use status/serve to resume.')
@@ -105,6 +116,7 @@ def init(root, source, name, simulation=False, language='en', ui_copy=None):
                  language=language, uiCopy=labels,
                  nextStage='direction', status='needs-agent', revision=0, round=None,
                  accepted={}, history=[], approval=None)
+    (project / TEMP_MARKER).write_text('Temporary files owned by grilling-design-system.\n')
     save(root, state)
     return state
 
@@ -255,6 +267,10 @@ def reopen(root, feedback):
 def finish(root, evidence):
     """Record delivery after actual build checks and DESIGN.md completion, in either output mode."""
     from design_document import completion_errors
+    project = temporary_project(root)
+    marker = project / TEMP_MARKER
+    if not marker.is_file():
+        raise ValueError('Temporary workspace ownership marker is missing')
     state = read(root / 'session.json')
     if state['status'] not in ['approved', 'delivered']:
         raise ValueError('Delivery requires confirmation of the current presentation')
@@ -268,6 +284,8 @@ def finish(root, evidence):
     if not Path(evidence['path']).is_dir() or not Path(evidence['designDoc']).is_file():
         raise ValueError('Delivery requires a component directory and DESIGN.md file')
     output, design_doc = Path(evidence['path']).resolve(), Path(evidence['designDoc']).resolve()
+    if output.is_relative_to(project) or design_doc.is_relative_to(project):
+        raise ValueError('Final library and DESIGN.md must remain outside the temporary PROJECT directory')
     context_path = root.parent / 'project-context.json'
     generated = state.get('generated')
     if context_path.is_file():
@@ -296,7 +314,13 @@ def finish(root, evidence):
         raise ValueError('Record component coverage and the source snapshot hash')
     state['status'] = 'delivered'
     state['delivery'] = {**evidence, 'mode': mode}
+    state['temporaryFilesRemoved'] = True
     save(root, state)
+    shutil.rmtree(project)
+    try:
+        project.parent.rmdir()
+    except OSError:
+        pass
     return state
 
 def serve(root, port):
@@ -370,7 +394,10 @@ def main():
         elif args.cmd == 'publish': publish(root, read(args.spec))
         elif args.cmd == 'serve': return serve(root, args.port)
         elif args.cmd == 'reopen': reopen(root, args.feedback)
-        elif args.cmd == 'finish': finish(root, read(args.evidence))
+        elif args.cmd == 'finish':
+            result = finish(root, read(args.evidence))
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return
         elif args.cmd == 'decide':
             if urlparse(args.url).hostname not in ['localhost', '127.0.0.1']:
                 raise ValueError('Use the local studio URL')

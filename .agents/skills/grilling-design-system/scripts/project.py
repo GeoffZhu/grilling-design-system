@@ -78,11 +78,11 @@ def resolve_project(cwd, output=None, web_root=None, source=None):
     if root:
         source_path = source_root(root, source)
         target = requested if requested is not None else source_path / 'design-system'
-        mode, design_root, work = 'integrated', root, root / '.glimpse'
+        mode, design_root, work = 'integrated', root, root / '.tmp' / 'grilling-design-system'
     else:
         source_path = None
         target = requested if requested is not None else cwd / 'design-system'
-        mode, design_root, work = 'standalone', target, target / '.glimpse'
+        mode, design_root, work = 'standalone', target, target / '.tmp' / 'grilling-design-system'
     locks = []
     if root:
         for parent in [root, *root.parents]:

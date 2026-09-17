@@ -9,7 +9,8 @@ from language import translated_copy
 class WorkflowTest(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory()
-        self.root=Path(self.temp.name)/'session'
+        self.project=Path(self.temp.name)/'.tmp/grilling-design-system'
+        self.root=self.project/'session'
         image=Path(self.temp.name)/'image.png';image.write_bytes(b'test fixture')
         init(self.root,image,'Workflow test',True)
         (self.root/'preview.html').write_text('<h1>Fixture</h1>')
@@ -210,6 +211,26 @@ class WorkflowTest(unittest.TestCase):
         result=finish(self.root,evidence)
         self.assertEqual(result['status'],'delivered')
         self.assertEqual(result['delivery']['mode'],'integrated')
+        self.assertTrue(result['temporaryFilesRemoved'])
+        self.assertFalse(self.project.exists())
+        self.assertTrue(module.exists())
+        self.assertTrue(doc.exists())
+
+    def test_delivery_refuses_final_output_inside_temporary_project(self):
+        from test_design_document import DesignDocumentTest
+        self.advance();self.choose('approve')
+        module=self.project/'final-library';module.mkdir()
+        doc=self.project/'DESIGN.md';doc.write_text(DesignDocumentTest().completed_fixture())
+        write(self.project/'project-context.json',{'mode':'integrated','webRoot':str(self.project),
+                                                    'output':str(module),'designDoc':str(doc)})
+        state=read(self.root/'session.json')
+        evidence={'path':str(module),'designDoc':str(doc),'tokenHash':state['approval']['tokenHash'],
+                  'componentCount':2,'snapshotHash':'fixture','checks':{'build':'Fixture host build result'}}
+        with self.assertRaisesRegex(ValueError,'outside the temporary PROJECT'):
+            finish(self.root,evidence)
+        self.assertTrue(self.project.exists())
+        self.assertTrue(module.exists())
+        self.assertTrue(doc.exists())
 
     def test_standalone_delivery_requires_generation_and_completed_document(self):
         from test_design_document import DesignDocumentTest
@@ -229,5 +250,9 @@ class WorkflowTest(unittest.TestCase):
         result=finish(self.root,evidence)
         self.assertEqual(result['status'],'delivered')
         self.assertEqual(result['delivery']['mode'],'standalone')
+        self.assertTrue(result['temporaryFilesRemoved'])
+        self.assertFalse(self.project.exists())
+        self.assertTrue(library.exists())
+        self.assertTrue(doc.exists())
 
 if __name__=='__main__':unittest.main()

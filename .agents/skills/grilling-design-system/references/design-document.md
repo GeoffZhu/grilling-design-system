@@ -19,7 +19,7 @@ Do not turn template fields into questions. Reuse project context, the reference
 
 ## Regeneration and completion
 
-Before regenerating, preserve the completed DESIGN_DOC with the normal project backup. The renderer writes PROJECT/DESIGN.draft.md instead of overwriting when root DESIGN.md already exists in integrated mode, or when a standalone DESIGN.md no longer carries the draft notice; merge it into the existing document. Keep durable guidance in design-notes.md or IMAGE-COMPONENTS.md; the generator imports or links these under section 13. Reapply project-specific values and translations after regeneration, checking them against current tokens and code.
+Before regenerating, preserve the completed DESIGN_DOC with the normal project backup. The renderer writes PROJECT/DESIGN.draft.md under `.tmp/grilling-design-system` instead of overwriting when root DESIGN.md already exists in integrated mode, or when a standalone DESIGN.md no longer carries the draft notice; merge it into the existing document. Keep durable guidance in design-notes.md or IMAGE-COMPONENTS.md; the generator imports or links these under section 13. Reapply project-specific values and translations after regeneration, checking them against current tokens and code.
 
 Before reporting delivery:
 
