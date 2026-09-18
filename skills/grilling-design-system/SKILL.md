@@ -120,7 +120,7 @@ python3 "$SKILL/scripts/studio.py" finish --session "$PROJECT/session" --evidenc
 
 `finish` validates the final library and DESIGN_DOC, records the result in its command output, then deletes PROJECT. Do not copy session state, candidates, screenshots, caches, drafts, or other working artifacts into the final library.
 
-Report the exact LIBRARY and DESIGN_DOC paths and actual verification results. Include a "How to use" section that follows usage-handoff.md and contains repository-valid commands and a minimal working component example. State that the temporary preview was retired during cleanup; do not report its now-invalid URL. Missing browser capabilities do not make source artifacts optional; identify checks that could not run without claiming full visual verification.
+Report the exact LIBRARY and DESIGN_DOC paths and actual verification results. Include a "How to use" section that follows usage-handoff.md and contains repository-valid commands, a minimal working component example, and two explicit reuse paths: the exact source set a user can copy into another project, and a copyable prompt for an AI to read and adapt the generated directory. Name required styles, utilities, assets, dependencies, and providers; exclude gallery-only, temporary, and build artifacts. State that the temporary preview was retired during cleanup; do not report its now-invalid URL. Missing browser capabilities do not make source artifacts optional; identify checks that could not run without claiming full visual verification.
 
 ## Maintain
 

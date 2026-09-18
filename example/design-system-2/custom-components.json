@@ -1,0 +1,13 @@
+{
+  "components": [
+    {
+      "name": "signal-audit-panel",
+      "title": "信号审计面板",
+      "description": "用于呈现评分、诊断指标、信号缺口和下一步动作的品牌分析面板。",
+      "files": ["src/components/custom/signal-audit-panel.tsx", "src/components/custom/signal-audit-panel.css"],
+      "preview": {"path": "src/components/custom/signal-audit-panel.preview.tsx", "export": "default"},
+      "dependencies": [],
+      "registryDependencies": ["button"]
+    }
+  ]
+}
