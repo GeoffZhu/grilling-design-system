@@ -1,0 +1,20 @@
+{
+  "components": [
+    {
+      "name": "cat-backdrop",
+      "title": "Cat Backdrop",
+      "description": "将卡通黑白猫安全地放在页面或卡片背景中，并为正文保留清晰区域。",
+      "files": [
+        "src/components/custom/cat-backdrop.tsx",
+        "src/components/custom/cat-backdrop.css",
+        "src/components/custom/cat-mascot-data.ts"
+      ],
+      "preview": {
+        "path": "src/components/custom/cat-backdrop.preview.tsx",
+        "export": "default"
+      },
+      "dependencies": ["cn@0.3.0"],
+      "registryDependencies": []
+    }
+  ]
+}

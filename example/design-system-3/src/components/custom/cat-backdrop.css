@@ -1,0 +1,103 @@
+.cat-backdrop {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--surface-radius);
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow: var(--design-shadow);
+}
+
+.cat-backdrop::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+}
+
+.cat-backdrop__content {
+  position: relative;
+  z-index: 1;
+}
+
+.cat-backdrop__mascot {
+  position: absolute;
+  z-index: -2;
+  right: -5%;
+  bottom: -19%;
+  width: 48%;
+  max-width: 31rem;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cat-backdrop[data-variant="page"] {
+  min-height: 22rem;
+}
+
+.cat-backdrop[data-variant="page"]::after {
+  background: linear-gradient(90deg, var(--card) 0%, var(--card) 48%, transparent 75%);
+}
+
+.cat-backdrop[data-variant="page"] .cat-backdrop__content {
+  width: min(60%, 40rem);
+  padding: clamp(1.75rem, 4vw, 3.5rem);
+}
+
+.cat-backdrop[data-variant="card"] {
+  min-height: 13rem;
+}
+
+.cat-backdrop[data-variant="card"]::after {
+  background: linear-gradient(90deg, var(--card) 0%, var(--card) 55%, transparent 82%);
+}
+
+.cat-backdrop[data-variant="card"] .cat-backdrop__content {
+  width: 68%;
+  padding: 1.5rem;
+}
+
+.cat-backdrop[data-variant="card"] .cat-backdrop__mascot {
+  right: -12%;
+  bottom: -30%;
+  width: 86%;
+}
+
+@media (max-width: 640px) {
+  .cat-backdrop[data-variant="page"] {
+    min-height: 34rem;
+  }
+
+  .cat-backdrop[data-variant="page"]::after {
+    background: linear-gradient(180deg, var(--card) 0%, var(--card) 55%, transparent 82%);
+  }
+
+  .cat-backdrop[data-variant="page"] .cat-backdrop__content {
+    width: 100%;
+    padding: 1.5rem;
+  }
+
+  .cat-backdrop[data-variant="page"] .cat-backdrop__mascot {
+    right: -16%;
+    bottom: -8%;
+    width: 96%;
+  }
+
+  .cat-backdrop[data-variant="card"] .cat-backdrop__mascot {
+    right: -18%;
+    bottom: -22%;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cat-backdrop__mascot {
+    transition: transform var(--motion-duration) var(--motion-easing);
+  }
+
+  .cat-backdrop:hover .cat-backdrop__mascot {
+    transform: translateY(-0.25rem);
+  }
+}

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { MouseEvent } from 'react'
-import { Menu, Search, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Github, Menu, Search, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { componentEntries, ComponentPreview } from './FullGallery'
 import { EcosystemDashboard } from '@/components/custom/ecosystem-dashboard'
@@ -25,8 +24,6 @@ export default function App() {
   const [component, setComponent] = useState(readComponent)
   const [query, setQuery] = useState('')
   const [mobileNav, setMobileNav] = useState(false)
-  const [mode, setMode] = useState(tokens.mode)
-  const alternate = (tokens as typeof tokens & { alternate?: { mode: string } }).alternate
   const active = componentEntries.find(item => item.name === component)
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -68,10 +65,7 @@ export default function App() {
     <header className="catalog-header">
       <button className="mobile-menu" type="button" onClick={() => setMobileNav(true)} aria-label={text['Open component navigation']}><Menu aria-hidden="true"/></button>
       <a className="wordmark" href={window.location.pathname} onClick={event => navigate(event)}>{tokens.name}</a>
-      <div className="header-actions">
-        {alternate && <Button variant="ghost" size="sm" onClick={() => { const next = mode === tokens.mode ? alternate.mode : tokens.mode; document.documentElement.classList.remove(mode); document.documentElement.classList.add(next); setMode(next) }}>{text[mode] || mode}</Button>}
-        <span className="component-count">{componentEntries.length} {text['components']}</span>
-      </div>
+      <a className="github-link" href="https://github.com/GeoffZhu/grilling-design-system" target="_blank" rel="noreferrer" aria-label="GitHub"><Github aria-hidden="true"/></a>
     </header>
 
     <div className="catalog-layout">

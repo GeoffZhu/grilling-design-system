@@ -1,0 +1,11 @@
+@import "@fontsource-variable/manrope";
+
+/* Amber Tuxedo keeps the illustration decorative and the UI chrome quiet. */
+::selection {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+:where([data-slot="progress-indicator"]) {
+  background: var(--foreground);
+}

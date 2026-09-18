@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build real shadcn source, themed gallery and an installable registry."""
 import argparse
+import hashlib
 import html
 from concurrent.futures import ThreadPoolExecutor
 import json
@@ -12,13 +13,19 @@ import time
 from urllib.request import urlopen, Request, getproxies
 
 from studio import read, write, digest, save
-from theme import validate, css, contrast
+from theme import validate, css, contrast, visual_contract, component_css, audit_visual_css
 from design_document import document
 from language import translated_copy
 from project import resolve_project, find_web_project
 
 ASSETS = Path(__file__).resolve().parents[1] / 'assets'
-ORIGIN = 'https://ui.shadcn.com/r/styles/new-york-v4/'
+UPSTREAM_BASE = 'base'
+UPSTREAM_COMMIT = 'a87a63b2ca25143d26c8bd0903e4e9bc77b3f824'
+UPSTREAM_ID = 'base-ui-source-'+UPSTREAM_COMMIT
+REPOSITORY = 'https://github.com/shadcn-ui/ui'
+RAW_ROOT = 'https://raw.githubusercontent.com/shadcn-ui/ui/'+UPSTREAM_COMMIT+'/apps/v4/'
+INDEX_URL = RAW_ROOT+'public/r/index.json'
+SOURCE_ROOT = RAW_ROOT+'registry/bases/base/'
 TEMP_NAMESPACE = Path('.tmp') / 'grilling-design-system'
 MARKER = TEMP_NAMESPACE / 'standalone-owner'
 CORE = ['button','card','badge','input','label','checkbox','switch','tabs','dialog',
@@ -40,13 +47,17 @@ COMPONENT_CATEGORIES = {
     'direction':'Utilities','kbd':'Utilities',
 }
 SUPPLEMENTAL_PREVIEWS = {
-    'form':'FormDemo','direction':'DirectionDemo','attachment':'AttachmentDemo','bubble':'BubbleDemo',
+    'direction':'DirectionDemo','attachment':'AttachmentDemo','bubble':'BubbleDemo',
     'marker':'MarkerDemo','message':'MessageDemo','message-scroller':'MessageScrollerDemo',
 }
 GLOBAL_COMPONENT_HOSTS = {
     'sonner': {
         'import': 'import { Toaster } from "@/components/ui/sonner";',
         'render': '<Toaster />',
+    },
+    'toast': {
+        'import': 'import { Toaster as BaseToaster } from "@/components/ui/toast";',
+        'render': '<BaseToaster />',
     },
 }
 MAX_VISUAL_EXAMPLES = 8
@@ -72,7 +83,7 @@ def component_title(name):
 
 def main_source(tokens, component_names, has_theme_overrides=False):
     """Render the entry point and mount singleton hosts required by included components."""
-    imports=['import React from "react";','import { createRoot } from "react-dom/client";','import { TooltipProvider } from "@/components/ui/tooltip";','import App from "./App";','import "./index.css";']
+    imports=['import React from "react";','import { createRoot } from "react-dom/client";','import App from "./App";','import "./index.css";']
     hosts=[]
     for name, host in GLOBAL_COMPONENT_HOSTS.items():
         if name in component_names:
@@ -80,7 +91,10 @@ def main_source(tokens, component_names, has_theme_overrides=False):
             hosts.append(host['render'])
     if has_theme_overrides:
         imports.append('import "./theme-overrides.css";')
-    tree='<TooltipProvider><App />'+''.join(hosts)+'</TooltipProvider>'
+    tree='<App />'+''.join(hosts)
+    if 'tooltip' in component_names:
+        imports.append('import { TooltipProvider } from "@/components/ui/tooltip";')
+        tree='<TooltipProvider>'+tree+'</TooltipProvider>'
     imports += [
         'document.documentElement.classList.add('+json.dumps(tokens['mode'])+');',
         'createRoot(document.getElementById("root")!).render(<React.StrictMode>'+tree+'</React.StrictMode>);',
@@ -92,14 +106,14 @@ def examples_by_component(names, available):
     result={name:[] for name in names}
     candidates=[item['name'] for item in available.values() if item['type']=='registry:example']
     for example in candidates:
-        owners=[name for name in names if example==name+'-demo' or example.startswith(name+'-')]
+        owners=[name for name in names if example in [name+'-demo',name+'-example'] or example.startswith(name+'-')]
         if not owners: continue
         owner=max(owners,key=len)
         suffix=example.removeprefix(owner+'-')
-        if suffix=='demo' or suffix in VISUAL_VARIANTS.get(owner,[]): result[owner].append(example)
+        if suffix in ['demo','example'] or suffix in VISUAL_VARIANTS.get(owner,[]): result[owner].append(example)
     for name, examples in result.items():
-        examples.sort(key=lambda item:(item!=name+'-demo', item))
-        result[name]=examples[:MAX_VISUAL_EXAMPLES]
+        examples.sort(key=lambda item:(item not in [name+'-demo',name+'-example'], item))
+        result[name]=[] if name in SUPPLEMENTAL_PREVIEWS else examples[:MAX_VISUAL_EXAMPLES]
     return result
 
 def load_custom_components(output):
@@ -143,13 +157,45 @@ def load_custom_components(output):
     return result
 
 def fetch(name, cache):
-    target=cache/(name+'.json')
+    target=cache/UPSTREAM_ID/(name+'.json')
     if target.exists(): return read(target)
+    target.parent.mkdir(parents=True,exist_ok=True)
     error=None
     for attempt in range(3):
         try:
-            with urlopen(Request(ORIGIN+name+'.json',headers={'User-Agent':'Grilling/1.0'}),timeout=45) as r:
-                data=json.load(r)
+            if name=='registry':
+                with urlopen(Request(INDEX_URL,headers={'User-Agent':'Grilling/1.0'}),timeout=45) as r:
+                    index=json.load(r)
+                ui=[item for item in index if item.get('type')=='registry:ui']
+                examples=[{'name':item['name']+'-example','type':'registry:example',
+                           'registryDependencies':[item['name'],'example'],
+                           'files':[{'path':'registry/bases/base/examples/'+item['name']+'-example.tsx','type':'registry:example'}]}
+                          for item in ui if item.get('files') and item['name']!='direction']
+                data={'name':'shadcn/ui Base UI source','homepage':'https://ui.shadcn.com',
+                      'source':SOURCE_ROOT,'items':ui+examples}
+            else:
+                registry=fetch('registry',cache)
+                metadata=next((item for item in registry['items'] if item['name']==name),None)
+                special={
+                    'utils':('lib/utils.ts','registry:lib',['cn']),
+                    'example':('components/example.tsx','registry:component',['cn']),
+                    'use-mobile':('hooks/use-mobile.ts','registry:hook',[]),
+                }
+                if name in special:
+                    rel,item_type,deps=special[name]
+                    metadata={'name':name,'type':item_type,'dependencies':deps,
+                              'files':[{'path':'registry/bases/base/'+rel,'type':item_type}]}
+                if not metadata or not metadata.get('files'):
+                    raise ValueError('Base UI source item has no files: '+name)
+                files=[]
+                for file in metadata['files']:
+                    source=file['path']
+                    prefix='registry/bases/base/'
+                    rel=source[len(prefix):] if source.startswith(prefix) else source
+                    with urlopen(Request(SOURCE_ROOT+rel,headers={'User-Agent':'Grilling/1.0'}),timeout=45) as r:
+                        content=r.read().decode('utf-8')
+                    files.append({**file,'path':prefix+rel,'content':content})
+                data={**metadata,'files':files}
             write(target,data)
             return data
         except Exception as e:
@@ -159,31 +205,58 @@ def fetch(name, cache):
     proxy=getproxies().get('https')
     if proxy and 'CERTIFICATE_VERIFY_FAILED' in str(error):
         hint='. A system proxy is active ('+proxy+'); if it intercepts TLS, retry with no_proxy="*"'
-    raise RuntimeError('Cannot fetch official shadcn item '+name+': '+str(error)+hint)
+    raise RuntimeError('Cannot fetch official shadcn Base UI source item '+name+': '+str(error)+hint)
 
 def filename(source):
-    prefix='registry/new-york-v4/'
+    prefix='registry/bases/base/'
     if not source.startswith(prefix): raise ValueError('Unexpected upstream path '+source)
     rel=source[len(prefix):]
     if rel.startswith('ui/'): return 'src/components/'+rel
     if rel.startswith('examples/'): return 'src/'+rel
-    if rel.startswith(('blocks/','internal/')): return 'src/'+rel
+    if rel.startswith(('blocks/','internal/','components/')): return 'src/'+rel
     if rel.startswith(('hooks/','lib/')): return 'src/'+rel
     raise ValueError('Unsupported upstream file '+source)
 
 def transform(content):
-    return (content.replace('@/registry/new-york-v4/ui/', '@/components/ui/')
-            .replace('@/registry/new-york-v4/', '@/')
+    content=(content.replace('@/registry/bases/base/ui/', '@/components/ui/')
+            .replace('@/registry/bases/base/', '@/')
             .replace('from "next-themes"','from "@/lib/theme-mode"')
             .replace('from "next/image"','from "@/lib/next-image"')
             .replace('from "next/link"','from "@/lib/next-link"')
             .replace('from "@tabler/icons-react"','from "@/lib/tabler-icons"'))
+    # Raw examples include docs-only conditional classes for official visual presets.
+    # The generated system owns its visual layer, so none of those branches may survive.
+    content=re.sub(r'(?<![A-Za-z0-9_-])style-(?:vega|nova|maia|lyra|mira|luma|sera|rhea):[^\s"\']+','',content)
+    icons=[]
+    def replace_icon(match):
+        attrs=match.group(1)
+        icon=re.search(r'\blucide=["\']([^"\']+)["\']',attrs)
+        if not icon:
+            raise ValueError('IconPlaceholder is missing a Lucide mapping')
+        name=icon.group(1)
+        if name not in icons: icons.append(name)
+        attrs=re.sub(r'\s+(?:lucide|tabler|hugeicons|phosphor|remixicon)=["\'][^"\']+["\']','',attrs)
+        attrs=attrs.strip()
+        return '<'+name+(' '+attrs if attrs else '')+' />'
+    content=re.sub(r'<IconPlaceholder\b(.*?)/>',replace_icon,content,flags=re.S)
+    content=re.sub(r'import\s*\{\s*IconPlaceholder\s*\}\s*from\s*["\'][^"\']*icon-placeholder["\']\s*;?\n?','',content)
+    if icons:
+        imported=re.search(r'import\s*\{([^}]*)\}\s*from\s*["\']lucide-react["\']\s*;?',content,re.S)
+        if imported:
+            existing=[part.strip() for part in imported.group(1).split(',') if part.strip()]
+            merged=existing+[name for name in icons if name not in {part.split(' as ')[-1] for part in existing}]
+            content=content[:imported.start()]+'import { '+', '.join(merged)+' } from "lucide-react"'+content[imported.end():]
+        else:
+            directive=re.match(r'(["\']use client["\'];?\s*)',content)
+            offset=directive.end() if directive else 0
+            content=content[:offset]+'\nimport { '+', '.join(icons)+' } from "lucide-react"\n'+content[offset:]
+    return content
 
 def theme_example(name, content):
     # Upstream examples may demonstrate a fixed palette. Preserve their states
     # while making the gallery follow the selected design system's semantics.
     replacements = {
-        'checkbox-demo': {
+        'checkbox-example': {
             'dark:has-[[aria-checked=true]]:border-blue-900': '',
             'dark:has-[[aria-checked=true]]:bg-blue-950': '',
             'dark:data-[state=checked]:border-blue-700': '',
@@ -194,11 +267,11 @@ def theme_example(name, content):
             'data-[state=checked]:bg-blue-600': 'data-[state=checked]:bg-primary',
             'data-[state=checked]:text-white': 'data-[state=checked]:text-primary-foreground',
         },
-        'badge-demo': {
+        'badge-example': {
             'dark:bg-blue-600': '',
             'bg-blue-500 text-white': 'bg-primary text-primary-foreground',
         },
-        'toggle-demo': {
+        'toggle-example': {
             'fill-blue-500': 'fill-primary',
             'stroke-blue-500': 'stroke-primary',
         },
@@ -217,6 +290,28 @@ def dependencies(items):
             result[name]=version or 'latest'
     return result
 
+def preserve_previous_dependencies(current, previous):
+    """Keep user dependencies without retaining an unused legacy primitive family."""
+    for name, version in previous.items():
+        legacy_primitive=name=='radix-ui' or name.startswith('@radix-ui/')
+        if name in current or not legacy_primitive:
+            current[name]=version
+    return current
+
+def source_digest(items):
+    sources={}
+    for item in items.values():
+        for file in item.get('files',[]):
+            if file.get('content') is not None: sources[file['path']]=file['content']
+    return digest(sources)
+
+def tool_version(command):
+    try:
+        result=subprocess.run(command,capture_output=True,text=True,check=True)
+        return (result.stdout or result.stderr).strip().splitlines()[0]
+    except (OSError,subprocess.CalledProcessError,IndexError):
+        return 'unavailable'
+
 def collect(names, cache):
     items={}
     pending=set(names)|{'utils'}
@@ -232,7 +327,26 @@ def collect(names, cache):
         pending-=items.keys()
     return items
 
-def scaffold(output, language, title):
+def local_registry_imports(item):
+    """Return shadcn item names imported by source when upstream metadata omits them."""
+    result=set()
+    prefix='@/registry/bases/base/'
+    for file in item.get('files',[]):
+        content=file.get('content','')
+        for area,name in re.findall(r'from\s*["\']'+re.escape(prefix)+r'(ui|hooks|lib|components)/([^"\']+)["\']',content):
+            if area=='ui': result.add(name.rsplit('/',1)[-1])
+    return result
+
+def collect_source_imports(items, cache):
+    """Expand fetched items with imports present in source but absent from registryDependencies."""
+    pending=set().union(*(local_registry_imports(item) for item in items.values()))-items.keys()
+    while pending:
+        extra=collect(pending,cache)
+        items.update(extra)
+        pending=set().union(*(local_registry_imports(item) for item in extra.values()))-items.keys()
+    return items
+
+def scaffold(output, language, title, style):
     output.mkdir(parents=True,exist_ok=True)
     # Written first so an interrupted run is still recognized as this generator's output.
     (output/MARKER).parent.mkdir(parents=True, exist_ok=True)
@@ -241,7 +355,7 @@ def scaffold(output, language, title):
     (output/'index.html').write_text('<!doctype html><html lang="'+html.escape(language)+'"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+html.escape(title)+'</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>')
     (output/'vite.config.ts').write_text('import { defineConfig } from "vite";\nimport react from "@vitejs/plugin-react";\nimport tailwindcss from "@tailwindcss/vite";\nimport { fileURLToPath, URL } from "node:url";\nexport default defineConfig({base:"./",plugins:[react(),tailwindcss()],resolve:{alias:{"@":fileURLToPath(new URL("./src",import.meta.url))}}});\n')
     write(output/'tsconfig.json',{'compilerOptions':{'target':'ES2022','lib':['ES2022','DOM','DOM.Iterable'],'module':'ESNext','moduleResolution':'Bundler','jsx':'react-jsx','strict':True,'skipLibCheck':True,'allowSyntheticDefaultImports':True,'esModuleInterop':True,'resolveJsonModule':True,'noEmit':True,'baseUrl':'.','paths':{'@/*':['./src/*']}},'include':['src','vite.config.ts']})
-    write(output/'components.json',{'$schema':'https://ui.shadcn.com/schema.json','style':'new-york','rsc':False,'tsx':True,'tailwind':{'config':'','css':'src/index.css','baseColor':'neutral','cssVariables':True,'prefix':''},'iconLibrary':'lucide','aliases':{'components':'@/components','utils':'@/lib/utils','ui':'@/components/ui','lib':'@/lib','hooks':'@/hooks'}})
+    write(output/'components.json',{'$schema':'https://ui.shadcn.com/schema.json','style':style,'rsc':False,'tsx':True,'tailwind':{'config':'','css':'src/index.css','baseColor':'neutral','cssVariables':True,'prefix':''},'iconLibrary':'lucide','aliases':{'components':'@/components','utils':'@/lib/utils','ui':'@/components/ui','lib':'@/lib','hooks':'@/hooks'}})
 
 def registry(output,items,t,package,custom_components):
     artifact_name=t['slug']
@@ -257,7 +371,8 @@ def registry(output,items,t,package,custom_components):
         if not rel.startswith(('src/components/','src/hooks/','src/lib/','src/assets/')) and rel!='src/theme-overrides.css': continue
         kind='registry:file' if path.suffix not in ['.tsx','.ts'] else 'registry:ui' if '/ui/' in rel else 'registry:hook' if '/hooks/' in rel else 'registry:lib' if '/lib/' in rel else 'registry:component'
         files.append({'path':rel,'type':kind,'target':rel,'content':path.read_text()})
-    theme=css(t).replace('@import "tailwindcss";\n','').replace('@import "tw-animate-css";\n','').replace('@import "shadcn/tailwind.css";\n','')
+    hooks=visual_contract(item.get('files',[]) for item in items.values())
+    theme=css(t,hooks=hooks['hooks']).replace('@import "tailwindcss";\n','').replace('@import "tw-animate-css";\n','').replace('@import "shadcn/tailwind.css";\n','')
     if (output/'src/theme-overrides.css').exists(): theme='@import "./theme-overrides.css";\n'+theme
     files.append({'path':theme_file,'target':theme_file,'type':'registry:file','content':theme})
     deps=[name+'@'+version for name,version in package['dependencies'].items() if name not in ['react','react-dom']]
@@ -311,7 +426,8 @@ def build(args):
     if args.deliver and not args.build: raise ValueError('Delivery requires --build')
     # Fetch every upstream input before writing, so a network failure leaves the output untouched.
     upstream=fetch('registry',cache)
-    names=[i['name'] for i in upstream['items'] if i['type']=='registry:ui'] if args.full or args.deliver else CORE
+    unavailable_ui=[i['name'] for i in upstream['items'] if i['type']=='registry:ui' and not i.get('files')]
+    names=[i['name'] for i in upstream['items'] if i['type']=='registry:ui' and i.get('files')] if args.full or args.deliver else CORE
     available={i['name']:i for i in upstream['items']}
     custom_components=load_custom_components(output)
     custom_names={entry['name'] for entry in custom_components}
@@ -326,16 +442,17 @@ def build(args):
         demos=[example for name in names for example in component_demos[name]]
     else:
         for name in names:
-            candidate=name+'-demo' if name+'-demo' in available else 'chart-bar-demo' if name=='chart' else None
+            candidate=name+'-example' if name+'-example' in available else name+'-demo' if name+'-demo' in available else 'chart-bar-demo' if name=='chart' else None
             if candidate:
                 component_demos[name]=[candidate]
                 demos.append(candidate)
-    items=collect(names+demos,cache)
+    items=collect_source_imports(collect(names+demos,cache),cache)
     previous=read(output/'package.json') if (output/'package.json').exists() else {}
-    scaffold(output, language, t['name'])
+    scaffold(output, language, t['name'], t['slug'])
     (output/'src/review-copy.ts').write_text('export const text: Record<string, string> = '+json.dumps(labels,ensure_ascii=False)+';\n')
     shutil.copy2(ASSETS/'SHADCN-LICENSE.txt',output/'SHADCN-LICENSE.txt')
-    # Examples are generated upstream inputs. Remove stale examples when the selected set changes.
+    # Upstream UI and examples are generator-owned. Remove stale preset files before regeneration.
+    if generated and (output/'src/components/ui').exists(): shutil.rmtree(output/'src/components/ui')
     if generated and (output/'src/examples').exists(): shutil.rmtree(output/'src/examples')
     for item in items.values():
         for file in item.get('files',[]):
@@ -363,15 +480,25 @@ def build(args):
     (output/'src/lib/tabler-icons.tsx').write_text('export { '+', '.join(icon_map.get(n,'Circle')+' as '+n for n in sorted(icon_names))+' } from "lucide-react";\n')
     deps=dependencies(items.values())
     deps.update(dependencies({'dependencies':entry['dependencies']} for entry in custom_components))
-    deps.update({'react':'^19.1.0','react-dom':'^19.1.0','class-variance-authority':'^0.7.1','lucide-react':'^0.468.0','cn':'latest','radix-ui':'latest','tw-animate-css':'latest','shadcn':'4.21.0'})
-    deps.update(previous.get('dependencies',{}))
+    deps.update({'react':'^19.1.0','react-dom':'^19.1.0','class-variance-authority':'^0.7.1','lucide-react':'^0.468.0','cn':'latest','@base-ui/react':'latest','tw-animate-css':'latest','shadcn':'4.21.0'})
+    deps=preserve_previous_dependencies(deps,previous.get('dependencies',{}))
     package={'name':t['slug'],'version':'0.1.0','private':True,'type':'module',
              'scripts':{'dev':'vite --host 127.0.0.1','build':'tsc --noEmit && vite build','preview':'vite preview --host 127.0.0.1'},
              'dependencies':deps,'devDependencies':{'typescript':'^5.8.3','vite':'^6.4.1','@vitejs/plugin-react':'^4.7.0','tailwindcss':'^4.1.0','@tailwindcss/vite':'^4.1.0','@types/react':'^19.1.0','@types/react-dom':'^19.1.0','@types/node':'^22.0.0'}}
     package['devDependencies'].update(previous.get('devDependencies',{}))
     package['scripts'].update(previous.get('scripts',{}))
     write(output/'package.json',package);write(output/'tokens.json',t)
-    (output/'src/index.css').write_text(css(t))
+    contract=visual_contract(item.get('files',[]) for item in items.values())
+    explicit_styles=component_css([])
+    stylesheet=css(t,hooks=contract['hooks'])
+    audit=audit_visual_css(contract,stylesheet,explicit_styles)
+    if audit['missingHooks']:
+        raise ValueError('Generated visual layer is missing semantic hooks: '+', '.join(audit['missingHooks']))
+    if audit['missingStates']:
+        raise ValueError('Generated visual layer is missing visible Base UI states: '+', '.join(audit['missingStates']))
+    if audit['unclassifiedHooks']:
+        raise ValueError('Classify new Base UI semantic hooks before generation: '+', '.join(audit['unclassifiedHooks']))
+    (output/'src/index.css').write_text(stylesheet)
     (output/'src/main.tsx').write_text(main_source(t, names, (output/'src/theme-overrides.css').exists()))
     if not (output/'src/App.tsx').exists(): shutil.copy2(ASSETS/'App.tsx',output/'src/App.tsx')
     if not (output/'src/gallery.css').exists(): shutil.copy2(ASSETS/'gallery.css',output/'src/gallery.css')
@@ -415,13 +542,24 @@ def build(args):
     demo_imports.append('export default function FullGallery(){return <div className="gallery-grid">{componentEntries.map(entry=><section className="gallery-item" id={entry.name} key={entry.name}><h3>{entry.title}</h3><ComponentPreview entry={entry}/></section>)}</div>;}')
     (output/'src/FullGallery.tsx').write_text('\n'.join(demo_imports))
     custom_hashes={entry['name']:digest({path:(output/path).read_text() for path in entry['files']}) for entry in custom_components}
-    snapshot={'url':ORIGIN+'registry.json','fetchedAt':time.strftime('%Y-%m-%d',time.gmtime()),'sha256':digest(upstream),'ui':names,'custom':[entry['name'] for entry in custom_components],
+    toolchain={'python':tool_version(['python3','--version']),'node':tool_version(['node','--version']),
+               'npm':tool_version(['npm','--version']),'generatorSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+               'themeGeneratorSha256':hashlib.sha256((Path(__file__).parent/'theme.py').read_bytes()).hexdigest()}
+    snapshot={'repository':REPOSITORY,'commit':UPSTREAM_COMMIT,'url':SOURCE_ROOT,'indexUrl':INDEX_URL,
+              'sourceLayer':'shadcn Base UI components','style':'generated from approved tokens','primitive':'Base UI',
+              'fetchedAt':time.strftime('%Y-%m-%d',time.gmtime()),'indexSha256':digest(upstream),
+              'sourceSha256':source_digest(items),'toolchain':toolchain,
+              'visualContract':{'hookCount':len(contract['hooks']),'hookHash':digest(contract['hooks']),
+                                'states':sorted(contract['requiredStates']),
+                                'observedStates':contract['observedStates'],
+                                'explicitHookCount':len(audit['explicitHooks']),
+                                'inferredHookCount':len(audit['inferredHooks']),
+                                'structuralHookCount':len(audit['structuralHooks'])},
+              'ui':names,'unavailableUi':unavailable_ui,'custom':[entry['name'] for entry in custom_components],
               'customItems':custom_hashes,'demos':demos,'items':{n:digest(items[n]) for n in sorted(items)}}
-    snapshot['deliverySha256']=digest(snapshot)
-    write(output/'shadcn-snapshot.json',snapshot)
+    write(output/'visual-contract.json',{**contract,**audit,'sourceCommit':UPSTREAM_COMMIT})
     checks=state['round'].get('checks',{}) if state else {}
     write(output/'contrast-report.json',contrast(t))
-    design_doc=document(output,t,state,snapshot,checks)
     if args.install:
         subprocess.run(['npm','install','--no-audit','--no-fund'],cwd=output,check=True)
         # Freeze resolved direct dependencies for registry consumers.
@@ -431,6 +569,11 @@ def build(args):
             if resolved: package['dependencies'][dep]=resolved
         write(output/'package.json',package)
         subprocess.run(['npm','install','--package-lock-only','--no-audit','--no-fund'],cwd=output,check=True)
+        snapshot['lockfileSha256']=hashlib.sha256((output/'package-lock.json').read_bytes()).hexdigest()
+        snapshot['resolvedDependencies']=package['dependencies']
+    snapshot['deliverySha256']=digest(snapshot)
+    write(output/'shadcn-snapshot.json',snapshot)
+    design_doc=document(output,t,state,snapshot,checks)
     registry(output,items,t,package,custom_components)
     if args.build: subprocess.run(['npm','run','build'],cwd=output,check=True)
     result={'output':str(output),'components':len(names)+len(custom_components),'officialComponents':len(names),'customComponents':len(custom_components),'tokenHash':digest(t),'demos':len(demos),'designDocument':str(design_doc)}
@@ -465,11 +608,19 @@ def main():
                 raise ValueError('--sources-only cannot install, build, or mark delivery')
             cache=args.cache.resolve(); cache.mkdir(parents=True,exist_ok=True)
             upstream=fetch('registry',cache)
-            names=[item['name'] for item in upstream['items'] if item['type']=='registry:ui'] if args.full else CORE
-            items=collect(names,cache)
-            write(cache/'source-manifest.json',{'url':ORIGIN+'registry.json',
+            unavailable_ui=[item['name'] for item in upstream['items'] if item['type']=='registry:ui' and not item.get('files')]
+            names=[item['name'] for item in upstream['items'] if item['type']=='registry:ui' and item.get('files')] if args.full else CORE
+            items=collect_source_imports(collect(names,cache),cache)
+            contract=visual_contract(item.get('files',[]) for item in items.values())
+            write(cache/'source-manifest.json',{'repository':REPOSITORY,'commit':UPSTREAM_COMMIT,
+                  'url':SOURCE_ROOT,'indexUrl':INDEX_URL,
                   'fetchedAt':time.strftime('%Y-%m-%d',time.gmtime()), 'sha256':digest(upstream),
-                  'ui':names,'items':{name:digest(item) for name,item in items.items()}})
+                  'sourceLayer':'shadcn Base UI components','style':'generated from approved tokens',
+                  'primitive':'Base UI','visualContract':{'hookCount':len(contract['hooks']),
+                  'hookHash':digest(contract['hooks']),'states':sorted(contract['requiredStates']),
+                  'observedStates':contract['observedStates']},
+                  'ui':names,'unavailableUi':unavailable_ui,
+                  'items':{name:digest(item) for name,item in items.items()}})
             print(json.dumps({'cache':str(cache),'components':len(names),'mode':'sources-only'},indent=2))
         else:
             build(args)

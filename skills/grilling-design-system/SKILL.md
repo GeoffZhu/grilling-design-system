@@ -5,7 +5,7 @@ description: Derive a PC and Mobile Web design system from an inspiration image 
 
 # Grilling design system
 
-Deliver both a working shadcn/ui design system adapted to the project framework and DESIGN.md that describes its final specification. These are mandatory outputs; a preview, token sheet, or design proposal alone is incomplete. Preserve confirmed preferences and distinguish user choices from agent-derived rules. Never treat silence, a timeout, or a preselected answer as approval.
+Deliver both a working shadcn/ui design system adapted to the project framework and DESIGN.md that describes its final specification. These are mandatory outputs; a preview, token sheet, or design proposal alone is incomplete. For standalone React output, use shadcn's raw Base UI component layer for behavior and accessibility, then author its `cn-*` visual layer from the approved design tokens. Do not use an official shadcn visual preset as the generated system's style. Preserve a host project's established primitive family when integrating rather than mixing implementations. Preserve confirmed preferences and distinguish user choices from agent-derived rules. Never treat silence, a timeout, or a preselected answer as approval.
 
 Use [DESIGN.template.md](assets/DESIGN.template.md) for DESIGN.md. Preserve its 13 numbered sections and required fields. Read [design-document.md](references/design-document.md) for evidence-based completion, API mappings, and the final completeness check. Read [usage-handoff.md](references/usage-handoff.md) before final delivery; a repository-specific usage handoff in the final reply is mandatory.
 
@@ -32,6 +32,8 @@ Write the option page intro as a short, direct instruction naming the user's act
 Use a specimen viewport sized for readable components; see [protocol.md](references/protocol.md). Reserve full Desktop and Mobile frames for page-level context and the integrated presentation. Keep designed type and control sizes, scrolling, open links, and browser zoom. Do not add zoom buttons, sliders, percentages, or hints. Apply `-webkit-font-smoothing: antialiased` and `-moz-osx-font-smoothing: grayscale` to every preview document, including iframe content. Tailwind's `antialiased` utility is equivalent.
 
 Keep the review HTML for viewing only. Do not add feedback forms, option checkboxes, selection counts, or decision buttons. Example components remain interactive. Publish working links before asking. Then call the actual question tool supplied by the host agent, such as AskUserQuestion or a native equivalent, using its real schema and single-select behavior. Set `multiSelect: false` only if the tool supports that field. Do not invent a tool or force a particular API name. Read [choices.md](references/choices.md) for tool adaptation and answer recording.
+
+Keep the shared preview chrome consistent: show `grilling design system` on the left and a GitHub icon linking to `https://github.com/GeoffZhu/grilling-design-system` on the right. Apply this to Studio and standalone comparison HTML. In the delivered example gallery, keep the generated project name on the left and use the same GitHub icon link on the right.
 
 If a stage has no important unresolved choice, publish one derived specimen with its rationale and continue without a question. The full-page preview always presents one consolidated design; it never asks for another A/B preference.
 

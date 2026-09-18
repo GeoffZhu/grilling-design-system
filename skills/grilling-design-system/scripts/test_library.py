@@ -5,7 +5,10 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from library import COMPONENT_CATEGORIES, component_title, examples_by_component, load_custom_components, main_source, registry
+from library import (COMPONENT_CATEGORIES, SOURCE_ROOT, UPSTREAM_BASE, UPSTREAM_COMMIT, component_title, examples_by_component,
+                     filename, load_custom_components, local_registry_imports, main_source,
+                     preserve_previous_dependencies, registry, scaffold, transform)
+from theme import STATE_RULES, audit_visual_css, classify_hooks, component_css, visual_contract
 
 
 class LibraryGalleryTest(unittest.TestCase):
@@ -34,6 +37,82 @@ class LibraryGalleryTest(unittest.TestCase):
         self.assertNotIn('@/components/ui/sonner', source)
         self.assertNotIn('<Toaster />', source)
 
+    def test_main_source_mounts_base_ui_toast_host(self):
+        source = main_source({'mode': 'light'}, ['toast'])
+        self.assertIn('from "@/components/ui/toast"', source)
+        self.assertIn('<App /><BaseToaster />', source)
+        self.assertNotIn('TooltipProvider', source)
+
+    def test_scaffold_uses_generated_style_name(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            scaffold(root,'en','Test','test-style')
+            config=json.loads((root/'components.json').read_text())
+            self.assertEqual(UPSTREAM_BASE,'base')
+            self.assertRegex(UPSTREAM_COMMIT,r'^[0-9a-f]{40}$')
+            self.assertIn(UPSTREAM_COMMIT,SOURCE_ROOT)
+            self.assertIn('/registry/bases/base/',SOURCE_ROOT)
+            self.assertEqual(config['style'],'test-style')
+
+    def test_base_ui_source_path_and_icon_transform(self):
+        self.assertEqual(filename('registry/bases/base/ui/button.tsx'),'src/components/ui/button.tsx')
+        source='''"use client"
+import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
+import { Button } from "@/registry/bases/base/ui/button"
+export function Demo(){return <div className="p-4 style-nova:p-2 style-vega:p-6"><IconPlaceholder lucide="XIcon" tabler="IconX" className="size-4" /></div>}
+'''
+        result=transform(source)
+        self.assertIn('import { XIcon } from "lucide-react"',result)
+        self.assertIn('from "@/components/ui/button"',result)
+        self.assertIn('<XIcon className="size-4" />',result)
+        self.assertNotIn('IconPlaceholder',result)
+        self.assertNotIn('style-nova',result)
+        self.assertNotIn('style-vega',result)
+
+    def test_local_registry_imports_find_missing_ui_dependency(self):
+        item={'files':[{'content':'import { ToggleGroup } from "@/registry/bases/base/ui/toggle-group"'}]}
+        self.assertEqual(local_registry_imports(item),{'toggle-group'})
+
+    def test_unused_legacy_primitive_dependencies_are_not_preserved(self):
+        current={'@base-ui/react':'latest','react':'^19'}
+        previous={'radix-ui':'1.4.3','@radix-ui/react-slot':'1.2.3','react':'19.3.0','zod':'4.0.0'}
+        result=preserve_previous_dependencies(current,previous)
+        self.assertNotIn('radix-ui',result)
+        self.assertNotIn('@radix-ui/react-slot',result)
+        self.assertEqual(result['react'],'19.3.0')
+        self.assertEqual(result['zod'],'4.0.0')
+
+    def test_generated_visual_layer_styles_raw_base_hooks(self):
+        styles=component_css()
+        for hook in ['.cn-button','.cn-input','.cn-card','.cn-dialog-content','.cn-select-item','.cn-tabs-trigger']:
+            with self.subTest(hook=hook):
+                self.assertIn(hook,styles)
+
+    def test_visual_contract_covers_every_hook_and_state(self):
+        files=[[{'content':'className="cn-button cn-dialog-content data-open:opacity-100 data-highlighted:bg-accent data-disabled:opacity-50 data-starting-style:opacity-0 aria-pressed:bg-accent"'}]]
+        contract=visual_contract(files)
+        styles=component_css(contract['hooks'])
+        self.assertEqual(contract['hooks'],['cn-button','cn-dialog-content'])
+        for hook in contract['hooks']:
+            self.assertIn('.'+hook+'{',styles)
+        self.assertEqual(set(contract['observedStates']),{'open','highlighted','disabled','starting-style','pressed'})
+        self.assertEqual(set(contract['requiredStates']),set(STATE_RULES))
+        for state,markers in contract['requiredStates'].items():
+            with self.subTest(state=state):
+                self.assertTrue(any(marker in styles for marker in markers[0].split(',')))
+                self.assertTrue(markers[1])
+
+    def test_visual_audit_rejects_missing_visible_state(self):
+        contract={'hooks':['cn-button'],'requiredStates':{'open':STATE_RULES['open']}}
+        audit=audit_visual_css(contract,'.cn-button{color:red}', '.cn-button{color:red}')
+        self.assertEqual(audit['missingStates'],['open'])
+        self.assertEqual(audit['explicitHooks'],['cn-button'])
+
+    def test_hook_classification_rejects_unknown_hooks(self):
+        classes=classify_hooks(['cn-button','cn-mystery'],' .cn-button{color:red}')
+        self.assertEqual(classes['explicitHooks'],['cn-button'])
+        self.assertEqual(classes['unclassifiedHooks'],['cn-mystery'])
+
     def test_component_title(self):
         self.assertEqual(component_title('alert-dialog'), 'Alert Dialog')
         self.assertEqual(component_title('input-otp'), 'Input OTP')
@@ -57,12 +136,12 @@ class LibraryGalleryTest(unittest.TestCase):
 
     def test_example_ownership_prefers_longest_component_name(self):
         available = {name: {'name': name, 'type': 'registry:example'} for name in [
-            'button-demo', 'button-outline', 'button-responsive', 'button-group-demo', 'input-demo', 'input-group-demo'
+            'button-example', 'button-outline', 'button-responsive', 'button-group-example', 'input-example', 'input-group-example'
         ]}
         result = examples_by_component(['button', 'button-group', 'input', 'input-group'], available)
-        self.assertEqual(result['button-group'], ['button-group-demo'])
-        self.assertEqual(result['input-group'], ['input-group-demo'])
-        self.assertEqual(result['button'], ['button-demo', 'button-outline'])
+        self.assertEqual(result['button-group'], ['button-group-example'])
+        self.assertEqual(result['input-group'], ['input-group-example'])
+        self.assertEqual(result['button'], ['button-example', 'button-outline'])
 
     def test_custom_component_manifest(self):
         with tempfile.TemporaryDirectory() as directory:
