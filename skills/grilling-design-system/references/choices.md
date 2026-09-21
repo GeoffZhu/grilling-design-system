@@ -58,7 +58,7 @@ Map the submitted label to one published ID. Submit via the running studio:
 ~~~
 
 ~~~sh
-python3 "$SKILL/scripts/studio.py" decide --session "$PROJECT/session" --url http://127.0.0.1:4310 --decision "$PROJECT/decision.json"
+node "$SKILL/scripts/studio.js" decide --session "$PROJECT/session" --url http://127.0.0.1:4310 --decision "$PROJECT/decision.json"
 ~~~
 
 - One option without changes: select.

@@ -10,7 +10,6 @@
   "indexSha256": "e4b4d051ef4a2ac22a1d514eaccb893e35958e6fc71136aa14fef3419970068f",
   "sourceSha256": "9d55696efcc56240a84e8b77ac7294d546304531eccb0b6ebb6f801dfd40681b",
   "toolchain": {
-    "python": "Python 3.14.7",
     "node": "v20.20.1",
     "npm": "10.8.2",
     "generatorSha256": "40d18f8dc8c51f6954c9e66629f903bd6d37aa64964f92c234648746e0083316",

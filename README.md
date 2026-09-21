@@ -26,10 +26,10 @@ Skill 入口：[.agents/skills/grilling-design-system/SKILL.md](.agents/skills/g
 - 当前目录是 Web 项目：沿用它的框架、样式方案和包管理器，组件写到源码根目录下的 design-system/（或你指定的目录），DESIGN.md 写到应用根目录。
 - 不是 Web 项目：在指定目录或 ./design-system 生成一个完整的 React + Vite + Tailwind 4 应用，DESIGN.md 放在应用根目录。
 
-完整库指所记录官方 registry 中的全部 registry:ui 项，加上图片特有组件；不包含官方页面 block。产物包括源码、可运行的展示页、主题参数、shadcn 安装 registry、依赖锁文件、来源快照、DESIGN.md 与验证记录。DESIGN.md 补全并通过 `design_document.py --check` 后，用 `studio.py finish` 记录交付。
+完整库指所记录官方 registry 中的全部 registry:ui 项，加上图片特有组件；不包含官方页面 block。产物包括源码、可运行的展示页、主题参数、shadcn 安装 registry、依赖锁文件、来源快照、DESIGN.md 与验证记录。DESIGN.md 补全并通过 `design_document.js --check` 后，用 `studio.js finish` 记录交付。
 
 ## 环境
 
-需要 Python 3.10+；独立应用还需要 Node 20.19+ 和 npm。首次获取 shadcn 源码和字体依赖需要网络。若系统代理拦截 TLS 导致证书校验失败，可用 `no_proxy='*'` 重试。
+需要 Node.js 20.19+ 和 npm。首次获取 shadcn 源码和字体依赖需要网络。若系统代理拦截 TLS 导致证书校验失败，可用 `no_proxy='*'` 重试。
 
 所有说明和预览内容跟随用户的主语言，使用简短、容易理解的话。已融合 Anthropic frontend-design 的设计意图、构图与组件细节检查方法，见 [frontend-craft.md](.agents/skills/grilling-design-system/references/frontend-craft.md)。组件与整合预览需要实际截图检查；没有浏览器能力时，如实记录未能执行的检查。构建通过不能代替视觉检查。

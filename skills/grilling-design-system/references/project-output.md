@@ -21,25 +21,25 @@ Read AGENTS.md, package manifests, lockfiles, build scripts/config, route entrie
 
 Identify the actual source root from build entries and aliases. Common roots are src/, app/, resources/js/, client/, or the flat project root. Do not create src/ merely because the standalone starter uses it. Identify JS versus TS, JSX conventions, client/server boundaries, import paths, filename casing, exports, quotes, semicolons, formatting, CSS approach, framework/Tailwind versions, icon library, accessibility primitives, package manager, and verification commands. Reinspect these facts after delivery when preparing the final usage handoff; generated files and integration edits are the authority.
 
-Use scripts/project.py for a read-only first pass:
+Use scripts/project.js for a read-only first pass:
 
 ~~~sh
-python3 "$SKILL/scripts/project.py" --cwd "$PWD"
-python3 "$SKILL/scripts/project.py" --cwd "$PWD" --output /user/requested/path
+node "$SKILL/scripts/project.js" --cwd "$PWD"
+node "$SKILL/scripts/project.js" --cwd "$PWD" --output /user/requested/path
 ~~~
 
 Its detection is heuristic; confirm results from source/config. For a custom setup or targeted monorepo app, pass --web-root and --source-root after inspection. The script resolves paths but never creates files or changes project configuration.
 
-Record the confirmed result as PROJECT/project-context.json. Use LIBRARY for its output, DESIGN_DOC for its designDoc, and PROJECT for its workDir. PROJECT defaults to WEB_ROOT/.tmp/grilling-design-system in integrated mode and LIBRARY/.tmp/grilling-design-system in standalone mode. Keep sessions, candidates, caches, translations, drafts, and evidence there. Never use a legacy working directory. Reuse these paths while the workflow is active. A successful `studio.py finish` deletes PROJECT; only LIBRARY and DESIGN_DOC remain.
+Record the confirmed result as PROJECT/project-context.json. Use LIBRARY for its output, DESIGN_DOC for its designDoc, and PROJECT for its workDir. PROJECT defaults to WEB_ROOT/.tmp/grilling-design-system in integrated mode and LIBRARY/.tmp/grilling-design-system in standalone mode. Keep sessions, candidates, caches, translations, drafts, and evidence there. Never use a legacy working directory. Reuse these paths while the workflow is active. A successful `studio.js finish` deletes PROJECT; only LIBRARY and DESIGN_DOC remain.
 
 ## Existing Web project
 
 Implement a source module inside LIBRARY using the host framework and conventions. Use directories such as ui/, custom/, hooks/, and theme files only where they fit the host structure. Reuse existing canonical primitives and utilities via imports/re-exports when suitable. Add or adapt missing components under LIBRARY. Preserve existing package/build configuration and entry points; make only the changes needed to compile and expose the new module. Merge existing root DESIGN.md guidance rather than discarding unrelated standards.
 
-Do not run the standalone scaffold into the project or its source tree. library.py is a standalone React/Vite generator and cannot infer arbitrary project conventions. To fetch official shadcn inputs without writing a new app, use:
+Do not run the standalone scaffold into the project or its source tree. library.js is a standalone React/Vite generator and cannot infer arbitrary project conventions. To fetch official shadcn inputs without writing a new app, use:
 
 ~~~sh
-python3 "$SKILL/scripts/library.py" --sources-only --full --cache "$PROJECT/cache"
+node "$SKILL/scripts/library.js" --sources-only --full --cache "$PROJECT/cache"
 ~~~
 
 For compatible React projects, use shadcn's raw Base UI component source by default and implement the approved visual system through its semantic class hooks. Do not introduce Nova, another official visual preset, or another primitive family as a hidden fallback. If the host already standardizes on another primitive family, preserve that host architecture and document the native adaptation instead of mixing primitive families. Respect Next/server rendering boundaries and existing image/link/theme providers. Tailwind 3 requires its own configuration conventions; never inject Tailwind 4 directives blindly. When the project uses another styling system, translate the accepted visual specification into that system without replacing its build pipeline. Install only required dependencies with the existing package manager and compatible versions.
@@ -50,27 +50,27 @@ Mount a gallery/specimen through the host's existing route, story, demo, or prev
 
 Write tokens, attribution/snapshot, applicable registry, and custom guidance with the module. Write the completed 13-section DESIGN.md to WEB_ROOT/DESIGN.md. Paths in that document are relative to WEB_ROOT, including relative paths to an explicitly requested external component directory. Its Implementation section must name actual host tooling, commands, global style and provider setup, and public import convention. Existing root standards must be merged with the new system.
 
-For a generated documentation draft, scripts/design_document.py accepts --context with project-context.json. Add inspected fields framework, styling, componentLibrary, apiMapping, buildInstructions, workingDirectory, startOrInstall, globalStyles, rootProviders, publicImports, galleryDocs, and path mappings implementationPaths, referencePaths, and canonicalPaths; resolve path mappings from WEB_ROOT. The usage fields must describe the final repository, use its package manager, and agree with usage-handoff.md. implementationPaths uses the template labels UI components, Shared components, Domain components, and Design tokens. referencePaths uses App shell, List page, Detail page, Form page, and Settings. canonicalPaths uses Button, Input, Select, Dialog, Table, Tabs, and Toast. Do not fill these with assumed Vite/src paths. When root DESIGN.md exists, merge an intermediate draft into it.
+For a generated documentation draft, scripts/design_document.js accepts --context with project-context.json. Add inspected fields framework, styling, componentLibrary, apiMapping, buildInstructions, workingDirectory, startOrInstall, globalStyles, rootProviders, publicImports, galleryDocs, and path mappings implementationPaths, referencePaths, and canonicalPaths; resolve path mappings from WEB_ROOT. The usage fields must describe the final repository, use its package manager, and agree with usage-handoff.md. implementationPaths uses the template labels UI components, Shared components, Domain components, and Design tokens. referencePaths uses App shell, List page, Detail page, Form page, and Settings. canonicalPaths uses Button, Input, Select, Dialog, Table, Tabs, and Toast. Do not fill these with assumed Vite/src paths. When root DESIGN.md exists, merge an intermediate draft into it.
 
 ~~~sh
-python3 "$SKILL/scripts/design_document.py" --context "$PROJECT/project-context.json" --tokens "$LIBRARY/tokens.json" --snapshot "$LIBRARY/shadcn-snapshot.json" --checks "$PROJECT/checks.json" --session "$PROJECT/session"
+node "$SKILL/scripts/design_document.js" --context "$PROJECT/project-context.json" --tokens "$LIBRARY/tokens.json" --snapshot "$LIBRARY/shadcn-snapshot.json" --checks "$PROJECT/checks.json" --session "$PROJECT/session"
 ~~~
 
-Only finalize delivery after the integrated build, available visual checks, component coverage, and DESIGN_DOC completion check. Record integrated delivery through studio.py finish using an evidence JSON with absolute path, designDoc, tokenHash, componentCount, snapshotHash, and checks containing the actual host build result. This records evidence; it does not execute the build or prove visual quality.
+Only finalize delivery after the integrated build, available visual checks, component coverage, and DESIGN_DOC completion check. Record integrated delivery through studio.js finish using an evidence JSON with absolute path, designDoc, tokenHash, componentCount, snapshotHash, and checks containing the actual host build result. This records evidence; it does not execute the build or prove visual quality.
 
 ~~~sh
-python3 "$SKILL/scripts/studio.py" finish --session "$PROJECT/session" --evidence "$PROJECT/delivery.json"
+node "$SKILL/scripts/studio.js" finish --session "$PROJECT/session" --evidence "$PROJECT/delivery.json"
 ~~~
 
 On success, capture the command output for the handoff; the command removes PROJECT and all non-delivery artifacts. On failure, PROJECT remains intact for correction and resume.
 
 ## No Web project
 
-Create the full runnable React/TypeScript/Vite/Tailwind application at LIBRARY itself. Use library.py with --output LIBRARY, --cache PROJECT/cache, and the existing draft/delivery arguments. The app's package.json, src/, public/, and DESIGN.md belong directly under LIBRARY. Never add a library/ wrapper. The user's chosen path remains the application root.
+Create the full runnable React/TypeScript/Vite/Tailwind application at LIBRARY itself. Use library.js with --output LIBRARY, --cache PROJECT/cache, and the existing draft/delivery arguments. The app's package.json, src/, public/, and DESIGN.md belong directly under LIBRARY. Never add a library/ wrapper. The user's chosen path remains the application root.
 
 Use the model-authored token `name` as the visible application and theme name. Use the model-authored token `slug` as the package name, registry name, and registry theme CSS filename (`src/<slug>.css`). Do not use the skill name or another fixed generator name for these artifacts. The scaffold seeds docs-only `src/IntegratedPreview.tsx`; replace it with the confirmed reference-derived Key Visual, keep it above the component directory on the overview route, and remove its placeholder marker before `--deliver`. It may import delivered ui/custom components, but must not appear in custom-components.json, componentEntries, component counts, registry files/items, or consumer copy instructions.
 
-Use the standalone development/build commands and compatible shadcn registry consumer checks. Complete LIBRARY/DESIGN.md with the required template. Then record delivery with studio.py finish: evidence path is LIBRARY, designDoc is LIBRARY/DESIGN.md, tokenHash and snapshotHash come from session.generated, and checks.build holds the actual build result. Without project-context.json, finish validates against session.generated. If output already contains user work, inspect and preserve it before generating; an existing Web application takes the integration path.
+Use the standalone development/build commands and compatible shadcn registry consumer checks. Complete LIBRARY/DESIGN.md with the required template. Then record delivery with studio.js finish: evidence path is LIBRARY, designDoc is LIBRARY/DESIGN.md, tokenHash and snapshotHash come from session.generated, and checks.build holds the actual build result. Without project-context.json, finish validates against session.generated. If output already contains user work, inspect and preserve it before generating; an existing Web application takes the integration path.
 
 ### Custom component manifest
 

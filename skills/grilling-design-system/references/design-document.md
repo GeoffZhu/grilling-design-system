@@ -2,7 +2,7 @@
 
 Use [DESIGN.template.md](../assets/DESIGN.template.md) as the required output structure. Keep the title and all 13 numbered section headings in their original order. Preserve every subsection, field, and rule; fill values from the final implementation and settled design. Translate explanations and values into the user's language while retaining the template's headings, field labels, code identifiers, and paths.
 
-Resolve DESIGN_DOC with project-output.md: Web application root/DESIGN.md for integration, or LIBRARY/DESIGN.md for standalone delivery. library.py generates a standalone draft; design_document.py --context uses inspected host environment and path mappings for integrated drafts. Both fill available tokens, paths, inventory, decisions, and evidence. Complete project-specific fields before delivery; placeholders do not constitute a finished document. In integrated mode, preserve and merge existing root standards.
+Resolve DESIGN_DOC with project-output.md: Web application root/DESIGN.md for integration, or LIBRARY/DESIGN.md for standalone delivery. library.js generates a standalone draft; design_document.js --context uses inspected host environment and path mappings for integrated drafts. Both fill available tokens, paths, inventory, decisions, and evidence. Complete project-specific fields before delivery; placeholders do not constitute a finished document. In integrated mode, preserve and merge existing root standards.
 
 ## Fill from evidence
 
@@ -28,7 +28,7 @@ Before reporting delivery:
 3. Run the structural completion check:
 
 ~~~sh
-python3 "$SKILL/scripts/design_document.py" --check "$DESIGN_DOC"
+node "$SKILL/scripts/design_document.js" --check "$DESIGN_DOC"
 ~~~
 
 This check catches missing/reordered sections, template placeholders, and empty value slots. It does not prove that design rules or paths match the implementation; inspect those separately. Deliver the component library and completed DESIGN.md together.
