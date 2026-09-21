@@ -1,9 +1,16 @@
-"""Run with python3 -m unittest discover -s scripts -p 'test_*.py'."""
+"""Run from the repository root with python3 -m unittest discover -s test."""
 import copy
 import tempfile
 from pathlib import Path
+import sys
 import unittest
-from studio import init, publish, decide, read, digest, reopen, write, validate_visual_review, finish
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS = REPOSITORY_ROOT / 'skills/grilling-design-system/scripts'
+sys.path.insert(0, str(SCRIPTS))
+
+from studio import init, publish, decide, read, digest, reopen, snapshot, write, validate_visual_review, finish
 from language import translated_copy
 
 class WorkflowTest(unittest.TestCase):
@@ -17,6 +24,44 @@ class WorkflowTest(unittest.TestCase):
         (self.root/'intent.md').write_text('Fixture design intent')
         (self.root/'screenshot.png').write_bytes(b'test screenshot fixture')
     def tearDown(self): self.temp.cleanup()
+    def build_fixture(self):
+        dist=Path(self.temp.name)/'dist';assets=dist/'assets';assets.mkdir(parents=True,exist_ok=True)
+        (dist/'index.html').write_text('<script type="module" src="./assets/index.js"></script>')
+        (assets/'index.js').write_text('import "./style.css"; import("./lazy.js")')
+        (assets/'style.css').write_text('body{background:url("./pixel.png")}')
+        (assets/'lazy.js').write_text('export const ready=true')
+        (assets/'pixel.png').write_bytes(b'pixel')
+        return dist
+
+    def test_snapshot_is_atomic_verified_and_refuses_existing_target(self):
+        result=snapshot(self.root,self.build_fixture(),'r1-preview')
+        target=self.root/'candidates/r1-preview'
+        self.assertEqual(result['preview'],'candidates/r1-preview/index.html')
+        self.assertTrue((target/'.preview-snapshot.json').is_file())
+        self.assertFalse(any(path.name.startswith('.r1-preview.staging-') for path in target.parent.iterdir()))
+        with self.assertRaisesRegex(ValueError,'already exists'):
+            snapshot(self.root,self.build_fixture(),'r1-preview')
+
+    def test_invalid_snapshot_never_publishes_target(self):
+        dist=self.build_fixture()
+        (dist/'assets/lazy.js').unlink()
+        with self.assertRaisesRegex(ValueError,'Build asset missing'):
+            snapshot(self.root,dist,'broken-preview')
+        self.assertFalse((self.root/'candidates/broken-preview').exists())
+        self.assertFalse(any(path.name.startswith('.broken-preview.staging-') for path in (self.root/'candidates').iterdir()))
+
+    def test_publish_rejects_snapshot_with_missing_dynamic_chunk(self):
+        result=snapshot(self.root,self.build_fixture(),'r1-preview')
+        (self.root/'candidates/r1-preview/assets/lazy.js').unlink()
+        option={'title':'Build','description':'Test build','preview':result['preview'],'tokens':{}}
+        spec={'stage':'direction','options':[{**option,'id':'a'},{**option,'id':'b'}]}
+        with self.assertRaisesRegex(ValueError,'missing|changed'):
+            publish(self.root,spec)
+        self.assertEqual(read(self.root/'session.json')['revision'],0)
+
+    def test_publish_keeps_plain_html_preview_compatible(self):
+        state=self.publish('direction')
+        self.assertEqual(state['status'],'awaiting-user')
     def publish(self,stage,review_type=None):
         review_type=review_type or ('presentation' if stage=='preview' else 'choice')
         option={'id':'a','title':'A','description':'Test option','preview':'preview.html'}

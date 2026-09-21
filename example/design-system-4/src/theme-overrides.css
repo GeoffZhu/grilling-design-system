@@ -1,0 +1,25 @@
+@import "@fontsource-variable/nunito";
+@import "@fontsource/nunito/400.css";
+@import "@fontsource/nunito/700.css";
+@import "@fontsource/nunito/800.css";
+
+/* B direction: crisp cut-out geometry, dark outlines, shallow offset depth. */
+.cn-button{border-width:2px;border-color:var(--foreground)}
+.cn-button-variant-ghost,.cn-button-variant-link{border-color:transparent;box-shadow:none}
+.cn-card,.cn-alert,.cn-table-container{border-width:2px}
+.cn-card-footer{min-height:80px;padding-top:16px;padding-bottom:16px;align-items:center}
+.group\/card[data-size="sm"] .cn-card-footer{min-height:64px;padding-top:12px;padding-bottom:12px}
+.cn-badge{border-width:2px;border-color:var(--foreground);border-radius:7px}
+.cn-tabs-list{background:var(--card)}
+.cn-dialog-overlay{backdrop-filter:none}
+.cn-dialog-content{box-shadow:4px 4px 0 var(--foreground)}
+.cn-sheet-close{position:absolute;top:16px;right:16px}
+.cn-calendar{--cell-size:2.75rem;padding:1rem}
+.cn-calendar-day-button{font-size:.9375rem}
+.cn-tabs-list[data-variant=line] .cn-tabs-trigger[data-active]:not([data-active="false"]){background:transparent;color:var(--foreground);border-color:transparent;box-shadow:none}
+.cn-tabs-list[data-variant=line] .cn-tabs-trigger[data-active]:not([data-active="false"])::after{opacity:1}
+:where([data-slot=button]):active{transform:translate(2px,2px);box-shadow:none}
+
+@media (prefers-reduced-motion: reduce){
+  :where([data-slot=button]):active{transform:none}
+}

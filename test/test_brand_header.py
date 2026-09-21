@@ -1,12 +1,18 @@
 """Regression tests for the shared preview and gallery header."""
 import json
 from pathlib import Path
+import sys
 import unittest
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+SKILL = REPOSITORY_ROOT / 'skills/grilling-design-system'
+SCRIPTS = SKILL / 'scripts'
+sys.path.insert(0, str(SCRIPTS))
 
 from board import render
 
 
-SKILL = Path(__file__).resolve().parents[1]
 ASSETS = SKILL / 'assets'
 REPOSITORY = 'https://github.com/GeoffZhu/grilling-design-system'
 

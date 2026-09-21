@@ -123,7 +123,13 @@ Expand observations to cover reference, typography, spacing, shape, icons, state
 
 If no usable browser/image capture capability exists, use method: source-inspection, screenshots: [], and a nonempty limitations array describing the unavailable checks. Record source files and actual observations instead of inventing screenshots, focus tests, or visual approval. Missing verification belongs in limitations; known defects belong in unresolved and must be repaired. See verification.md.
 
-Preview is a session-relative path or localhost URL. For standalone previews, copy immutable dist builds into session/candidates/rN-preview/ and reference index.html. For Web integration, use the host preview URL or its supported export format, preserving the tested source revision. Never replace files behind a confirmed preview.
+Preview is a session-relative path or localhost URL. For every session-hosted production build, create a fresh immutable snapshot and use the returned preview path:
+
+~~~sh
+python3 "$SKILL/scripts/studio.py" snapshot --session "$PROJECT/session" --dist "$LIBRARY/dist"
+~~~
+
+By default the command generates a unique directory name and returns its preview path. An optional `--name` must itself be new; the command refuses an existing or concurrent target. It copies into hidden staging beside candidates, validates `index.html` and the recursive local HTML/JS/CSS asset closure (including static and dynamic imports), writes a hash manifest, then atomically renames staging into `session/candidates/`. A failed validation leaves no published target. Never use `mkdir`/`cp` to publish a build and never replace files behind a published preview. `studio.py publish` revalidates the closure and manifest of local module-based HTML before changing session state. Plain board HTML remains valid without a snapshot manifest. For Web integration, a localhost host-preview URL remains valid; otherwise snapshot its supported static export while preserving the tested source revision.
 
 The integrated presentation requires checks for build, desktop, mobile, keyboard, and contrast. Record actual commands, observations, and evidence paths; use an explicit "Not run: capability unavailable" explanation for checks that could not run. These keys document evidence and limitations, not automatic passing grades.
 

@@ -2,8 +2,14 @@
 import copy
 from pathlib import Path
 import re
+import sys
 import tempfile
 import unittest
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS = REPOSITORY_ROOT / 'skills/grilling-design-system/scripts'
+sys.path.insert(0, str(SCRIPTS))
 
 from design_document import TEMPLATE, FENCE, completion_errors, document
 from studio import digest

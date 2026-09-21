@@ -3,9 +3,12 @@
 import argparse
 import copy
 import hashlib
+from html.parser import HTMLParser
 import json
+import os
 from pathlib import Path
 import mimetypes
+import re
 import shutil
 import threading
 import time
@@ -21,6 +24,7 @@ STAGES = ['direction', 'foundations', 'components', 'preview']
 LOCK = threading.RLock()
 TEMP_NAMESPACE = 'grilling-design-system'
 TEMP_MARKER = '.temporary-workspace'
+SNAPSHOT_MANIFEST = '.preview-snapshot.json'
 
 class DecisionError(ValueError):
     def __init__(self, code):
@@ -62,6 +66,166 @@ def contained(root, rel):
     if not path.is_relative_to(root.resolve()):
         raise ValueError('Path must remain inside the session')
     return path
+
+def local_reference(value):
+    """Return an asset path without query/fragment, or None for external/data links."""
+    value = value.strip()
+    parsed = urlparse(value)
+    if not value or value.startswith(('#', 'data:', 'blob:')) or parsed.scheme or parsed.netloc:
+        return None
+    return unquote(parsed.path)
+
+class AssetHTMLParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.references = []
+        self.module_scripts = []
+    def handle_starttag(self, tag, attrs):
+        values = dict(attrs)
+        if tag == 'script' and values.get('src'):
+            self.references.append(values['src'])
+            if values.get('type', '').lower() == 'module':
+                self.module_scripts.append(values['src'])
+        elif tag == 'link' and values.get('href') and values.get('rel', '').lower() in [
+                'stylesheet', 'modulepreload', 'preload', 'icon']:
+            self.references.append(values['href'])
+        elif tag in ['img', 'source', 'video', 'audio', 'iframe']:
+            if values.get('src'):
+                self.references.append(values['src'])
+            for item in values.get('srcset', '').split(','):
+                if item.strip():
+                    self.references.append(item.strip().split()[0])
+
+JS_REFERENCE_PATTERNS = [
+    re.compile(r'''(?:import|export)\s*(?:(?:[^\"'();]*?)\bfrom\s*)?[\"']([^\"']+)[\"']'''),
+    re.compile(r'''import\s*\(\s*[\"']([^\"']+)[\"']\s*\)'''),
+    re.compile(r'''new\s+URL\s*\(\s*[\"']([^\"']+)[\"']\s*,\s*import\.meta\.url'''),
+    re.compile(r'''[\"']((?:\.\.?/)[^\"']+\.(?:js|mjs|cjs|css|wasm|json|png|jpe?g|gif|webp|svg|woff2?|ttf|otf)(?:[?#][^\"']*)?)[\"']''', re.I),
+]
+CSS_REFERENCE_PATTERNS = [
+    re.compile(r'''@import\s+(?:url\(\s*)?[\"']?([^\"')\s;]+)'''),
+    re.compile(r'''url\(\s*[\"']?([^\"')]+)'''),
+]
+
+def file_hash(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def resolve_asset(root, source, reference):
+    rel = local_reference(reference)
+    if rel is None:
+        return None
+    if rel.startswith('/'):
+        raise ValueError(f'Build asset references must be relative: {reference}')
+    target = (source.parent / rel).resolve()
+    if not target.is_relative_to(root.resolve()):
+        raise ValueError(f'Build asset escapes the snapshot: {reference}')
+    if not target.is_file():
+        raise ValueError(f'Build asset missing: {target.relative_to(root)}')
+    return target
+
+def validate_asset_closure(root, entry='index.html'):
+    """Validate the local HTML/JS/CSS dependency closure and return its files."""
+    root = Path(root).resolve()
+    entry_path = (root / entry).resolve()
+    if not entry_path.is_relative_to(root) or not entry_path.is_file():
+        raise ValueError(f'Preview entry missing: {entry}')
+    pending = [entry_path]
+    visited = set()
+    module_entry = False
+    while pending:
+        source = pending.pop()
+        if source in visited:
+            continue
+        visited.add(source)
+        suffix = source.suffix.lower()
+        text = source.read_text(errors='replace') if suffix in ['.html', '.htm', '.js', '.mjs', '.cjs', '.css'] else ''
+        references = []
+        if suffix in ['.html', '.htm']:
+            parser = AssetHTMLParser()
+            parser.feed(text)
+            references = parser.references
+            if source == entry_path and parser.module_scripts:
+                module_entry = True
+        elif suffix in ['.js', '.mjs', '.cjs']:
+            references = [match.group(1) for pattern in JS_REFERENCE_PATTERNS for match in pattern.finditer(text)]
+        elif suffix == '.css':
+            references = [match.group(1) for pattern in CSS_REFERENCE_PATTERNS for match in pattern.finditer(text)]
+        for reference in references:
+            target = resolve_asset(root, source, reference)
+            if target is not None:
+                pending.append(target)
+    return {'files': sorted(path.relative_to(root).as_posix() for path in visited),
+            'moduleEntry': module_entry}
+
+def validate_snapshot(root, entry='index.html', require_manifest=False):
+    result = validate_asset_closure(root, entry)
+    manifest_path = Path(root) / SNAPSHOT_MANIFEST
+    if require_manifest and not manifest_path.is_file():
+        raise ValueError('Build previews must be created with studio.py snapshot')
+    if manifest_path.is_file():
+        manifest = read(manifest_path)
+        if manifest.get('entry') != entry or not isinstance(manifest.get('files'), dict):
+            raise ValueError('Preview snapshot manifest is invalid')
+        current = {path.relative_to(root).as_posix(): file_hash(path) for path in Path(root).rglob('*')
+                   if path.is_file() and path.name != SNAPSHOT_MANIFEST}
+        if current != manifest['files']:
+            raise ValueError('Preview snapshot changed after creation')
+    return result
+
+def snapshot(root, dist, name=None):
+    """Publish a verified build to a new immutable candidate directory atomically."""
+    root = Path(root).resolve()
+    temporary_project(root)
+    if not (root / 'session.json').is_file():
+        raise ValueError('Initialize the session before creating a snapshot')
+    dist = Path(dist).resolve()
+    if not dist.is_dir():
+        raise ValueError('Build dist directory is missing')
+    name = name or f"preview-{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}-{uuid.uuid4().hex[:8]}"
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]*', name):
+        raise ValueError('Snapshot name must be one path-safe directory name')
+    candidates = root / 'candidates'
+    candidates.mkdir(parents=True, exist_ok=True)
+    if candidates.resolve().is_relative_to(dist):
+        raise ValueError('Build dist cannot contain the session candidates directory')
+    target = candidates / name
+    lock = candidates / f'.{name}.snapshot.lock'
+    try:
+        descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        os.close(descriptor)
+    except FileExistsError as error:
+        raise ValueError(f'Snapshot name is already being published: {name}') from error
+    staging = candidates / f'.{name}.staging-{uuid.uuid4().hex}'
+    try:
+        if target.exists():
+            raise ValueError(f'Snapshot target already exists: candidates/{name}')
+        if any(path.is_symlink() for path in dist.rglob('*')):
+            raise ValueError('Build snapshots cannot contain symlinks')
+        shutil.copytree(dist, staging)
+        closure = validate_asset_closure(staging)
+        files = {path.relative_to(staging).as_posix(): file_hash(path) for path in staging.rglob('*') if path.is_file()}
+        write(staging / SNAPSHOT_MANIFEST, {'schemaVersion': 1, 'entry': 'index.html',
+                                            'closure': closure['files'], 'files': files})
+        if target.exists():
+            raise ValueError(f'Snapshot target already exists: candidates/{name}')
+        staging.rename(target)
+    finally:
+        if staging.exists():
+            shutil.rmtree(staging)
+        lock.unlink(missing_ok=True)
+    return {'preview': f'candidates/{name}/index.html', 'directory': str(target),
+            'files': len(files), 'closure': closure['files']}
+
+def validate_local_preview(root, preview):
+    path = contained(root, preview)
+    if not path.is_file():
+        raise ValueError(f'Preview missing: {preview}')
+    if path.suffix.lower() not in ['.html', '.htm']:
+        return
+    parser = AssetHTMLParser()
+    parser.feed(path.read_text(errors='replace'))
+    if parser.module_scripts:
+        validate_snapshot(path.parent, path.name, require_manifest=True)
 
 def validate_visual_review(root, option, token_hash):
     """Require auditable visual inspection; this does not grade aesthetics."""
@@ -166,8 +330,8 @@ def publish(root, spec):
         if preview.startswith('http'):
             if urlparse(preview).hostname not in ['localhost', '127.0.0.1']:
                 raise ValueError('Preview URLs must be local')
-        elif not contained(root, preview).is_file():
-            raise ValueError(f'Preview missing: {preview}')
+        else:
+            validate_local_preview(root, preview)
         if stage in ['direction', 'foundations'] and not isinstance(option.get('tokens'), dict):
             raise ValueError('Direction/foundation options need a complete token object')
         if stage in ['components', 'preview']:
@@ -370,7 +534,7 @@ def serve(root, port):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest='cmd', required=True)
-    for command in ['init', 'publish', 'status', 'serve', 'wait', 'reopen', 'decide', 'finish']:
+    for command in ['init', 'snapshot', 'publish', 'status', 'serve', 'wait', 'reopen', 'decide', 'finish']:
         s = sub.add_parser(command)
         s.add_argument('--session', required=True, type=Path)
         if command == 'init':
@@ -380,6 +544,9 @@ def main():
             s.add_argument('--language', required=True, help='User language, e.g. zh-CN or en')
             s.add_argument('--ui-copy', type=Path, help='Translated studio text for other languages')
         if command == 'publish': s.add_argument('--spec', required=True, type=Path)
+        if command == 'snapshot':
+            s.add_argument('--dist', required=True, type=Path, help='Completed build output directory')
+            s.add_argument('--name', help='Optional new immutable candidate directory name; omitted generates one')
         if command == 'serve': s.add_argument('--port', type=int, default=4310)
         if command == 'wait': s.add_argument('--timeout', type=int, default=45)
         if command == 'reopen': s.add_argument('--feedback', required=True)
@@ -391,6 +558,9 @@ def main():
     root = args.session.resolve()
     try:
         if args.cmd == 'init': init(root, args.image, args.name, args.simulation, args.language, read(args.ui_copy) if args.ui_copy else None)
+        elif args.cmd == 'snapshot':
+            print(json.dumps(snapshot(root, args.dist, args.name), ensure_ascii=False, indent=2))
+            return
         elif args.cmd == 'publish': publish(root, read(args.spec))
         elif args.cmd == 'serve': return serve(root, args.port)
         elif args.cmd == 'reopen': reopen(root, args.feedback)

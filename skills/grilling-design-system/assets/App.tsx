@@ -3,6 +3,7 @@ import type { MouseEvent } from 'react'
 import { Github, Menu, Search, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { componentEntries, ComponentPreview } from './FullGallery'
+import IntegratedPreview from './IntegratedPreview'
 import tokens from '../tokens.json'
 import { text } from './review-copy'
 import './gallery.css'
@@ -82,6 +83,10 @@ function Overview({ navigate }: { navigate: (event: MouseEvent<HTMLAnchorElement
       <h1>{text['Components']}</h1>
       <p>{text['Browse every component in this design system. Select one to inspect its visual treatment and interaction states.']}</p>
     </div>
+    <section className="integrated-showcase" data-slot="integrated-preview" aria-labelledby="integrated-preview-heading">
+      <div className="section-heading"><h2 id="integrated-preview-heading">{text['Integrated preview']}</h2><span>{text['Key Visual']}</span></div>
+      <div className="integrated-showcase-canvas"><IntegratedPreview /></div>
+    </section>
     <section className="component-directory" aria-labelledby="all-components">
       <div className="section-heading"><h2 id="all-components">{text['All components']}</h2><span>{componentEntries.length}</span></div>
       <div className="component-index">{componentEntries.map(item => <a href={`?component=${item.name}`} onClick={event => navigate(event, item.name)} key={item.name}><span>{item.title}</span><small>{item.category}</small></a>)}</div>

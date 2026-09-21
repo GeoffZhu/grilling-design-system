@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import time
 from urllib.request import urlopen, Request, getproxies
+from urllib.parse import parse_qs, urlsplit
 
 from studio import read, write, digest, save
 from theme import validate, css, contrast, visual_contract, component_css, audit_visual_css
@@ -61,6 +62,9 @@ GLOBAL_COMPONENT_HOSTS = {
     },
 }
 MAX_VISUAL_EXAMPLES = 8
+INTEGRATED_PREVIEW_MARKER = 'GRILLING_INTEGRATED_PREVIEW_PLACEHOLDER'
+DOCS_ONLY_PATHS = {'src/IntegratedPreview.tsx'}
+DOCS_ONLY_COMPONENT_NAMES = {'integrated-preview'}
 VISUAL_VARIANTS = {
     'button':['default','secondary','destructive','outline','ghost','link','with-icon','loading'],
     'badge':['default','secondary','destructive','outline'],
@@ -76,6 +80,14 @@ VISUAL_VARIANTS = {
     'dialog':['close-button'],
     'select':['scrollable'],
 }
+PLACEHOLDER_IMAGE_HOSTS = {
+    'dummyimage.com', 'fakeimg.pl', 'loremflickr.com', 'placebear.com',
+    'placekitten.com', 'picsum.photos', 'pravatar.cc',
+    'placehold.co', 'placehold.it', 'placehold.jp', 'placeholder.com',
+    'via.placeholder.com',
+}
+DEMO_PHOTO_HOSTS = {'images.unsplash.com', 'source.unsplash.com'}
+REMOTE_URL = re.compile(r'https?://[^\s\"\'`<>}]+')
 
 def component_title(name):
     special={'kbd':'KBD','input-otp':'Input OTP'}
@@ -131,6 +143,8 @@ def load_custom_components(output):
         if not isinstance(name,str) or not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*',name):
             raise ValueError('Custom component name must use kebab-case: '+str(name))
         if name in seen: raise ValueError('Duplicate custom component '+name)
+        if name in DOCS_ONLY_COMPONENT_NAMES:
+            raise ValueError(name+' is reserved for the docs-only gallery composition and cannot be a custom component')
         if 'category' in entry: raise ValueError('Custom components use the fixed Custom components category: '+name)
         seen.add(name)
         if not isinstance(entry['files'],list) or not entry['files']:
@@ -217,13 +231,116 @@ def filename(source):
     if rel.startswith(('hooks/','lib/')): return 'src/'+rel
     raise ValueError('Unsupported upstream file '+source)
 
-def transform(content):
+def _image_dimensions(url, tag=''):
+    """Resolve placeholder pixels from JSX/HTML intent, then from the source URL."""
+    def attribute(name):
+        match=re.search(r'\b'+name+r'\s*=\s*(?:[\"\'](\d+)[\"\']|\{\s*(\d+)\s*\}|(\d+))',tag)
+        return int(next(value for value in match.groups() if value)) if match else None
+    width,height=attribute('width'),attribute('height')
+    parsed=urlsplit(url)
+    query=parse_qs(parsed.query)
+    def query_number(*names):
+        for name in names:
+            value=query.get(name,[None])[0]
+            if value and str(value).isdigit() and int(value)>0: return int(value)
+        return None
+    source_width,source_height=query_number('w','width'),query_number('h','height')
+    size=re.search(r'(?<!\d)(\d{1,5})x(\d{1,5})(?!\d)',parsed.path,re.I)
+    if size: source_width,source_height=map(int,size.groups())
+    if parsed.hostname and parsed.hostname.lower().removeprefix('www.') in {
+        'loremflickr.com','placebear.com','placekitten.com','picsum.photos',
+    }:
+        size=re.search(r'/(?:id/\d+/)?(\d{1,5})/(\d{1,5})(?:/|$)',parsed.path)
+        if size: source_width,source_height=map(int,size.groups())
+    width=width or source_width
+    height=height or source_height
+    ratio=None
+    if tag.lstrip().startswith('<AvatarImage') or re.search(r'\baspect-square\b',tag): ratio=1
+    elif re.search(r'\baspect-video\b',tag): ratio=16/9
+    else:
+        match=re.search(r'\baspect-\[(\d+(?:\.\d+)?)/(\d+(?:\.\d+)?)\]',tag)
+        if match and float(match.group(2)): ratio=float(match.group(1))/float(match.group(2))
+    if ratio and not width and not height:
+        width,height=600,round(600/ratio)
+    elif width and not height: height=round(width/(ratio or 1.5))
+    elif height and not width: width=round(height*(ratio or 1.5))
+    return max(1,width or 600),max(1,height or 400)
+
+def _placeholder_kind(url, include_demo_photos=True):
+    try: host=(urlsplit(url).hostname or '').lower().removeprefix('www.')
+    except ValueError: return None
+    if host=='dummyimage.com': return 'dummyimage'
+    if host in PLACEHOLDER_IMAGE_HOSTS: return 'placeholder'
+    if include_demo_photos and host in DEMO_PHOTO_HOSTS: return 'demo-photo'
+    return None
+
+def normalize_placeholder_images(content, include_demo_photos=True, include_remote_images=False):
+    """Use deterministic dummyimage.com URLs for generated examples only.
+
+    include_remote_images is reserved for downloaded/generated examples and blocks, where
+    every remote image is sample content. User-authored sources keep unknown remote URLs.
+    """
+    def normalize(url, tag='', allow_remote=False):
+        if not _placeholder_kind(url,include_demo_photos) and not allow_remote: return url
+        width,height=_image_dimensions(url,tag)
+        return f'https://dummyimage.com/{width}x{height}/000/fff'
+    def replace_tag(match):
+        tag=match.group(0)
+        return REMOTE_URL.sub(lambda url_match:normalize(url_match.group(0),tag,include_remote_images),tag)
+    # Read element geometry before the general string pass. This covers both HTML img
+    # and JSX/Next Image, including multiline props and fill layouts.
+    content=re.sub(r'<(?:img|Image|AvatarImage)\b[^>]*>',replace_tag,content,flags=re.S)
+    return REMOTE_URL.sub(lambda match:normalize(match.group(0)),content)
+
+def remote_example_image_urls(content):
+    """Return non-dummy remote src values used by generated image elements."""
+    result=set()
+    for tag in re.findall(r'<(?:img|Image|AvatarImage)\b[^>]*>',content,flags=re.S):
+        for match in REMOTE_URL.finditer(tag):
+            if _placeholder_kind(match.group(0))!='dummyimage': result.add(match.group(0))
+    return sorted(result)
+
+def nonstandard_placeholder_urls(content, include_demo_photos=True):
+    """Return placeholder/random-photo sources that escaped normalization."""
+    return sorted({match.group(0) for match in REMOTE_URL.finditer(content)
+                   if _placeholder_kind(match.group(0),include_demo_photos) not in [None,'dummyimage']})
+
+def normalize_generated_sources(output):
+    """Normalize generated source files and reject escaped placeholder services."""
+    root=output/'src'
+    if not root.exists(): return
+    for path in root.rglob('*'):
+        if not path.is_file() or path.suffix not in ['.tsx','.jsx','.ts','.js','.html']: continue
+        # Every downloaded example image is generated sample content. Custom/application
+        # sources may be user-provided or licensed, so unknown remote assets stay intact.
+        generated_example=path.is_relative_to(root/'examples') or path.is_relative_to(root/'blocks')
+        content=normalize_placeholder_images(path.read_text(),include_demo_photos=generated_example,
+                                             include_remote_images=generated_example)
+        escaped=nonstandard_placeholder_urls(content,include_demo_photos=generated_example)
+        escaped_images=remote_example_image_urls(content) if generated_example else []
+        if escaped: raise ValueError('Nonstandard placeholder images remain in '+str(path)+': '+', '.join(escaped))
+        if escaped_images: raise ValueError('Remote example images remain in '+str(path)+': '+', '.join(escaped_images))
+        path.write_text(content)
+
+def transform(content, generated_example=False):
     content=(content.replace('@/registry/bases/base/ui/', '@/components/ui/')
             .replace('@/registry/bases/base/', '@/')
             .replace('from "next-themes"','from "@/lib/theme-mode"')
             .replace('from "next/image"','from "@/lib/next-image"')
             .replace('from "next/link"','from "@/lib/next-link"')
             .replace('from "@tabler/icons-react"','from "@/lib/tabler-icons"'))
+    # Remove the known unused namespace import left by the upstream ScrollArea
+    # source so registry consumers with noUnusedLocals can build unchanged.
+    if 'function ScrollArea(' in content:
+        without_react_import=content.replace('import * as React from "react"\n','')
+        if 'React.' not in without_react_import:
+            content=without_react_import
+    # The Base UI Menu portal drops the popup outside its trigger ancestry. Give the
+    # positioner a stable hook so context-specific generated examples can mark the
+    # portaled surface without depending on a DOM ancestor that no longer exists.
+    if 'function DropdownMenuContent(' in content:
+        content=content.replace('<MenuPrimitive.Positioner\n        className="isolate z-50 outline-none"',
+                                '<MenuPrimitive.Positioner\n        data-slot="dropdown-menu-positioner"\n        className="cn-dropdown-menu-positioner isolate z-50 outline-none"')
     # Raw examples include docs-only conditional classes for official visual presets.
     # The generated system owns its visual layer, so none of those branches may survive.
     content=re.sub(r'(?<![A-Za-z0-9_-])style-(?:vega|nova|maia|lyra|mira|luma|sera|rhea):[^\s"\']+','',content)
@@ -250,6 +367,11 @@ def transform(content):
             directive=re.match(r'(["\']use client["\'];?\s*)',content)
             offset=directive.end() if directive else 0
             content=content[:offset]+'\nimport { '+', '.join(icons)+' } from "lucide-react"\n'+content[offset:]
+    content=normalize_placeholder_images(content,include_remote_images=generated_example)
+    escaped=nonstandard_placeholder_urls(content)
+    if escaped: raise ValueError('Nonstandard placeholder images remain: '+', '.join(escaped))
+    escaped_images=remote_example_image_urls(content) if generated_example else []
+    if escaped_images: raise ValueError('Remote example images remain: '+', '.join(escaped_images))
     return content
 
 def theme_example(name, content):
@@ -278,6 +400,38 @@ def theme_example(name, content):
     }
     for source, target in replacements.get(name, {}).items():
         content = content.replace(source, target)
+    if name == 'example':
+        # The gallery owns responsive columns through a container query. Viewport
+        # breakpoints cannot know how much width remains beside the documentation sidebar.
+        content = content.replace('min-h-screen', 'min-h-0').replace('md:grid-cols-2', '')
+    if name == 'sidebar-example':
+        # This popup is portaled, so its sidebar context cannot be recovered with an
+        # ancestor selector. Mark the authored sidebar account/version menu explicitly.
+        content = content.replace('<DropdownMenuContent>',
+                                  '<DropdownMenuContent className="cn-sidebar-dropdown-content">',1)
+    if name in ['progress', 'progress-example'] and 'function FileUploadList()' in content:
+        # Keep filename and time on the first row. The progress column follows another
+        # ItemContent, whose upstream selector sets flex-none, so explicitly make it a
+        # full-width second row instead of squeezing the filename in narrow gallery cards.
+        content = content.replace(
+            'className="inline-block truncate"',
+            'className="min-w-0 inline-block truncate"',
+        )
+        content = re.sub(
+            r'<ItemContent>\s*<Progress value=\{file\.progress\} className="w-32" />\s*</ItemContent>',
+            '<ItemContent className="order-last !flex-[0_0_100%] pl-8">\n'
+            '              <Progress value={file.progress} className="w-full" />\n'
+            '            </ItemContent>',
+            content,
+        ).replace(
+            'className="w-16 justify-end"',
+            'className="w-16 shrink-0 justify-end"',
+        )
+    if name in ['collapsible', 'collapsible-example']:
+        # Base UI exposes data-panel-open on Trigger. Remove the example's fixed accent
+        # hover so the generated semantic hover/open pair controls all text and icons.
+        content=content.replace(' hover:bg-accent hover:text-accent-foreground','')
+        content=content.replace('group-data-[state=open]:rotate-90','group-data-[panel-open]:rotate-90')
     return content
 
 def dependencies(items):
@@ -357,6 +511,25 @@ def scaffold(output, language, title, style):
     write(output/'tsconfig.json',{'compilerOptions':{'target':'ES2022','lib':['ES2022','DOM','DOM.Iterable'],'module':'ESNext','moduleResolution':'Bundler','jsx':'react-jsx','strict':True,'skipLibCheck':True,'allowSyntheticDefaultImports':True,'esModuleInterop':True,'resolveJsonModule':True,'noEmit':True,'baseUrl':'.','paths':{'@/*':['./src/*']}},'include':['src','vite.config.ts']})
     write(output/'components.json',{'$schema':'https://ui.shadcn.com/schema.json','style':style,'rsc':False,'tsx':True,'tailwind':{'config':'','css':'src/index.css','baseColor':'neutral','cssVariables':True,'prefix':''},'iconLibrary':'lucide','aliases':{'components':'@/components','utils':'@/lib/utils','ui':'@/components/ui','lib':'@/lib','hooks':'@/hooks'}})
 
+def prepare_integrated_preview(output, require_authored=False):
+    """Seed the overview Key Visual and reject a placeholder or hidden preview at delivery."""
+    preview=output/'src/IntegratedPreview.tsx'
+    if not preview.exists():
+        preview.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copy2(ASSETS/'IntegratedPreview.tsx',preview)
+    if not require_authored: return
+    preview_source=preview.read_text()
+    if INTEGRATED_PREVIEW_MARKER in preview_source:
+        raise ValueError('Replace src/IntegratedPreview.tsx with the confirmed Key Visual and remove its placeholder marker before delivery')
+    if not re.search(r'''from\s+["']@/components/''',preview_source):
+        raise ValueError('The confirmed Key Visual must import and render delivered components from @/components/')
+    app=output/'src/App.tsx'
+    source=app.read_text() if app.exists() else ''
+    preview_position=source.find('data-slot="integrated-preview"')
+    directory_position=source.find('className="component-directory"')
+    if preview_position < 0 or directory_position < 0 or preview_position > directory_position:
+        raise ValueError('The component overview must render data-slot="integrated-preview" before the component directory')
+
 def registry(output,items,t,package,custom_components):
     artifact_name=t['slug']
     theme_file='src/'+artifact_name+'.css'
@@ -367,7 +540,7 @@ def registry(output,items,t,package,custom_components):
     for path in sorted((output/'src').rglob('*')):
         if not path.is_file() or path.suffix not in ['.tsx','.ts','.css','.svg','.json']: continue
         rel=path.relative_to(output).as_posix()
-        if rel in preview_paths: continue
+        if rel in preview_paths or rel in DOCS_ONLY_PATHS: continue
         if not rel.startswith(('src/components/','src/hooks/','src/lib/','src/assets/')) and rel!='src/theme-overrides.css': continue
         kind='registry:file' if path.suffix not in ['.tsx','.ts'] else 'registry:ui' if '/ui/' in rel else 'registry:hook' if '/hooks/' in rel else 'registry:lib' if '/lib/' in rel else 'registry:component'
         files.append({'path':rel,'type':kind,'target':rel,'content':path.read_text()})
@@ -395,6 +568,17 @@ def registry(output,items,t,package,custom_components):
         catalog.append(custom_item)
     write(output/'public/r/all.json',item)
     write(output/'registry.json',{'$schema':'https://ui.shadcn.com/schema/registry.json','name':artifact_name,'homepage':'https://ui.shadcn.com','items':catalog})
+
+def component_catalog_entries(names, custom_components, labels):
+    """Return reusable components only; docs compositions never enter the catalog."""
+    reserved=DOCS_ONLY_COMPONENT_NAMES.intersection(names)|DOCS_ONLY_COMPONENT_NAMES.intersection(
+        entry['name'] for entry in custom_components)
+    if reserved:
+        raise ValueError('Docs-only component names cannot enter componentEntries: '+', '.join(sorted(reserved)))
+    entries=[{'name':name,'title':component_title(name),'category':labels[COMPONENT_CATEGORIES.get(name,'Utilities')],
+              'description':labels['Visual preview, variants and interaction states for this component.']} for name in names]
+    entries.extend({'name':entry['name'],'title':entry['title'],'category':labels['Custom components'],'description':entry['description']} for entry in custom_components)
+    return entries
 
 def build(args):
     context = resolve_project(Path.cwd(), args.output)
@@ -458,7 +642,8 @@ def build(args):
         for file in item.get('files',[]):
             if not file.get('content'): continue
             target=output/filename(file['path']); target.parent.mkdir(parents=True,exist_ok=True)
-            content=theme_example(item['name'],transform(file['content']))
+            generated_example=item['type'] in ['registry:example','registry:block']
+            content=theme_example(item['name'],transform(file['content'],generated_example=generated_example))
             if item['name'].startswith('chart-') and item['type'] in ['registry:example','registry:block']:
                 palette={}
                 def chart_color(match):
@@ -496,12 +681,16 @@ def build(args):
         raise ValueError('Generated visual layer is missing semantic hooks: '+', '.join(audit['missingHooks']))
     if audit['missingStates']:
         raise ValueError('Generated visual layer is missing visible Base UI states: '+', '.join(audit['missingStates']))
+    if audit['missingStructures']:
+        raise ValueError('Generated visual layer is missing critical component structure: '+', '.join(audit['missingStructures']))
     if audit['unclassifiedHooks']:
         raise ValueError('Classify new Base UI semantic hooks before generation: '+', '.join(audit['unclassifiedHooks']))
     (output/'src/index.css').write_text(stylesheet)
     (output/'src/main.tsx').write_text(main_source(t, names, (output/'src/theme-overrides.css').exists()))
     if not (output/'src/App.tsx').exists(): shutil.copy2(ASSETS/'App.tsx',output/'src/App.tsx')
     if not (output/'src/gallery.css').exists(): shutil.copy2(ASSETS/'gallery.css',output/'src/gallery.css')
+    prepare_integrated_preview(output,args.deliver)
+    normalize_generated_sources(output)
     demo_imports=['import { Suspense, lazy } from "react";', 'import type { ComponentType, LazyExoticComponent } from "react";', 'import { text } from "./review-copy";']
     preview_entries={name:[] for name in names}
     for i,name in enumerate(demos):
@@ -531,9 +720,7 @@ def build(args):
         else:
             demo_imports.append('const '+symbol+'=lazy(()=>import('+json.dumps(import_path)+').then(module=>({default:module.'+entry['export']+'})));')
         preview_entries[entry['name']]=['{title:"Preview",Preview:'+symbol+'}']
-    entries=[{'name':name,'title':component_title(name),'category':labels[COMPONENT_CATEGORIES.get(name,'Utilities')],
-              'description':labels['Visual preview, variants and interaction states for this component.']} for name in names]
-    entries.extend({'name':entry['name'],'title':entry['title'],'category':labels['Custom components'],'description':entry['description']} for entry in custom_components)
+    entries=component_catalog_entries(names,custom_components,labels)
     demo_imports.append('export const componentEntries = '+json.dumps(entries,ensure_ascii=False)+' as const;')
     preview_map=','.join(json.dumps(name)+':['+','.join(preview_entries[name])+']' for name in preview_entries if preview_entries[name])
     demo_imports.append('type PreviewEntry={title:string,Preview:ComponentType|LazyExoticComponent<ComponentType>};')
