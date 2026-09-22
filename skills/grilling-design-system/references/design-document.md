@@ -31,4 +31,4 @@ Before reporting delivery:
 node "$SKILL/scripts/design_document.js" --check "$DESIGN_DOC"
 ~~~
 
-This check catches missing/reordered sections, template placeholders, and empty value slots. It does not prove that design rules or paths match the implementation; inspect those separately. Deliver the component library and completed DESIGN.md together.
+This check catches missing/reordered sections, template placeholders, empty value slots, and nonexistent inline source paths in sections 9, 11 and 12. Write these paths as plain paths or code spans relative to DESIGN.md. It does not prove that design rules match the implementation; inspect semantic consistency separately. Deliver the component library and completed DESIGN.md together.

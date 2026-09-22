@@ -58,11 +58,26 @@ Optional craft group controls component-specific details without replacing shadc
 }
 ~~~
 
-Radius/padding/gap use px; line heights are unitless and tracking uses em. Omit craft to keep legacy token defaults. The theme applies controlHeight to default/large actions; compact sizes retain their shadcn dimensions and coarse-pointer targets remain at least 44 px. For more specific geometry, use component classes or theme-overrides.css instead of high-specificity global selectors.
+Radius/padding/gap use px; line heights are unitless and tracking uses em. Omitted craft values use documented script defaults: equal base/control/surface/overlay radii, label weight 500, body/heading line heights 1.5/1.15, heading tracking -0.035em, control padding 16px and icon gap 8px. Supply explicit craft values when deriving the design. The theme applies controlHeight to default/large actions; compact sizes retain their shadcn dimensions and coarse-pointer targets remain at least 44 px. For more specific geometry, use component classes or theme-overrides.css instead of high-specificity global selectors.
 
 Switch uses an independent transparent hit area (at least 44×44) around its visible track. Default track/thumb are 44×24 / 18px, small 36×20 / 14px, both with 3px end insets. Thumb travel derives from track width, thumb size and insets. Do not apply generic button minimum sizes or background clipping to Switch. A hit area may extend outside the visual box; leave room around it and verify actual input there.
 
 ## Boards
+
+Boards and standalone libraries use the same browser-native component CSS. Use the delivered `cn-*` class hooks in board HTML; arbitrary agent-authored markup does not acquire component behavior. The two modes differ only in Tailwind imports and aliases. Use the same custom overrides in both previews when present.
+
+Optional signature tokens configure each family: actions, inputs, selection, navigation, data-display, overlays, feedback. Every family accepts shadow (CSS value) and borderWidth (px, 0–16). Actions, selection and navigation also accept pressedOffset; feedback accepts accentWidth. Other family/property combinations are rejected. Example:
+
+~~~json
+"signature": {
+  "actions": {"shadow":"none","borderWidth":1,"pressedOffset":0},
+  "inputs": {"shadow":"none","borderWidth":1},
+  "overlays": {"shadow":"0 12px 32px #00000020","borderWidth":1},
+  "feedback": {"accentWidth":0}
+}
+~~~
+
+Missing family shadows default to none for controls/navigation and the main shadow token for data display/overlays/feedback; borders default to 1px, press offsets and accent stripes to 0. Family rules use these variables; no fixed hard shadow or press translation is injected. Geometry and family defaults are recorded in style-provenance.json and the DESIGN.md draft. Explicit token values still need their user/image/agent basis documented by the agent. Structural sizing, accessible state pairs and compound-control ownership remain shared implementation rules.
 
 ~~~sh
 node "$SKILL/scripts/board.js" --tokens tokens.json --content content.json --output "$PROJECT/session/candidates/r1-a.html"
@@ -119,9 +134,9 @@ Components/preview require visualReview: a JSON path relative to session/. Prefe
 }
 ~~~
 
-Expand observations to cover reference, typography, spacing, shape, icons, states, composition, and copy. The studio validates structure, paths, token hash, and known unresolved defects; it cannot grade aesthetics or prove screenshots were viewed.
+Expand observations to cover reference, typography, spacing, shape, icons, states, composition, and copy. Use actual PNG/JPEG/WebP captures at least 160×160. Studio checks image headers and dimensions, hashes the review, intent and screenshot bytes, and rechecks them before accepting a selection or approval. It cannot grade aesthetics, authenticate a capture, or prove screenshots were viewed.
 
-If no usable browser/image capture capability exists, use method: source-inspection, screenshots: [], and a nonempty limitations array describing the unavailable checks. Record source files and actual observations instead of inventing screenshots, focus tests, or visual approval. Missing verification belongs in limitations; known defects belong in unresolved and must be repaired. See verification.md.
+If no usable browser/image capture capability exists, use method: source-inspection, screenshots: [], and a nonempty limitations array describing the unavailable checks. Include sourceFiles for every inspected artifact: session-relative snapshot paths, or absolute source paths covered by option.buildId and record actual observations instead of inventing screenshots, focus tests, or visual approval. Missing verification belongs in limitations; known defects belong in unresolved and must be repaired. See verification.md.
 
 Preview is a session-relative path or localhost URL. For every session-hosted production build, create a fresh immutable snapshot and use the returned preview path:
 
@@ -131,7 +146,7 @@ node "$SKILL/scripts/studio.js" snapshot --session "$PROJECT/session" --dist "$L
 
 By default the command generates a unique directory name and returns its preview path. An optional `--name` must itself be new; the command refuses an existing or concurrent target. It copies into hidden staging beside candidates, validates `index.html` and the recursive local HTML/JS/CSS asset closure (including static and dynamic imports), writes a hash manifest, then atomically renames staging into `session/candidates/`. A failed validation leaves no published target. Never use `mkdir`/`cp` to publish a build and never replace files behind a published preview. `studio.js publish` revalidates the closure and manifest of local module-based HTML before changing session state. Plain board HTML remains valid without a snapshot manifest. For Web integration, a localhost host-preview URL remains valid; otherwise snapshot its supported static export while preserving the tested source revision.
 
-The integrated presentation requires checks for build, desktop, mobile, keyboard, and contrast. Record actual commands, observations, and evidence paths; use an explicit "Not run: capability unavailable" explanation for checks that could not run. These keys document evidence and limitations, not automatic passing grades.
+The integrated presentation requires a buildId from the verification command below, plus checks for build, desktop, mobile, keyboard, and contrast. Record actual commands, observations, and evidence paths; use an explicit "Not run: capability unavailable" explanation for checks that could not run. These keys document evidence and limitations, not automatic passing grades.
 
 ~~~sh
 node "$SKILL/scripts/studio.js" publish --session "$PROJECT/session" --spec round.json
@@ -144,6 +159,29 @@ wait polls while the round is awaiting-user (at most 55 seconds) and prints the 
 Record native single-select tool answers or plain chat responses with roundId, optionIds (zero or one ID), action, and actual feedback. The HTML has no decision inputs. Legacy optionId remains readable; multiple IDs are rejected without mutation. Actions: select for a preference choice, revise for changes, and approve for the sole integrated presentation. Chat submissions use studio.js decide against the running server and share its validation lock. See choices.md. Stale/duplicate submissions are rejected. Components/preview revisions return to foundations and invalidate downstream confirmations. Approval with unprocessed feedback is rejected. Writes are atomic and history survives restarts.
 
 ## Generator
+
+### Verified build receipts
+
+Before publishing the integrated presentation and again after final generation, write a build spec with the actual framework command and output paths, then execute it through Studio:
+
+~~~json
+{
+  "cwd": "/absolute/application/root",
+  "command": ["npm", "run", "build"],
+  "artifacts": ["dist"],
+  "inputs": []
+}
+~~~
+
+~~~sh
+node "$SKILL/scripts/studio.js" verify --session "$PROJECT/session" --spec "$PROJECT/build.json"
+~~~
+
+Use the host package manager and real artifact paths (for example .next in Next). Add external component directories and workspace dependency/config paths to inputs when outside cwd. The command runs without a shell, captures a log, rejects failures or source mutation during the build, and records source/artifact/log hashes in the session. It returns buildId. Source fingerprinting excludes dependency/cache/output directories and DESIGN.md/DESIGN.draft.md/log/build-info files; include actual consumed code and assets. Arbitrary commands are host-selected: a successful receipt proves execution and file integrity, not that the command is a sufficient test.
+
+Add buildId at the top level of a presentation spec and delivery evidence. Live localhost component previews also need option.buildId. Their receipt binds source files; the host must verify that the running server uses that source revision, because HTTP content is not authenticated by this check. Create the immutable snapshot after verification. Studio hashes local preview assets and visual evidence at publish and rechecks them at select/approve. Changes require a revised round. finish requires a current build receipt covering delivered sources; it rejects changes to previously confirmed component/style files, stale standalone tokens/inventory, and registry contents that differ from local source. Generate the full standalone inventory with --full before the integrated presentation so --deliver does not change the confirmed theme CSS. A new build receipt does not approve changed design.
+
+Keep the final library/source snapshot and DESIGN.md in agreement by agent inspection. Structured checks and image headers cannot establish aesthetic quality, screenshot authenticity or natural-language meaning. Decision events and approval are explicitly marked host-reported: only submit actual host-tool/chat answers. The local API is not an identity-verification boundary.
 
 Resolve paths with project-output.md first. These generator details apply to standalone delivery. Draft uses --tokens and core shadcn sources plus a neutral starter. --full preflights the entire snapshot. --deliver reads approved foundations from --session, requires --build, and records session.generated; it never marks the session delivered. Upstream inputs are fetched before any file is written, and LIBRARY/.tmp/grilling-design-system/standalone-owner marks generator-owned output so an interrupted run can be retried in place. The marker is temporary and removed after delivery; later maintenance also recognizes the generated package and snapshot. If TLS verification fails behind an intercepting system proxy, retry with no_proxy="*". Use --output LIBRARY directly, without a library/ wrapper; App.tsx and custom files remain. Never run this scaffold in a host Web project. Both modes finish with studio.js finish and actual delivery evidence (see project-output.md); finish rejects an incomplete DESIGN.md.
 

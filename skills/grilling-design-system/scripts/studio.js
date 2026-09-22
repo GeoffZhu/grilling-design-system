@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { translated_copy } from './language.js';
 import { completion_errors } from './design_document.js';
+import { execute_build, validate_build, image_dimensions, sha256, fingerprint } from './verification.js';
 
 export const ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'assets');
 export const STAGES = ['direction', 'foundations', 'components', 'preview'];
@@ -292,6 +293,8 @@ export function validate_visual_review(root, option, token_hash) {
     if (typeof shot !== 'string' || !['.png', '.jpg', '.jpeg', '.webp'].includes(path.extname(shot).toLowerCase()) || !isFile(contained(root, shot))) {
       throw new Error('Visual review screenshot is missing or invalid');
     }
+    const dimensions = image_dimensions(contained(root, shot));
+    if (dimensions.width < 160 || dimensions.height < 160) throw new Error('Review screenshots must show a usable specimen of at least 160 by 160 pixels');
   }
   const observations = review.observations;
   if (!Array.isArray(observations) || !observations.length) throw new Error('Visual review needs concrete observations and repairs');
@@ -306,7 +309,60 @@ export function validate_visual_review(root, option, token_hash) {
     throw new Error('Visual review must inspect reference, typography, spacing, shape, icons, states, composition and copy');
   }
   if (!Array.isArray(review.unresolved) || review.unresolved.length !== 0) throw new Error('Resolve visual defects before publishing; direction changes return to foundations');
-  return digest(review);
+  const evidenceFiles = [reviewPath, intent, ...screenshots];
+  const sourceHashes = {};
+  if (method === 'source-inspection') {
+    if (!Array.isArray(review.sourceFiles) || !review.sourceFiles.length) throw new Error('Source inspection must name the inspected files');
+    const state = read(path.join(root, 'session.json'));
+    const receipt = option.buildId ? build_receipt(root, state, option.buildId) : null;
+    for (const file of review.sourceFiles) {
+      if (path.isAbsolute(file)) {
+        if (!receipt?.sourceFiles[file] || receipt.sourceFiles[file] !== sha256(file)) throw new Error('External inspected source must belong to the verified build inputs');
+        sourceHashes[file] = receipt.sourceFiles[file];
+      } else evidenceFiles.push(file);
+    }
+  }
+  return digest({ review, files: { ...sourceHashes, ...Object.fromEntries(evidenceFiles.map((file) => [file, sha256(contained(root, file))])) } });
+}
+
+export function verify(root, spec) {
+  root = path.resolve(root);
+  const state = read(path.join(root, 'session.json'));
+  if (state.status === 'awaiting-user') throw new Error('Resolve the pending round before running another build');
+  const receipt = execute_build(root, spec);
+  state.verifications ??= {};
+  state.verifications[receipt.id] = receipt;
+  save(root, state);
+  return { buildId: receipt.id, log: receipt.log, exitCode: receipt.exitCode };
+}
+
+function build_receipt(root, state, id) {
+  if (typeof id !== 'string' || !state.verifications?.[id]) throw new Error('Provide a buildId returned by studio.js verify');
+  return validate_build(root, state.verifications[id]);
+}
+
+function preview_fingerprint(root, option, receipt = null) {
+  if (option.preview.startsWith('http')) {
+    if (!receipt) throw new Error('A live preview requires a verified buildId');
+    return digest(receipt.sourceFiles);
+  }
+  const file = contained(root, option.preview);
+  const closure = validate_asset_closure(path.dirname(file), path.basename(file));
+  if (receipt) {
+    const artifacts = new Set(Object.values(receipt.artifactFiles));
+    if (closure.files.some((relative) => !artifacts.has(sha256(path.join(path.dirname(file), relative))))) {
+      throw new Error('Preview assets do not match the verified build outputs');
+    }
+  }
+  return digest(Object.fromEntries(closure.files.map((relative) => [relative, sha256(path.join(path.dirname(file), relative))])));
+}
+
+function check_published_evidence(root, state) {
+  for (const option of state.round.options) {
+    const receipt = option.buildId ? build_receipt(root, state, option.buildId) : null;
+    if (preview_fingerprint(root, option, receipt) !== option.previewHash) throw new Error('Published preview changed; create a new round');
+    if (option.visualReview && validate_visual_review(root, option, option.tokenHash) !== option.visualReviewHash) throw new Error('Published visual evidence changed; create a new round');
+  }
 }
 
 export function init(root, source, name, simulation = false, language = 'en', ui_copy = undefined) {
@@ -329,6 +385,7 @@ export function init(root, source, name, simulation = false, language = 'en', ui
 
 export function publish(root, spec) {
   root = path.resolve(String(root));
+  spec = clone(spec);
   const state = read(path.join(root, 'session.json'));
   if (state.status !== 'needs-agent') throw new Error('Read/resolve the current round before publishing another.');
   const stage = spec.stage;
@@ -350,6 +407,7 @@ export function publish(root, spec) {
     throw new Error('Foundation review must cover color, typography, spacing, shape, icons, motion');
   }
   for (const option of options) {
+    if (stage === 'preview') option.buildId = spec.buildId;
     if (!option.title || !option.description || !option.preview) throw new Error('Each option needs title, description and preview');
     const viewports = option.viewports;
     if (viewports !== undefined && viewports !== null) {
@@ -370,8 +428,11 @@ export function publish(root, spec) {
     if (['components', 'preview'].includes(stage)) {
       const expected = digest(state.accepted.foundations.tokens);
       if (option.tokenHash !== expected) throw new Error('Candidate tokenHash does not match accepted foundations');
-      validate_visual_review(root, option, expected);
+      option.visualReviewHash = validate_visual_review(root, option, expected);
     }
+    const receipt = option.buildId ? build_receipt(root, state, option.buildId) : null;
+    if (stage === 'preview' && !receipt) throw new Error('The integrated presentation requires a verified buildId');
+    option.previewHash = preview_fingerprint(root, option, receipt);
   }
   if (stage === 'preview') for (const key of ['build', 'desktop', 'mobile', 'keyboard', 'contrast']) {
     if (!spec.checks?.[key]) throw new Error(`Missing preview evidence: ${key}`);
@@ -420,9 +481,11 @@ export function decide(root, data) {
   if (stage === 'preview' && action === 'select') throw new DecisionError('previewAction');
   if (action === 'approve' && (feedback || combination)) throw new DecisionError('approveChanges');
   if (action === 'select' && (feedback || combination)) action = 'revise';
+  if (action !== 'revise') check_published_evidence(root, state);
+  if (!['chat', 'ask-user-question'].includes(data.source ?? 'chat')) throw new DecisionError('invalidSource');
   const event = { at: utcTimestamp(), roundId: current.id, stage, action,
     optionId: selected ? option_ids[0] : null, optionIds: option_ids, feedback, combination,
-    source: data.source ?? 'chat', simulation: state.simulation };
+    source: data.source ?? 'chat', simulation: state.simulation, provenance: 'host-reported' };
   state.history.push(event);
   if (action === 'revise') {
     state.status = 'needs-agent';
@@ -434,7 +497,7 @@ export function decide(root, data) {
     state.accepted[stage] = selected;
     state.status = 'approved';
     state.nextStage = 'delivery';
-    state.approval = { roundId: current.id, tokenHash: selected.tokenHash, at: event.at, simulation: state.simulation };
+    state.approval = { roundId: current.id, tokenHash: selected.tokenHash, previewHash: selected.previewHash, buildId: selected.buildId, at: event.at, simulation: state.simulation, provenance: 'host-reported' };
   } else {
     state.accepted[stage] = selected;
     state.nextStage = current.continueStage ? stage : STAGES[STAGES.indexOf(stage) + 1];
@@ -494,14 +557,35 @@ export function finish(root, evidence) {
   if (mode === 'standalone' && (!generated || path.resolve(generated.path) !== output || generated.tokenHash !== expected)) {
     throw new Error('Standalone delivery requires library.js --deliver for the approved tokens first');
   }
-  const errors = completion_errors(fs.readFileSync(evidence.designDoc, 'utf8'));
+  const errors = completion_errors(fs.readFileSync(evidence.designDoc, 'utf8'), path.dirname(evidence.designDoc));
   if (errors.length) throw new Error('Complete DESIGN.md before delivery: ' + errors.join('; '));
+  const receipt = build_receipt(root, state, evidence.buildId);
+  if (!Object.keys(receipt.sourceFiles).some((file) => file.startsWith(output + path.sep))) throw new Error('Verified build must include the delivered component source');
+  const approvedBuild = state.verifications?.[state.approval.buildId];
+  if (!approvedBuild) throw new Error('The approved presentation needs a verified build');
+  for (const [file, hash] of Object.entries(approvedBuild.sourceFiles)) {
+    if (file.startsWith(output + path.sep) && (file.includes('/src/') || file.includes('/components/') || /[.](?:[cm]?[jt]sx?|vue|svelte|html|css|scss|sass|less|svg|mdx?)$/.test(file))) {
+      if (receipt.sourceFiles[file] !== hash) throw new Error('Confirmed component or style changed; present the final implementation again: ' + file);
+    }
+  }
   if (!isObject(evidence.checks) || !evidence.checks.build) throw new Error('Record the actual host build result');
   if (!Number.isInteger(evidence.componentCount) || evidence.componentCount < 1 || !evidence.snapshotHash) {
     throw new Error('Record component coverage and the source snapshot hash');
   }
+  if (mode === 'standalone') {
+    const tokens = read(path.join(output, 'tokens.json'));
+    const snapshot = read(path.join(output, 'shadcn-snapshot.json'));
+    if (digest(tokens) !== expected || snapshot.deliverySha256 !== evidence.snapshotHash || generated.snapshotHash !== evidence.snapshotHash) throw new Error('Delivered tokens or source snapshot do not match generation');
+    if ((snapshot.ui?.length ?? 0) + (snapshot.custom?.length ?? 0) !== evidence.componentCount || generated.componentCount !== evidence.componentCount) throw new Error('Delivered component inventory does not match generation');
+    const registry = read(path.join(output, 'public/r/all.json'));
+    for (const file of registry.files ?? []) {
+      const local = contained(output, file.path);
+      if (!isFile(local) || fs.readFileSync(local, 'utf8') !== file.content) throw new Error('Registry differs from delivered source: ' + file.path);
+    }
+  }
   state.status = 'delivered';
-  state.delivery = { ...evidence, mode };
+  state.delivery = { ...evidence, mode, build: { command: receipt.command, exitCode: receipt.exitCode, at: receipt.at },
+    artifactHash: digest(fingerprint([output, design_doc])), verificationLimits: ['Visual quality and user response provenance are host-reported; build execution and file integrity are script-verified.'] };
   state.temporaryFilesRemoved = true;
   save(root, state);
   fs.rmSync(project, { recursive: true });
@@ -583,12 +667,13 @@ function usageError(message) {
   throw new Error(message);
 }
 
-const CLI_HELP = `usage: studio.js [-h] {init,snapshot,publish,status,serve,wait,reopen,decide,finish} ...
+const CLI_HELP = `usage: studio.js [-h] {init,verify,snapshot,publish,status,serve,wait,reopen,decide,finish} ...
 
 Local design review. Standard library only; no hosted service.
 
 commands:
   init       initialize a review session
+  verify     execute a build spec and record its file fingerprints
   snapshot   create an immutable build snapshot
   publish    publish a review round
   status     print the session state
@@ -602,7 +687,7 @@ options:
   -h, --help  show this help message and exit`;
 
 function parseCli(argv) {
-  const commands = new Set(['init', 'snapshot', 'publish', 'status', 'serve', 'wait', 'reopen', 'decide', 'finish']);
+  const commands = new Set(['init', 'verify', 'snapshot', 'publish', 'status', 'serve', 'wait', 'reopen', 'decide', 'finish']);
   const command = argv[0];
   if (argv.includes('--help') || argv.includes('-h')) return { help: true };
   if (!commands.has(command)) usageError('Choose a command: init, snapshot, publish, status, serve, wait, reopen, decide or finish');
@@ -616,7 +701,7 @@ function parseCli(argv) {
     values[key] = argv[++index];
   }
   if (!values.session) usageError('The following argument is required: --session');
-  const required = { init: ['image', 'name', 'language'], snapshot: ['dist'], publish: ['spec'], reopen: ['feedback'],
+  const required = { init: ['image', 'name', 'language'], verify: ['spec'], snapshot: ['dist'], publish: ['spec'], reopen: ['feedback'],
     finish: ['evidence'], decide: ['decision', 'url'] };
   for (const key of required[command] ?? []) if (!values[key]) usageError(`The following argument is required: --${key}`);
   return { command, values };
@@ -632,6 +717,7 @@ export async function main(argv = process.argv.slice(2)) {
   const { command, values } = parsed;
   const root = path.resolve(values.session);
   if (command === 'init') init(root, values.image, values.name, values.simulation ?? false, values.language, values['ui-copy'] ? read(values['ui-copy']) : undefined);
+  else if (command === 'verify') { console.log(pretty(verify(root, read(values.spec)))); return; }
   else if (command === 'snapshot') { console.log(pretty(snapshot(root, values.dist, values.name))); return; }
   else if (command === 'publish') publish(root, read(values.spec));
   else if (command === 'serve') { serve(root, values.port === undefined ? 4310 : Number(values.port)); return; }

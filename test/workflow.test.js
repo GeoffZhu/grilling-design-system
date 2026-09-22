@@ -4,8 +4,11 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, test } from 'node:test';
+import { deflateSync } from 'node:zlib';
 
 import { translated_copy } from '../skills/grilling-design-system/scripts/language.js';
+import { registry } from '../skills/grilling-design-system/scripts/library.js';
+import { COLOR_KEYS } from '../skills/grilling-design-system/scripts/theme.js';
 import {
   decide,
   digest,
@@ -16,11 +19,35 @@ import {
   reopen,
   snapshot,
   validate_visual_review,
+  verify,
   write,
 } from '../skills/grilling-design-system/scripts/studio.js';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const designTemplate = path.join(repositoryRoot, 'skills/grilling-design-system/assets/DESIGN.template.md');
+
+function tokenFixture() {
+  return { name: 'Workflow', slug: 'workflow', mode: 'light', colors: Object.fromEntries(COLOR_KEYS.map((key) => [key, key.endsWith('foreground') ? '#111111' : '#EEEEEE'])),
+    radius: 10, font: { family: 'sans-serif', heading: 'sans-serif', bodySize: 16, headingWeight: 700 },
+    spacing: { unit: 4, controlHeight: 44 }, icons: { family: 'Lucide', size: 20, stroke: 2 }, motion: { duration: 160, easing: 'ease-out' }, shadow: 'none' };
+}
+
+function screenshotFixture() {
+  function chunk(type, data) {
+    const name = Buffer.from(type);
+    const bytes = Buffer.concat([name, data]);
+    let crc = 0xffffffff;
+    for (const byte of bytes) {
+      crc ^= byte;
+      for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
+    }
+    const size = Buffer.alloc(4); size.writeUInt32BE(data.length);
+    const checksum = Buffer.alloc(4); checksum.writeUInt32BE((crc ^ 0xffffffff) >>> 0);
+    return Buffer.concat([size, bytes, checksum]);
+  }
+  const header = Buffer.alloc(13); header.writeUInt32BE(160, 0); header.writeUInt32BE(160, 4); header[8] = 8; header[9] = 2;
+  return Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]), chunk('IHDR', header), chunk('IDAT', deflateSync(Buffer.alloc(160 * 481))), chunk('IEND', Buffer.alloc(0))]);
+}
 
 function completedDesignDocument() {
   return readFileSync(designTemplate, 'utf8')
@@ -43,7 +70,7 @@ describe('workflow', () => {
     init(root, image, 'Workflow test', true);
     writeFileSync(path.join(root, 'preview.html'), '<h1>Fixture</h1>');
     writeFileSync(path.join(root, 'intent.md'), 'Fixture design intent');
-    writeFileSync(path.join(root, 'screenshot.png'), Buffer.from('test screenshot fixture'));
+    writeFileSync(path.join(root, 'screenshot.png'), screenshotFixture());
   });
 
   afterEach(() => rmSync(temporaryDirectory, { recursive: true, force: true }));
@@ -63,7 +90,7 @@ describe('workflow', () => {
   function publishStage(stage, reviewType = stage === 'preview' ? 'presentation' : 'choice') {
     const option = { id: 'a', title: 'A', description: 'Test option', preview: 'preview.html' };
     if (['direction', 'foundations'].includes(stage)) {
-      option.tokens = { revision: 1 };
+      option.tokens = tokenFixture();
     } else {
       option.tokenHash = digest(read(path.join(root, 'session.json')).accepted.foundations.tokens);
       option.visualReview = 'visual-review.json';
@@ -91,6 +118,7 @@ describe('workflow', () => {
     if (reviewType === 'derived') spec.derivation = 'Derived from the reference and existing choices';
     if (stage === 'foundations') spec.covers = ['color', 'typography', 'spacing', 'shape', 'icons', 'motion'];
     if (stage === 'preview') {
+      if (reviewType === 'presentation') spec.buildId = verifyFixture().buildId;
       spec.checks = Object.fromEntries(['build', 'desktop', 'mobile', 'keyboard', 'contrast'].map((key) => [key, 'fixture evidence']));
     }
     return publish(root, spec);
@@ -99,6 +127,11 @@ describe('workflow', () => {
   function choose(action = 'select', extra = {}) {
     const state = read(path.join(root, 'session.json'));
     return decide(root, { roundId: state.round.id, optionId: 'a', action, ...extra });
+  }
+
+  function verifyFixture(cwd = temporaryDirectory) {
+    writeFileSync(path.join(cwd, 'build.cjs'), 'require("node:fs").mkdirSync("dist",{recursive:true});require("node:fs").writeFileSync("dist/index.html","<h1>Fixture</h1>")');
+    return verify(root, { cwd, command: [process.execPath, 'build.cjs'], artifacts: ['dist'] });
   }
 
   function advance() {
@@ -349,6 +382,7 @@ describe('workflow', () => {
     write(reviewPath, review);
     assert.throws(() => validate_visual_review(root, spec, spec.tokenHash));
     review.limitations = ['No browser capture available; layout and keyboard behavior remain unverified'];
+    review.sourceFiles = ['preview.html'];
     write(reviewPath, review);
     assert.ok(validate_visual_review(root, spec, spec.tokenHash));
     review.unresolved = ['Known overflow defect'];
@@ -363,6 +397,7 @@ describe('workflow', () => {
     const module = path.join(host, 'src/design-system');
     mkdirSync(module, { recursive: true });
     const documentPath = path.join(host, 'DESIGN.md');
+    writeFileSync(path.join(module, 'button.js'), 'export const button = true');
     writeFileSync(documentPath, completedDesignDocument());
     write(path.join(root, '..', 'project-context.json'), {
       mode: 'integrated', webRoot: host, output: module, designDoc: documentPath,
@@ -376,8 +411,10 @@ describe('workflow', () => {
       snapshotHash: 'fixture',
       checks: { build: 'Fixture host build result' },
     };
+    evidence.buildId = verifyFixture(host).buildId;
+    const verifiedState = read(path.join(root, 'session.json'));
     assert.throws(() => finish(root, { ...evidence, designDoc: path.join(module, 'DESIGN.md') }));
-    assert.deepEqual(read(path.join(root, 'session.json')), state);
+    assert.deepEqual(read(path.join(root, 'session.json')), verifiedState);
     const result = finish(root, evidence);
     assert.equal(result.status, 'delivered');
     assert.equal(result.delivery.mode, 'integrated');
@@ -436,6 +473,21 @@ describe('workflow', () => {
     assert.throws(() => finish(root, evidence), /Complete DESIGN\.md/);
     assert.equal(read(sessionPath).status, 'approved');
     writeFileSync(documentPath, completedDesignDocument());
+    write(path.join(library, 'tokens.json'), state.accepted.foundations.tokens);
+    write(path.join(library, 'shadcn-snapshot.json'), { ui: Array.from({ length: 61 }, (_, index) => 'component-' + index), custom: [], deliverySha256: 'fixture' });
+    mkdirSync(path.join(library, 'src/components/ui'), { recursive: true });
+    writeFileSync(path.join(library, 'src/components/ui/button.tsx'), 'export const Button = () => null');
+    writeFileSync(path.join(library, 'SHADCN-LICENSE.txt'), readFileSync(path.join(repositoryRoot, 'skills/grilling-design-system/assets/SHADCN-LICENSE.txt')));
+    registry(library, {}, state.accepted.foundations.tokens, { dependencies: {} }, []);
+    const registryPath = path.join(library, 'public/r/all.json');
+    const originalRegistry = read(registryPath);
+    const brokenRegistry = structuredClone(originalRegistry);
+    brokenRegistry.files.find((file) => file.path.endsWith('workflow.css')).content += '/* drift */';
+    write(registryPath, brokenRegistry);
+    evidence.buildId = verifyFixture(library).buildId;
+    assert.throws(() => finish(root, evidence), /Registry differs/);
+    write(registryPath, originalRegistry);
+    evidence.buildId = verifyFixture(library).buildId;
     const result = finish(root, evidence);
     assert.equal(result.status, 'delivered');
     assert.equal(result.delivery.mode, 'standalone');
@@ -443,6 +495,73 @@ describe('workflow', () => {
     assert.equal(existsSync(project), false);
     assert.equal(existsSync(library), true);
     assert.equal(existsSync(documentPath), true);
+  });
+
+  test('verification executes builds and refuses failure or stale inputs', () => {
+    const receipt = verifyFixture();
+    assert.equal(receipt.exitCode, 0);
+    assert.ok(read(path.join(root, 'session.json')).verifications[receipt.buildId]);
+    const before = read(path.join(root, 'session.json'));
+    assert.throws(() => verify(root, { cwd: temporaryDirectory, command: [process.execPath, '-e', 'process.exit(2)'], artifacts: ['dist'] }), /Build failed/);
+    assert.deepEqual(read(path.join(root, 'session.json')), before);
+    for (const stage of ['direction', 'foundations', 'components']) publishStage(stage, 'derived');
+    const state = publishStage('preview');
+    writeFileSync(path.join(temporaryDirectory, 'build.cjs'), 'changed');
+    assert.throws(() => choose('approve'), /source inputs changed/);
+    assert.equal(read(path.join(root, 'session.json')).status, state.status);
+  });
+
+  test('approval rejects replaced screenshots and previews but permits revision', () => {
+    advance();
+    writeFileSync(path.join(root, 'screenshot.png'), 'not an image');
+    assert.throws(() => choose('approve'), /Screenshot/);
+    assert.equal(choose('revise', { feedback: 'Refresh evidence' }).status, 'needs-agent');
+  });
+
+  test('choice cannot accept changed HTML after publishing', () => {
+    publishStage('direction');
+    writeFileSync(path.join(root, 'preview.html'), '<h1>Changed</h1>');
+    assert.throws(() => choose(), /preview changed/);
+    assert.equal(read(path.join(root, 'session.json')).status, 'awaiting-user');
+  });
+
+  test('verification includes Markdown pages and detects changed build output', () => {
+    writeFileSync(path.join(temporaryDirectory, 'page.md'), '# Page');
+    for (const stage of ['direction', 'foundations', 'components']) publishStage(stage, 'derived');
+    const state = publishStage('preview');
+    assert.ok(state.verifications[state.round.buildId].sourceFiles[path.join(temporaryDirectory, 'page.md')]);
+    writeFileSync(path.join(temporaryDirectory, 'dist/index.html'), 'Changed output');
+    assert.throws(() => choose('approve'), /artifacts changed/);
+  });
+
+  test('presentation refuses unrelated preview and a claimed build', () => {
+    for (const stage of ['direction', 'foundations', 'components']) publishStage(stage, 'derived');
+    const state = publishStage('preview');
+    choose('revise', { feedback: 'Review again' });
+    for (const stage of ['foundations', 'components']) publishStage(stage, 'derived');
+    const spec = structuredClone(state.round);
+    spec.buildId = 'claimed-success';
+    assert.throws(() => publish(root, spec), /buildId/);
+    spec.buildId = verifyFixture().buildId;
+    writeFileSync(path.join(root, 'other.html'), '<h1>Unrelated</h1>');
+    spec.options[0].preview = 'other.html';
+    assert.throws(() => publish(root, spec), /do not match/);
+  });
+
+  test('source inspection can bind real external source to verified build', () => {
+    const result = verifyFixture();
+    publishStage('direction', 'derived');
+    publishStage('foundations', 'derived');
+    publishStage('components', 'derived');
+    const option = read(path.join(root, 'session.json')).round.options[0];
+    option.buildId = result.buildId;
+    const review = read(path.join(root, option.visualReview));
+    Object.assign(review, { method: 'source-inspection', screenshots: [], limitations: ['Browser unavailable'], sourceFiles: [path.join(temporaryDirectory, 'build.cjs')] });
+    write(path.join(root, option.visualReview), review);
+    assert.ok(validate_visual_review(root, option, option.tokenHash));
+    review.sourceFiles = [path.join(temporaryDirectory, 'unverified.js')];
+    write(path.join(root, option.visualReview), review);
+    assert.throws(() => validate_visual_review(root, option, option.tokenHash), /verified build inputs/);
   });
 });
 

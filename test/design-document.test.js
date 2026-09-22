@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
@@ -13,6 +13,19 @@ const templatePath = typeof TEMPLATE === 'string' && !TEMPLATE.startsWith('file:
   ? TEMPLATE
   : fileURLToPath(TEMPLATE)
 const templateSource = () => readFileSync(templatePath, 'utf8')
+
+test('completion check verifies documented component paths', () => {
+  const text = templateSource().replace('UI components:' + String.fromCharCode(10) + '[path]', 'UI components: src/absent')
+  assert.ok(completion_errors(text, '/tmp').some(error => error.includes('src/absent')))
+})
+
+test('path checks accept existing multiple paths and explanatory notes', () => {
+  const root = dirname(templatePath)
+  const name = basename(templatePath)
+  const text = templateSource().replace('UI components:' + String.fromCharCode(10) + '[path]', 'UI components: ' + name + ' and ' + name)
+    .replace('Shared components:' + String.fromCharCode(10) + '[path]', 'Shared components: ' + name + '（示例说明）')
+  assert.ok(!completion_errors(text, root).some(error => error.startsWith('Documented path')))
+})
 
 describe('design document', () => {
   let output

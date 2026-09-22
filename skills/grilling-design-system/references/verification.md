@@ -8,7 +8,7 @@ Keep known defects separate from unavailable verification. Fix defects before sh
 
 ## Per preview
 
-1. Build target-framework source with host commands in Web projects and standalone commands otherwise. For a session-hosted build, run `studio.js snapshot` into a new candidate name and publish only its returned path; do not manually copy or overwrite a preview directory. Inspect focused HTML specimens for earlier decisions.
+1. Run the target-framework build through studio.js verify using the host command in Web projects and standalone command otherwise; provide explicit output paths and retain buildId. See protocol.md. For a session-hosted build, run `studio.js snapshot` into a new candidate name and publish only its returned path; do not manually copy or overwrite a preview directory. Inspect focused HTML specimens for earlier decisions.
 2. Serve locally. When browser capabilities exist, inspect the specimen at its declared viewport and the integrated page at 1440 by 900, 390 by 844, and 360 by 800.
 3. Check Mobile overflow, readable text, and touch targets. When device emulation exists, verify coarse-pointer behavior, Switch on/off and default/small sizes, thumb insets, and the independent hit area.
    Confirm Base UI Switch root state attributes drive both the painted track and descendant thumb; checked and unchecked must differ visibly without relying on a thumb `data-state` attribute.
@@ -38,7 +38,7 @@ Cover a planned visual choice, the real available single-select tool when a huma
 - Fetch all registry:ui items from one recorded snapshot; use its manifest rather than a permanently hardcoded count.
 - Verify the requested output directory takes priority. In Web projects put the module there or under the actual source root/design-system, and DESIGN.md at the application root. Outside Web projects put the complete app and DESIGN.md at the selected app root.
 - Include components, gallery, tokens, native styles, snapshot, licenses, and DESIGN_DOC. Web integration reuses the host manifest/lockfile and includes a compatible registry where supported. Standalone delivery includes its own manifest/lockfile and registry. Both components and DESIGN_DOC are mandatory.
-- Build the library. Where browser access exists, inspect lazy gallery rendering, runtime errors, and visual consistency across forms, navigation, overlays, charts, and feedback components.
+- Run the final build through studio.js verify and include buildId in delivery evidence. Build, source or artifact changes invalidate the receipt. Where browser access exists, inspect lazy gallery rendering, runtime errors, and visual consistency across forms, navigation, overlays, charts, and feedback components.
 - In Web projects verify host build/typecheck/lint, imports, framework boundaries, formatting, aliases, and dependencies. Test any registry in a consumer matching that stack. For standalone delivery, serve LIBRARY/public and install r/all.json into a clean React + Tailwind 4 consumer, then build and check theme imports.
 - Verify registry includes source imports, dependency versions, theme files, and required assets/fonts.
 - Search generated application, gallery, example, and registry sources for non-dummy placeholder services and random-photo URLs. Every remote `img`, `Image`, and Avatar image source in downloaded/generated examples and blocks must use `dummyimage.com`; preserve verified user-authored references, imported assets, and licensed assets outside generated example source.

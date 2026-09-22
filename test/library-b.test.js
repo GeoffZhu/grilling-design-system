@@ -236,14 +236,14 @@ test('theme signature matrix covers representative families', () => {
   assert.ok(signatures.includes('background-color:var(--accent)'))
   assert.ok(signatures.includes('color:var(--accent-foreground)'))
   assert.ok(!signatures.includes('background-color:var(--sidebar-accent)'))
-  assert.ok(signatures.includes('border-inline-start:6px solid var(--secondary)'))
-  assert.ok(signatures.includes('border-inline-start:6px solid var(--accent)'))
+  assert.ok(signatures.includes('border-inline-start:var(--feedback-accent-width) solid var(--secondary)'))
+  assert.ok(signatures.includes('border-inline-start:var(--feedback-accent-width) solid var(--accent)'))
 })
 
 test('table container owns horizontal overflow', () => {
   const table = declarations(compact(component_css()), /\.cn-table-container\{([^}]*)\}/)
-  assert.ok(table.includes('overflow-x-auto'))
-  assert.ok(table.includes('max-w-full'))
+  assert.ok(table.includes('overflow-x:auto'))
+  assert.ok(table.includes('max-width:100%'))
 })
 
 test('semantic hook inference does not guess layout from names', () => {
@@ -395,7 +395,7 @@ test('visual audit enforces navigation and compound component repairs', () => {
     ['.cn-sidebar-dropdown-content{z-index:75!important;width:var(--anchor-width)', 'sidebar-dropdown-content'],
     ['.cn-dropdown-menu-positioner:has(>.cn-sidebar-dropdown-content){z-index:75!important}', 'sidebar-dropdown-positioner'],
     ['.cn-sidebar-header{display:flex;flex-direction:column;gap:.75rem;padding:.75rem}', 'sidebar-header-controls-spacing'],
-    ['background-color:var(--accent);border-color:var(--border);color:var(--accent-foreground);box-shadow:0 2px 0 color-mix(in srgb,var(--foreground) 18%,transparent)', 'tabs-active-state'],
+    ['background-color:var(--accent);border-color:var(--border);color:var(--accent-foreground);box-shadow:var(--navigation-shadow)', 'tabs-active-state'],
     ['.cn-tabs-trigger[data-active="false"]{background-color:transparent;border-color:transparent;color:var(--muted-foreground);box-shadow:none}', 'tabs-inactive-state'],
     ['background-color:transparent;border-color:transparent;color:var(--foreground);box-shadow:none', 'tabs-line-active-state'],
     ['color:var(--foreground)', 'tabs-line-active-color'],

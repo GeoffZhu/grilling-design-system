@@ -56,7 +56,7 @@ For a generated documentation draft, scripts/design_document.js accepts --contex
 node "$SKILL/scripts/design_document.js" --context "$PROJECT/project-context.json" --tokens "$LIBRARY/tokens.json" --snapshot "$LIBRARY/shadcn-snapshot.json" --checks "$PROJECT/checks.json" --session "$PROJECT/session"
 ~~~
 
-Only finalize delivery after the integrated build, available visual checks, component coverage, and DESIGN_DOC completion check. Record integrated delivery through studio.js finish using an evidence JSON with absolute path, designDoc, tokenHash, componentCount, snapshotHash, and checks containing the actual host build result. This records evidence; it does not execute the build or prove visual quality.
+Only finalize delivery after the integrated build, available visual checks, component coverage, and DESIGN_DOC completion check. Record integrated delivery through studio.js finish using an evidence JSON with absolute path, designDoc, tokenHash, componentCount, snapshotHash, and buildId returned by studio.js verify and checks describing the host build. verify executes the command and fingerprints sources and outputs; finish validates that receipt. Visual quality and user response provenance remain host-reported.
 
 ~~~sh
 node "$SKILL/scripts/studio.js" finish --session "$PROJECT/session" --evidence "$PROJECT/delivery.json"
@@ -70,7 +70,7 @@ Create the full runnable React/TypeScript/Vite/Tailwind application at LIBRARY i
 
 Use the model-authored token `name` as the visible application and theme name. Use the model-authored token `slug` as the package name, registry name, and registry theme CSS filename (`src/<slug>.css`). Do not use the skill name or another fixed generator name for these artifacts. The scaffold seeds docs-only `src/IntegratedPreview.tsx`; replace it with the confirmed reference-derived Key Visual, keep it above the component directory on the overview route, and remove its placeholder marker before `--deliver`. It may import delivered ui/custom components, but must not appear in custom-components.json, componentEntries, component counts, registry files/items, or consumer copy instructions.
 
-Use the standalone development/build commands and compatible shadcn registry consumer checks. Complete LIBRARY/DESIGN.md with the required template. Then record delivery with studio.js finish: evidence path is LIBRARY, designDoc is LIBRARY/DESIGN.md, tokenHash and snapshotHash come from session.generated, and checks.build holds the actual build result. Without project-context.json, finish validates against session.generated. If output already contains user work, inspect and preserve it before generating; an existing Web application takes the integration path.
+Use the standalone development/build commands and compatible shadcn registry consumer checks. Complete LIBRARY/DESIGN.md with the required template. Then record delivery with studio.js finish: evidence path is LIBRARY, designDoc is LIBRARY/DESIGN.md, tokenHash and snapshotHash come from session.generated, buildId comes from the final studio.js verify run, and checks.build describes its actual result. Without project-context.json, finish validates against session.generated. If output already contains user work, inspect and preserve it before generating; an existing Web application takes the integration path.
 
 ### Custom component manifest
 

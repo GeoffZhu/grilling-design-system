@@ -29,6 +29,10 @@ import {
   component_css,
   css,
   input_group_composition_css,
+  geometry,
+  signature,
+  style_provenance,
+  validate,
   state_css,
   theme_signature_css,
 } from "../skills/grilling-design-system/scripts/theme.js";
@@ -64,6 +68,36 @@ const temporary_root = (t) => {
   t.after(() => rmSync(root, { recursive: true, force: true }));
   return root;
 };
+
+test("flat tokens have no hidden family elevation and explicit choices propagate", () => {
+  const flat = tokens("Flat", "flat");
+  const resolved = signature(flat);
+  for (const family of Object.values(resolved)) {
+    assert.equal(family.shadow, "none");
+    if (Object.hasOwn(family, "pressedOffset")) assert.equal(family.pressedOffset, 0);
+  }
+  assert.equal(geometry(flat).surfaceRadius, flat.radius);
+  assert.equal(style_provenance(flat).craft.labelWeight.source, "script-default");
+  flat.craft = { labelWeight: 650, surfaceRadius: 24 };
+  flat.signature = { actions: { shadow: "0 3px 0 #000000", pressedOffset: 2, borderWidth: 2 } };
+  const result = css(flat, false);
+  includes_all(result, ["--actions-shadow:0 3px 0 #000000", "--actions-pressed-offset:2px", "--actions-border-width:2px", "--surface-radius:24px"]);
+  assert.equal(style_provenance(flat).signature.actions.shadow.source, "token");
+  flat.signature.actions.shadow = "none; color:red";
+  assert.throws(() => validate(flat), /signature shadow/);
+});
+
+test("board and library share browser-native component rules", () => {
+  const t = tokens("Shared", "shared");
+  const shared = component_css();
+  assert.ok(!shared.includes("@apply"));
+  assert.ok(css(t, false).endsWith(shared));
+  assert.ok(css(t, true).endsWith(shared));
+  assert.ok(css(t, false).includes("--radius-sm:6px"));
+  assert.ok(shared.includes("display:inline-flex;align-items:center;justify-content:center"));
+  assert.ok(shared.includes(".cn-card{display:flex;flex-direction:column}"));
+  assert.ok(!shared.includes("box-shadow:var(--inputs-shadow),"));
+});
 
 test("registry uses model-authored artifact name", (t) => {
   const root = temporary_root(t);
@@ -268,19 +302,19 @@ test("progress root keeps labels and file-upload rows visible", () => {
   const styles = compact(component_css());
   const root = css_rule(styles, /\.cn-progress-root\{([^}]*)\}/g);
   const track = css_rule(styles, /\.cn-progress-track\{([^}]*)\}/g);
-  assert.ok(root.includes("@applyflexflex-wrapgap-3;"));
+  assert.ok(root.includes("display:flex;flex-wrap:wrap;gap:0.75rem;"));
   assert.ok(!root.includes("h-2"));
   assert.ok(!root.includes("overflow-hidden"));
-  assert.ok(track.includes("@applyh-2overflow-hiddenrounded-fullbg-muted;"));
+  assert.ok(track.includes("height:0.5rem;overflow:hidden;border-radius:9999px;background-color:var(--muted);"));
 });
 
 test("item defaults to lightweight surface without weakening cards", () => {
   const styles = compact(component_css());
   const item = css_rule(styles, /(?:^|})\.cn-item\{([^}]*)\}/g);
-  assert.ok(item.includes("shadow-none"));
+  assert.ok(item.includes("box-shadow:none"));
   assert.ok(!item.includes("var(--design-shadow)"));
   const raised = css_rule(styles, /\.cn-card,\.cn-attachment,\.cn-alert\{([^}]*)\}/g);
-  assert.ok(raised.includes("shadow-[var(--design-shadow)]"));
+  assert.ok(raised.includes("box-shadow:var(--design-shadow)"));
 });
 
 test("progress file-upload example wraps without squeezing filename", () => {
@@ -333,8 +367,8 @@ test("calendar has readable cells and card footer centers content", () => {
   const day = css_rule(styles, /(?:^|})\.cn-calendar-day-button\{([^}]*)\}/g);
   const footer = css_rule(styles, /\.cn-card-footer\{([^}]*)\}/g);
   assert.ok(calendar.includes("--cell-size:max(2.5rem,var(--control-height))"));
-  includes_all(day, ["min-h-[var(--cell-size)]", "min-w-[var(--cell-size)]"]);
-  includes_all(footer, ["@applyflex", "items-center", "min-h-[calc(var(--control-height)+2rem)]", "py-4"]);
+  includes_all(day, ["min-height:var(--cell-size)", "min-width:var(--cell-size)"]);
+  includes_all(footer, ["display:flex", "align-items:center", "min-height:calc(var(--control-height)+2rem)", "padding-block:1.0rem"]);
   assert.ok(!footer.includes("pt-4"));
 });
 
@@ -409,7 +443,7 @@ test("button group owns frame and children share single separators", () => {
   const horizontal = css_rule(styles, /\.cn-button-group:not\(\[data-orientation="vertical"\]\)>\[data-slot\]\+\[data-slot\]\{([^}]*)\}/g);
   const vertical = css_rule(styles, /\.cn-button-group\[data-orientation="vertical"\]>\[data-slot\]\+\[data-slot\]\{([^}]*)\}/g);
   const nested = css_rule(styles, /\.cn-button-group>\.cn-button-group\{([^}]*)\}/g);
-  includes_all(frame, ["border:2pxsolidvar(--border)", "border-radius:var(--control-radius)", "box-shadow:var(--design-shadow)", "overflow:hidden", "isolation:isolate"]);
+  includes_all(frame, ["border:var(--actions-border-width)solidvar(--border)", "border-radius:var(--control-radius)", "box-shadow:var(--design-shadow)", "overflow:hidden", "isolation:isolate"]);
   assert.ok(!frame.includes("box-shadow:03px0"));
   includes_all(children, ["border:0", "border-radius:0", "box-shadow:none", "margin:0"]);
   assert.ok(horizontal.includes("border-inline-start:1pxsolidvar(--border)"));
@@ -589,7 +623,7 @@ test("navigation and tabs use actual Base UI boolean states", () => {
   const lineMatch = lineExpression.exec(styles);
   assert.ok(lineMatch, "missing active line-tabs CSS rule");
   const lineRule = lineMatch[1];
-  includes_all(activeRule, ["background-color:var(--accent)", "color:var(--accent-foreground)", "border-color:var(--border)", "box-shadow:02px0color-mix(insrgb,var(--foreground)18%,transparent)"]);
+  includes_all(activeRule, ["background-color:var(--accent)", "color:var(--accent-foreground)", "border-color:var(--border)", "box-shadow:var(--navigation-shadow)"]);
   for (const value of ["background-color:transparent", "border-color:transparent", "box-shadow:none"]) {
     assert.ok(inactiveRule.includes(value));
     assert.ok(lineRule.includes(value));
@@ -609,6 +643,6 @@ test("navigation and tabs use actual Base UI boolean states", () => {
   const trailingTabSelectors = [...styles.slice(lineRuleEnd).matchAll(/([^{}]+)\{([^{}]*)\}/g)]
     .filter((match) => match[2].includes("color:"))
     .flatMap((match) => match[1].split(",").filter((selector) => selector.includes(".cn-tabs-trigger")));
-  assert.ok(trailingTabSelectors.every((selector) => selector.startsWith('.cn-tabs-list:not([data-variant="line"])')));
+  assert.ok(trailingTabSelectors.every((selector) => selector === '.cn-tabs-trigger' || selector.startsWith('.cn-tabs-list:not([data-variant="line"])')));
   assert.ok(!styles.includes(".cn-navigation-menu-trigger[data-active"));
 });

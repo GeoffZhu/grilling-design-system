@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { digest, read } from './studio.js';
-import { contrast, geometry } from './theme.js';
+import { contrast, geometry, style_provenance } from './theme.js';
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 export const TEMPLATE = path.resolve(SCRIPT_DIR, '..', 'assets', 'DESIGN.template.md');
@@ -166,6 +166,9 @@ export function document(output, tokens, state, snapshot, checks, context = null
     '- Reconcile role sizes, allowed spacing, and component overrides with the final source before delivery.',
   );
   append(2, colorTable.join('\n'));
+  const provenance = style_provenance(tokens);
+  append(2, '### Resolved style provenance\n\nExplicit token values come from the recorded design decisions; omitted values are script defaults, not user selections.\n\n'
+    + FENCE + 'json\n' + JSON.stringify(provenance, null, 2) + '\n' + FENCE);
 
   const confirmed = Boolean(
     state
@@ -201,7 +204,7 @@ export function document(output, tokens, state, snapshot, checks, context = null
   ];
   const checkEntries = Object.entries(checks);
   evidence.push(...(checkEntries.length
-    ? checkEntries.map(([key, value]) => `- ${key}: ${value}`)
+    ? checkEntries.map(([key, value]) => `- ${key}: ${typeof value === 'object' ? JSON.stringify(value) : value}`)
     : ['- No runtime verification recorded.']));
   append(8, evidence.join('\n'));
 
@@ -301,7 +304,7 @@ function matches(text, expression) {
   return [...text.matchAll(expression)].map((match) => match[0]);
 }
 
-export function completion_errors(text) {
+export function completion_errors(text, root = null) {
   /** Validate structure and filled slots; source consistency needs inspection. */
   const errors = [];
   const template = readText(TEMPLATE);
@@ -339,6 +342,25 @@ export function completion_errors(text) {
       const nextLine = index + 1 < lines.length ? lines[index + 1].trim() : '';
       if (!nextLine || nextLine.endsWith(':') || nextLine.endsWith('->')) errors.push(`Fill empty value: ${line}`);
     });
+  }
+  if (root) {
+    const sections = text.split(/^## .+$/gm);
+    const labels = ['UI components', 'Shared components', 'Domain components', 'Design tokens', 'App shell', 'List page', 'Detail page', 'Form page', 'Settings', 'Button', 'Input', 'Select', 'Dialog', 'Table', 'Tabs', 'Toast'];
+    for (const number of [9, 11, 12]) {
+      const lines = (sections[number] ?? '').split('\n');
+      for (const [index, line] of lines.entries()) {
+        const label = labels.find((key) => line.startsWith(key + ':'));
+        if (!label) continue;
+        const value = line.slice(label.length + 1).trim() || (lines[index + 1] ?? '').trim();
+        const clean = value.replaceAll(String.fromCharCode(96), '').replace(/（.*$/, '').replace(/\s+\([^)]*\)$/, '');
+        if (!clean || /^(?:Not applicable|N\/A|不适用|无)/i.test(clean)) continue;
+        for (const candidate of clean.split(/\s+and\s+|\s*[,;，；]\s*/)) {
+          let target = candidate.trim();
+          if (!exists(path.resolve(root, target))) target = target.split(/[?#]/)[0].replace(/\s+(?:overview|component|route|at|with|for)\b.*$/i, '');
+          if ((target.includes('/') || /\.[a-z0-9]+$/i.test(target)) && !/^https?:/.test(target) && !exists(path.resolve(root, target))) errors.push('Documented path does not exist: ' + target);
+        }
+      }
+    }
   }
   return errors;
 }
@@ -392,7 +414,7 @@ export function main(argv = process.argv.slice(2)) {
       return 0;
     }
     if (!args.check) throw argumentError('Provide --check or generation arguments with --context');
-    const errors = completion_errors(readText(args.check));
+    const errors = completion_errors(readText(args.check), path.dirname(path.resolve(args.check)));
     if (errors.length) {
       process.stderr.write(`${errors.join('\n')}\n`);
       return 1;
