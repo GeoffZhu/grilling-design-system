@@ -10,15 +10,15 @@ Infer the subject, a representative user action and realistic specimen content f
 
 ## Pass 1: specify a design intent
 
-Write a short design-intent.md beside each round's candidates. It must explain choices that the tokens cannot:
+Write a short design-intent.md beside each round's candidates. Summarize the region analysis and translation map from visual-analysis.md rather than starting a new interpretation. It must explain choices that the tokens cannot:
 
-- Reference evidence: three visible characteristics to preserve, with approximate image regions. Separate observation from interpretation.
+- Reference evidence: the highest-priority relationships to preserve, with region IDs. Include content anatomy, color prominence, type contrast, and geometry where visible. Separate observation from interpretation; a fixed count of adjectives does not establish coverage.
 - Visual priority: one memorable feature and the supporting elements that should stay quiet. For a component system, identify the recurring signature, not a compulsory landing-page hero.
 - Palette: 4–6 named base colors and their roles/relative prominence. Expand these into shadcn semantics later. Large surface color, action color and readable text color need not be identical.
 - Typography: rendered font(s), heading/body/label roles, sizes, weights, line heights and tracking. Use one family when sufficient; two only with distinct roles. Decide how short labels, long titles, numbers and multiline text wrap. Keep prose comfortably below 80 characters per line.
 - Composition: a small wireframe and one sentence about alignment, groups, whitespace and responsive reordering. Preserve purposeful asymmetry. Avoid a grid of identical containers merely because the starter has cards.
 - Component geometry: distinguish container radius, input radius, button radius and compact indicator shape. Define density, border roles and elevation hierarchy. Identify icon optical corrections.
-- Theme signature: expand the Key Visual and custom-component signature across representative actions, inputs, selection controls, navigation, feedback, overlays, and data display. Define depth, semantic color roles, and pressed/selected/focus behavior per family. Keep dense rows and low-priority utilities lighter; token substitution alone does not establish one coherent system.
+- Theme signature: carry the original image's relationships into the Key Visual, custom components, and representative actions, inputs, selection controls, navigation, feedback, overlays, and data display. Define role-specific type, density, geometry, depth, semantic color, and states. Retain the image's coexisting treatments and their scope. Keep dense rows and low-priority utilities lighter; token substitution alone does not establish one coherent system.
 - Motion and copy: name the action a transition explains; write representative labels, success and error text with consistent verbs.
 
 Before coding, compare the plan to the image. Remove choices that could have been pasted unchanged into any unrelated brief. Record what was revised and why, or explain why each familiar pattern fits this reference. This is an agent self-review, not another user questionnaire.
@@ -52,6 +52,8 @@ Use official shadcn APIs and interaction primitives as the structural base. Desi
 Treat common “generated UI” patterns as review prompts, not bans: all-caps labels, serial numbers without a sequence, one highlighted headline word, identical cards, pill-shaped everything, default soft shadows, decorative gradients, arrows appended to every action. Keep them only when the image or actual task justifies them. Round numbers in the review studio do describe a real sequence.
 
 ## Screenshot → critique → repair → screenshot
+
+Apply visual-analysis.md's review for lost information. Compare the original image as well as the generated Key Visual; a component library can consistently repeat an inaccurate interpretation. Check hierarchy, silhouette, color distribution, content anatomy, imagery, and transfer into ordinary controls. Record concrete findings against translation IDs and explain deliberate adaptations.
 
 Use available host browser/image capabilities; no particular package is required. When capture is available, inspect the rendered UI with fonts loaded at the specimen viewport, or at 1440×900 and real Mobile widths for the integrated page. Inspect relevant controls and states; the integrated review also covers a card/list item and overlay. View actual screenshots, since DOM measurements alone do not reveal weak composition or optical alignment. When these capabilities are unavailable, use the source-inspection artifact and explicit limitations described in verification.md. Never invent screenshot evidence or block source delivery on a missing browser tool.
 

@@ -1,35 +1,41 @@
 # Grilling Design System
 
-从一张图片出发，只问少量关键的视觉问题，交付完整的 shadcn/ui 组件库和 DESIGN.md。
+[English](README.md) | [中文](README.zh.md)
 
-Skill 入口：[.agents/skills/grilling-design-system/SKILL.md](.agents/skills/grilling-design-system/SKILL.md)。仓库同时提供 .claude/skills/grilling-design-system 链接。复制整个 skill 目录到其他项目即可使用。
+Start from one image, ask only a few high-impact visual questions, and deliver a complete shadcn/ui component library plus DESIGN.md.
 
-调用示例：
+Skill entry: [.agents/skills/grilling-design-system/SKILL.md](.agents/skills/grilling-design-system/SKILL.md). The repo also provides a `.claude/skills/grilling-design-system` link. Copy the entire skill directory into another project to use it.
 
-> 使用 $grilling-design-system，以这张图片为灵感，确认 PC Web 和 Mobile Web 的设计系统。
+Invocation example:
 
-## 流程
+> Use $grilling-design-system, take this image as inspiration, and confirm a PC Web and Mobile Web design system.
 
-图片解读 → 规划视觉决策树 → 整体风格 → 颜色、文字、间距、形状、图标和动效 → 组件与状态 → 电脑和手机整合预览 → 修改或确认 → 完整交付。
+## Workflow
 
-- 先写出完整的决策树，按视觉影响、复用范围和不确定程度排序。默认最多问 3 个问题，证据足够时更少。
-- 每个问题只放 A、B 两个方案，上下排列。只展示能看出差别的小样例，比如同一组按钮、输入框或卡片；不需要每次都放完整页面。
-- 预览链接先发出，再调用宿主 agent 的单选工具（例如 AskUserQuestion，`multiSelect: false`）。没有可用工具时，在对话里回复 A 或 B。想合并或调整，直接说明要改哪里。
-- 不需要提问的环节，由 agent 根据图片和已有选择推导，并记录推导依据，不算作用户的选择。
-- 最后只展示一个整合设计：左边 16:9 电脑预览，右边 9:16 手机预览。在对话里确认，或提出修改意见；修改后回到基础样式环节，重复到确认为止。
-- 默认只做一种明暗模式。
+Break the image into regions for content and style → map image traits to implementation → plan the visual decision tree → overall direction → foundation rules → components and states → check against the original image → integrated desktop and mobile preview → revise or confirm → full delivery.
 
-预览页在本机运行，只用于查看，没有选择框、反馈输入框或提交按钮。样例按设计尺寸显示，只在空间不够时缩小；保留滚动、手势缩放和单独打开。选择结果保存在 session.json；agent 结束当前轮后，回复选择即可继续。
+- Start with content hierarchy, composition, color prominence, type contrast, geometry, density, material, and image use. Separate direct observation from inference. See [visual-analysis.md](skills/grilling-design-system/references/visual-analysis.md) for the method.
+- Keep coexisting treatments in the image, such as a strong hero, a calm form, and a compact supporting list. Map every important trait to tokens, component variants, custom components, assets, or integrated composition. Do not leave it only in prose.
+- After generation, check hierarchy, contours, color distribution, and content grouping against the original image. Also check whether ordinary components still follow those rules. Document rewritten traits, missing traits, and asset limits.
 
-## 输出位置
+- Write the full decision tree first. Rank by visual impact, reuse, and uncertainty. Default to at most three questions; ask fewer when the evidence is enough.
+- Each question shows only two options, A above B. Show the smallest specimen that makes the difference visible, such as the same set of buttons, inputs, or cards. A full page is not required every time.
+- Publish the preview link first, then call the host agent's single-select tool (for example AskUserQuestion, `multiSelect: false`). If no tool is available, reply A or B in chat. To merge or adjust, say what should change.
+- When a stage needs no question, the agent derives the rule from the image and prior choices, records the basis, and does not treat it as a user choice.
+- The final preview shows one integrated design: a 16:9 desktop preview on the left and a 9:16 mobile preview on the right. Confirm in chat, or request changes. After changes, return to foundation styling and repeat until confirmed.
+- Default to one light or dark mode.
 
-- 当前目录是 Web 项目：沿用它的框架、样式方案和包管理器，组件写到源码根目录下的 design-system/（或你指定的目录），DESIGN.md 写到应用根目录。
-- 不是 Web 项目：在指定目录或 ./design-system 生成一个完整的 React + Vite + Tailwind 4 应用，DESIGN.md 放在应用根目录。
+Preview pages run locally and are for viewing only. They have no option checkboxes, feedback fields, or submit buttons. Specimens keep their designed size and shrink only when space is insufficient. Scrolling, pinch/browser zoom, and opening links stay available. Choices are saved in session.json. If the agent ends the turn, reply with the choice to continue.
 
-完整库指所记录官方 registry 中的全部 registry:ui 项，加上图片特有组件；不包含官方页面 block。产物包括源码、可运行的展示页、主题参数、shadcn 安装 registry、依赖锁文件、来源快照、DESIGN.md 与验证记录。DESIGN.md 补全并通过 `design_document.js --check` 后，用 `studio.js finish` 记录交付。
+## Output location
 
-## 环境
+- If the current directory is a Web project: reuse its framework, styling system, and package manager. Write components to `design-system/` under the source root (or a directory you specify). Write DESIGN.md at the application root.
+- If it is not a Web project: generate a complete React + Vite + Tailwind 4 app in the specified directory or `./design-system`, with DESIGN.md at that app root.
 
-需要 Node.js 20.19+ 和 npm。首次获取 shadcn 源码和字体依赖需要网络。若系统代理拦截 TLS 导致证书校验失败，可用 `no_proxy='*'` 重试。
+A complete library means every recorded official `registry:ui` item plus image-specific components. Official page blocks are not included. Deliverables include source, a runnable gallery, theme parameters, a shadcn install registry, the lockfile, an upstream snapshot, DESIGN.md, and verification records. After DESIGN.md is complete and passes `design_document.js --check`, record delivery with `studio.js finish`.
 
-所有说明和预览内容跟随用户的主语言，使用简短、容易理解的话。已融合 Anthropic frontend-design 的设计意图、构图与组件细节检查方法，见 [frontend-craft.md](.agents/skills/grilling-design-system/references/frontend-craft.md)。组件与整合预览需要实际截图检查；没有浏览器能力时，如实记录未能执行的检查。构建通过不能代替视觉检查。
+## Environment
+
+Requires Node.js 20.19+ and npm. The first fetch of shadcn source and font dependencies needs a network. If a system proxy intercepts TLS and certificate verification fails, retry with `no_proxy='*'`.
+
+All explanations and preview copy follow the user's primary language, in short, easy-to-understand sentences. The workflow incorporates Anthropic frontend-design checks for intent, composition, and component detail; see [frontend-craft.md](.agents/skills/grilling-design-system/references/frontend-craft.md). Component and integrated previews need real screenshot checks. If no browser capability is available, record the skipped checks honestly. A passing build does not replace visual inspection.

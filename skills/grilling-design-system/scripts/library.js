@@ -164,12 +164,20 @@ export function transform(source,generated_example=false){
             <ChevronDownIcon className="cn-select-trigger-icon-glyph pointer-events-none" />
           </span>
         }
+      />`;});content=content.replace(/<SelectPrimitive\.Icon\s+render=\{\s*<IconPlaceholder\b(?=[^>]*\blucide=["']ChevronDownIcon["'])(?=[^>]*\bclassName=["']cn-select-trigger-icon pointer-events-none["'])[^>]*\/>\s*\}\s*\/>/gs,()=>{count++;return `<SelectPrimitive.Icon
+        render={
+          <span className="cn-select-trigger-icon" aria-hidden="true">
+            <ChevronDownIcon className="cn-select-trigger-icon-glyph pointer-events-none" />
+          </span>
+        }
       />`;});if(count!==1)throw new Error("SelectTrigger disclosure icon markup changed upstream");}
   if(content.includes("function NavigationMenuTrigger(")&&!content.includes("cn-navigation-menu-trigger-icon-glyph")){let count=0;content=content.replace(/<ChevronDownIcon className="cn-navigation-menu-trigger-icon"\s+aria-hidden="true" \/>/g,()=>{count++;return `<span className="cn-navigation-menu-trigger-icon" aria-hidden="true">
         <ChevronDownIcon className="cn-navigation-menu-trigger-icon-glyph" />
+      </span>`;});content=content.replace(/<IconPlaceholder\b(?=[^>]*\blucide=["']ChevronDownIcon["'])(?=[^>]*\bclassName=["']cn-navigation-menu-trigger-icon["'])[^>]*\/>/gs,()=>{count++;return `<span className="cn-navigation-menu-trigger-icon" aria-hidden="true">
+        <ChevronDownIcon className="cn-navigation-menu-trigger-icon-glyph" />
       </span>`;});if(count!==1)throw new Error("NavigationMenuTrigger disclosure icon markup changed upstream");}
   content=content.replace(/(?<![A-Za-z0-9_-])style-(?:vega|nova|maia|lyra|mira|luma|sera|rhea):[^\s"']+/g,"");
-  const icons=[];content=content.replace(/<IconPlaceholder\b(.*?)\/>/gs,(_match,attrs)=>{const icon=attrs.match(/\blucide=["']([^"']+)["']/);if(!icon)throw new Error("IconPlaceholder is missing a Lucide mapping");const name=icon[1];if(!icons.includes(name))icons.push(name);attrs=attrs.replace(/\s+(?:lucide|tabler|hugeicons|phosphor|remixicon)=["'][^"']+["']/g,"").trim();return `<${name}${attrs?` ${attrs}`:""} />`;});
+  const icons=content.includes("<ChevronDownIcon")?["ChevronDownIcon"]:[];content=content.replace(/<IconPlaceholder\b(.*?)\/>/gs,(_match,attrs)=>{const icon=attrs.match(/\blucide=["']([^"']+)["']/);if(!icon)throw new Error("IconPlaceholder is missing a Lucide mapping");const name=icon[1];if(!icons.includes(name))icons.push(name);attrs=attrs.replace(/\s+(?:lucide|tabler|hugeicons|phosphor|remixicon)=["'][^"']+["']/g,"").trim();return `<${name}${attrs?` ${attrs}`:""} />`;});
   content=content.replace(/import\s*\{\s*IconPlaceholder\s*\}\s*from\s*["'][^"']*icon-placeholder["']\s*;?\n?/g,"");
   if(icons.length){const imported=content.match(/import\s*\{([^}]*)\}\s*from\s*["']lucide-react["']\s*;?/s);if(imported){const existing=imported[1].split(",").map(value=>value.trim()).filter(Boolean),aliases=new Set(existing.map(value=>value.split(" as " ).at(-1)));const merged=[...existing,...icons.filter(name=>!aliases.has(name))];content=content.slice(0,imported.index)+`import { ${merged.join(", ")} } from "lucide-react"`+content.slice(imported.index+imported[0].length);}else{const directive=content.match(/^(["']use client["'];?\s*)/);const offset=directive?directive[0].length:0;content=content.slice(0,offset)+`\nimport { ${icons.join(", ")} } from "lucide-react"\n`+content.slice(offset);}}
   content=normalize_placeholder_images(content,true,generated_example);const escaped=nonstandard_placeholder_urls(content);if(escaped.length)throw new Error(`Nonstandard placeholder images remain: ${escaped.join(", ")}`);const escapedImages=generated_example?remote_example_image_urls(content):[];if(escapedImages.length)throw new Error(`Remote example images remain: ${escapedImages.join(", ")}`);return content;
@@ -204,7 +212,16 @@ export function registry(output,items,t,packageData,custom_components){
   const artifactName=t.slug,themeFile=`src/${artifactName}.css`,deliveredPaths=new Set(custom_components.flatMap(entry=>entry.files)),previewPaths=new Set(custom_components.filter(entry=>!deliveredPaths.has(entry.preview.path)).map(entry=>entry.preview.path)),files=[];
   files.push({path:"SHADCN-LICENSE.txt",target:"SHADCN-LICENSE.txt",type:"registry:file",content:textRead(path.join(ASSETS,"SHADCN-LICENSE.txt"))});
   for(const target of walk(path.join(output,"src")).sort()){if(!isFile(target)||![".tsx",".ts",".css",".svg",".json"].includes(path.extname(target)))continue;const rel=path.relative(output,target).split(path.sep).join("/");if(previewPaths.has(rel)||DOCS_ONLY_PATHS.has(rel))continue;if(!["src/components/","src/hooks/","src/lib/","src/assets/"].some(prefix=>rel.startsWith(prefix))&&rel!=="src/theme-overrides.css")continue;const ext=path.extname(target),kind=![".tsx",".ts"].includes(ext)?"registry:file":rel.includes("/ui/")?"registry:ui":rel.includes("/hooks/")?"registry:hook":rel.includes("/lib/")?"registry:lib":"registry:component";files.push({path:rel,type:kind,target:rel,content:textRead(target)});}
-  const hooks=visual_contract(Object.values(items).map(item=>item.files??[]));let generatedTheme=css(t,true,hooks.hooks).replace('@import "tailwindcss";\n',"").replace('@import "tw-animate-css";\n',"").replace('@import "shadcn/tailwind.css";\n',"");if(exists(path.join(output,"src/theme-overrides.css")))generatedTheme='@import "./theme-overrides.css";\n'+generatedTheme;textWrite(path.join(output,themeFile),generatedTheme);files.push({path:themeFile,target:themeFile,type:"registry:file",content:generatedTheme});
+  const hooks=visual_contract(Object.values(items).map(item=>item.files??[]));
+  let generatedTheme=css(t,true,hooks.hooks).replace('@import "tailwindcss";\n',"").replace('@import "tw-animate-css";\n',"").replace('@import "shadcn/tailwind.css";\n',"");
+  if(exists(path.join(output,"src/theme-overrides.css"))){
+    // Keep imports valid while matching main.tsx: defaults first, authored rules last.
+    const baseFile=`src/${artifactName}.base.css`;
+    textWrite(path.join(output,baseFile),generatedTheme);
+    files.push({path:baseFile,target:baseFile,type:"registry:file",content:generatedTheme});
+    generatedTheme=`@import "./${artifactName}.base.css";\n@import "./theme-overrides.css";\n`;
+  }
+  textWrite(path.join(output,themeFile),generatedTheme);files.push({path:themeFile,target:themeFile,type:"registry:file",content:generatedTheme});
   const deps=Object.entries(packageData.dependencies).filter(([name])=>!["react","react-dom"].includes(name)).map(([name,version])=>`${name}@${version}`);const item={$schema:"https://ui.shadcn.com/schema/registry-item.json",name:"all",type:"registry:block",title:t.name,description:"Themed shadcn collection with custom components. See DESIGN.md for approval status.",dependencies:deps,files,css:{[`@import "./${artifactName}.css"`]:{},'@import "tw-animate-css"':{},'@import "shadcn/tailwind.css"':{}}},catalog=[item];
   for(const entry of custom_components){const customFiles=entry.files.map(rel=>{const target=path.join(output,rel);return {path:rel,target:rel,type:[".tsx",".ts"].includes(path.extname(target))?"registry:component":"registry:file",content:textRead(target)};}),customItem={$schema:"https://ui.shadcn.com/schema/registry-item.json",name:entry.name,type:"registry:component",title:entry.title,description:entry.description,files:customFiles};if(entry.dependencies.length)customItem.dependencies=entry.dependencies;if(entry.registryDependencies.length)customItem.registryDependencies=entry.registryDependencies;write(path.join(output,"public/r",`${entry.name}.json`),customItem);catalog.push(customItem);}
   write(path.join(output,"public/r/all.json"),item);write(path.join(output,"registry.json"),{$schema:"https://ui.shadcn.com/schema/registry.json",name:artifactName,homepage:"https://ui.shadcn.com",items:catalog});

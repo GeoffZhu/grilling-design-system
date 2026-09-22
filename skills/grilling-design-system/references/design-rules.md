@@ -1,5 +1,7 @@
 # Design translation rules
 
+Read visual-analysis.md first. Base these rules on the region map in interpretation.md and the evidence-to-implementation mapping in visual-translation.md. Preserve content hierarchy and the relationships among treatments, not just individual visual attributes.
+
 ## UI images
 
 Separate observed properties from inferred ones. Record palette roles, type proportions, border treatment, spacing rhythm, icon geometry and special component patterns. Preserve the recognizable composition and style when adapting Mobile UI to PC. Do not render the device frame as a product component. Extend the language to controls, menus, tables and overlays.
@@ -21,7 +23,7 @@ Map material/light to surface and elevation, color relationships to semantic rol
 
 Tokens alone cannot implement every style. Extend CSS and component variants when required; keep extensions in a dedicated theme file and include it in registry distribution. When changing template CSS, verify it reflects the accepted values in both preview and final library.
 
-Derive a theme signature matrix from the Key Visual and representative custom components before styling the complete library. For actions, inputs, selection, navigation, data display, overlays, and feedback, record the intended depth, semantic color role, and visible interaction state. Apply that matrix to representative official components without changing their APIs. Preserve hierarchy: strong actions and elevated overlays may inherit solid depth; dense Item rows and secondary utilities should remain lightweight.
+Derive a theme signature matrix from the original image's region map before styling the complete library. Validate it in the reference-derived fragment, then carry it into the Key Visual and representative components. For actions, inputs, selection, navigation, data display, overlays, and feedback, record type role, density, geometry, depth, semantic color, and visible interaction state, including scope and exceptions. Apply that matrix to representative official components without changing their APIs. The signature token group implements only part of this specification; use scoped styles and variants for the rest. Preserve hierarchy: strong actions and elevated overlays may inherit solid depth; dense Item rows and secondary utilities should remain lightweight.
 
 Apply frontend-craft.md for the design-intent and screenshot critique passes. Prefer a specific hierarchy of type weights, geometry and surface roles over globally applying one large radius and heavy weight. Every visible label, separator, illustration and motion should have a purpose in the image-derived design. The reference wins when it intentionally uses a familiar style.
 

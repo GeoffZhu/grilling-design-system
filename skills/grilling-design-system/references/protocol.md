@@ -19,6 +19,8 @@
 - Keep LIBRARY and DESIGN_DOC outside PROJECT. Stop the local Studio server before `finish`; its preview becomes unavailable when PROJECT is deleted.
 - evidence/: available screenshots, source observations, and explicit verification limitations.
 - decision-tree.md: planned visual branches, dependencies, question budget, choices, and derived rules.
+- interpretation.md: region IDs, content hierarchy, visual relationships, observations, and uncertainty from visual-analysis.md.
+- visual-translation.md: important evidence mapped to implementation layers, actual files/variants, scope, verification, and adaptations. Distill durable rules into design-notes.md before cleanup.
 
 Node.js scripts use built-in modules. library.js scaffolds standalone React/Vite apps and uses npm only in that mode. In Web projects, --sources-only fetches upstream inputs without scaffolding; follow project-output.md to integrate with the host framework and tooling. Local serving binds 127.0.0.1. No account or hosted backend is required.
 
@@ -77,13 +79,13 @@ Optional signature tokens configure each family: actions, inputs, selection, nav
 }
 ~~~
 
-Missing family shadows default to none for controls/navigation and the main shadow token for data display/overlays/feedback; borders default to 1px, press offsets and accent stripes to 0. Family rules use these variables; no fixed hard shadow or press translation is injected. Geometry and family defaults are recorded in style-provenance.json and the DESIGN.md draft. Explicit token values still need their user/image/agent basis documented by the agent. Structural sizing, accessible state pairs and compound-control ownership remain shared implementation rules.
+Missing family shadows default to none for controls/navigation and the main shadow token for data display/overlays/feedback; borders default to 1px, press offsets and accent stripes to 0. Family rules use these variables; no fixed hard shadow or press translation is injected. Geometry and family defaults are recorded in style-provenance.json and the DESIGN.md draft. Explicit token values still need their user/image/agent basis documented by the agent. These tokens cover depth and selected structural properties, not the full visual specification. Role-specific type, density, silhouettes, media masks, and motifs may require component rules or theme-overrides.css; do not discard them because no token field exists. Structural sizing, accessible state pairs and compound-control ownership remain shared implementation rules.
 
 ~~~sh
 node "$SKILL/scripts/board.js" --tokens tokens.json --content content.json --output "$PROJECT/session/candidates/r1-a.html"
 ~~~
 
-content.json requires language (for example zh-CN or en), title, headline, description and either bodyHtml or cards [{title,description,tone}]. tone defaults to card and must have a semantic foreground pair. Supply bodyHtml for composition derived from the image, css for its layout/type/icon rules, and optional extraHtml. No habit tracker, generic slogans or equal saturated cards are inserted automatically. Never interpolate raw feedback into HTML. Later reviews use actual components in the target framework.
+content.json requires language (for example zh-CN or en), title, headline, description and either bodyHtml or cards [{title,description,tone}]. tone defaults to card and must have a semantic foreground pair. Supply bodyHtml for composition derived from the image, css for its layout/type/icon rules, and optional extraHtml. Use the cards shortcut only when repeated equivalent tiles match the evidence or the narrow decision; it does not represent arbitrary content hierarchy. No habit tracker, generic slogans or equal saturated cards are inserted automatically. Never interpolate raw feedback into HTML. Later reviews use actual components in the target framework.
 
 ## Publish
 
@@ -159,6 +161,8 @@ wait polls while the round is awaiting-user (at most 55 seconds) and prints the 
 Record native single-select tool answers or plain chat responses with roundId, optionIds (zero or one ID), action, and actual feedback. The HTML has no decision inputs. Legacy optionId remains readable; multiple IDs are rejected without mutation. Actions: select for a preference choice, revise for changes, and approve for the sole integrated presentation. Chat submissions use studio.js decide against the running server and share its validation lock. See choices.md. Stale/duplicate submissions are rejected. Components/preview revisions return to foundations and invalidate downstream confirmations. Approval with unprocessed feedback is rejected. Writes are atomic and history survives restarts.
 
 ## Generator
+
+When src/theme-overrides.css exists, registry export writes src/<slug>.base.css with generated rules and src/<slug>.css as an entry importing that base followed by the overrides. Deliver all three files; consumers import the entry. This preserves the application's default-then-override order without placing CSS imports after style rules. Verify authored rules and any relative asset imports in the consumer.
 
 ### Verified build receipts
 

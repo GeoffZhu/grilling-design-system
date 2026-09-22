@@ -87,6 +87,29 @@ test("flat tokens have no hidden family elevation and explicit choices propagate
   assert.throws(() => validate(flat), /signature shadow/);
 });
 
+test("registry preserves authored theme precedence and its import closure", (t) => {
+  const root = temporary_root(t);
+  mkdirSync(path.join(root, "src"), { recursive: true });
+  const overrides = '.cn-button{border-radius:2px;font-weight:800}\n@media(max-width:600px){.cn-button{border-radius:0}}\n';
+  writeFileSync(path.join(root, "src/theme-overrides.css"), overrides);
+  const theme = tokens("Layered", "layered");
+  registry(root, {}, theme, { dependencies: {} }, []);
+  const item = JSON.parse(readFileSync(path.join(root, "public/r/all.json"), "utf8"));
+  const files = new Map(item.files.map((file) => [file.path, file.content]));
+  const entry = files.get("src/layered.css");
+  assert.equal(entry, '@import "./layered.base.css";\n@import "./theme-overrides.css";\n');
+  assert.equal(files.get("src/theme-overrides.css"), overrides);
+  assert.ok(files.get("src/layered.base.css").includes(".cn-button"));
+  assert.ok(!files.get("src/layered.base.css").includes('@import "tailwindcss"'));
+  for (const [, relativePath] of entry.matchAll(/@import "\.\/([^"]+)"/g)) {
+    const target = `src/${relativePath}`;
+    assert.ok(files.has(target), `registry must deliver ${target}`);
+    assert.equal(readFileSync(path.join(root, target), "utf8"), files.get(target));
+  }
+  const main = main_source(theme, [], true);
+  assert.ok(main.indexOf('import "./index.css"') < main.indexOf('import "./theme-overrides.css"'));
+});
+
 test("board and library share browser-native component rules", () => {
   const t = tokens("Shared", "shared");
   const shared = component_css();
@@ -590,6 +613,20 @@ test("transform wraps select and navigation disclosure icons", () => {
   const select = transform(selectSource);
   assert.ok(select.includes('<span className="cn-select-trigger-icon" aria-hidden="true">'));
   assert.ok(select.includes('className="cn-select-trigger-icon-glyph pointer-events-none"'));
+  const placeholderSelectSource = `function SelectTrigger() { return (
+  <SelectPrimitive.Icon render={
+    <IconPlaceholder
+      lucide="ChevronDownIcon"
+      tabler="IconSelector"
+      className="cn-select-trigger-icon pointer-events-none"
+    />
+  } />
+) }`;
+  const placeholderSelect = transform(placeholderSelectSource);
+  assert.ok(placeholderSelect.includes('<span className="cn-select-trigger-icon" aria-hidden="true">'));
+  assert.ok(placeholderSelect.includes('className="cn-select-trigger-icon-glyph pointer-events-none"'));
+  assert.ok(!placeholderSelect.includes("IconPlaceholder"));
+  assert.ok(placeholderSelect.includes('import { ChevronDownIcon } from "lucide-react"'));
   const navigationSource = `function NavigationMenuTrigger() { return (
   <ChevronDownIcon className="cn-navigation-menu-trigger-icon"
     aria-hidden="true" />
@@ -597,6 +634,19 @@ test("transform wraps select and navigation disclosure icons", () => {
   const navigation = transform(navigationSource);
   assert.ok(navigation.includes('<span className="cn-navigation-menu-trigger-icon" aria-hidden="true">'));
   assert.ok(navigation.includes('className="cn-navigation-menu-trigger-icon-glyph"'));
+  const placeholderNavigationSource = `function NavigationMenuTrigger() { return (
+  <IconPlaceholder
+    lucide="ChevronDownIcon"
+    tabler="IconChevronDown"
+    className="cn-navigation-menu-trigger-icon"
+    aria-hidden="true"
+  />
+) }`;
+  const placeholderNavigation = transform(placeholderNavigationSource);
+  assert.ok(placeholderNavigation.includes('<span className="cn-navigation-menu-trigger-icon" aria-hidden="true">'));
+  assert.ok(placeholderNavigation.includes('className="cn-navigation-menu-trigger-icon-glyph"'));
+  assert.ok(!placeholderNavigation.includes("IconPlaceholder"));
+  assert.ok(placeholderNavigation.includes('import { ChevronDownIcon } from "lucide-react"'));
 });
 
 test("select and navigation disclosure icons have optical frames", () => {

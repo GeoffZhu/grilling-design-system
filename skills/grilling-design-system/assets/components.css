@@ -48,7 +48,9 @@
 .cn-calendar-custom-days .rdp-day{height:4rem;aspect-ratio:auto}
 .cn-calendar-custom-days .cn-calendar-day-button{height:4rem;min-height:4rem;aspect-ratio:auto;gap:.25rem;padding-block:.5rem;border-radius:var(--radius-sm);line-height:1.1}
 .cn-calendar-custom-days .cn-calendar-day-button>span{line-height:1rem}
-.cn-calendar-day-button[data-selected-single="true"],.cn-calendar-day-button[data-range-start="true"],.cn-calendar-day-button[data-range-end="true"]{background-color:var(--primary);color:var(--primary-foreground)}
+.cn-calendar-day-button[data-selected-single="true"]{background-color:var(--primary);color:var(--primary-foreground)}
+.cn-calendar-day-button[data-range-start="true"]{background-color:var(--primary);color:var(--primary-foreground)}
+.cn-calendar-day-button[data-range-end="true"]{background-color:var(--primary);color:var(--primary-foreground)}
 .cn-calendar-custom-days .cn-calendar-day-button[data-range-middle="true"]{border-radius:0}
 .cn-calendar-custom-days [data-focused="true"] .cn-calendar-day-button{box-shadow:0 0 0 2px var(--ring)}
 .cn-command-input-wrapper{border-bottom:1px solid var(--border);padding:0}

@@ -1,13 +1,15 @@
 # Plan the visual decision tree
 
-Before asking, map the full visual tree in PROJECT/decision-tree.md. This is an agent planning artifact, not a questionnaire for the user. Cover each branch below, its dependencies, known evidence, remaining alternatives, and the downstream rules each answer would settle.
+Before asking, map the full visual tree in PROJECT/decision-tree.md using interpretation.md and visual-translation.md from visual-analysis.md. This is an agent planning artifact, not a questionnaire for the user. Cover each branch below, its dependencies, known evidence, remaining alternatives, and the downstream rules each answer would settle. Infer content and page structure; ask only about an unresolved visible treatment. Preserve treatments that coexist in the image instead of making the user choose between them.
 
 | Branch | Component evidence | Downstream decisions |
 | --- | --- | --- |
+| Composition and emphasis | A reference-derived section with title, media, and supporting content | Relative scale, alignment, dense/open rhythm, color distribution; derive content and page structure |
 | Palette and surface hierarchy | Action, field, card, muted text | Semantic colors, emphasis, borders, feedback, chart roles |
 | Typography and rhythm | Heading, label, body, numbers | Type roles, line height, control height, spacing density |
 | Geometry and depth | Button, input, card, overlay | Corner hierarchy, nested insets, border weight, shadows |
 | Icon language | The same action icons | Family, stroke, fill, optical size, text alignment |
+| Imagery and motifs | The same media region or recurring graphic | Crop, mask, layering, texture, and scope; separate decorative marks from interactive icons |
 | State treatment and motion | Focus, selection, errors, opening | State colors, indicators, transitions, reduced motion |
 | Responsive adaptation | The same component at relevant widths | Wrapping, spacing changes, touch areas, overflow |
 
