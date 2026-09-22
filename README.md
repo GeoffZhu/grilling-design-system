@@ -6,8 +6,6 @@
 
 Input an inspiration image and generate a complete UI design system.
 
-You make a few visible choices. You get a complete [shadcn/ui](https://ui.shadcn.com/) library you can run, plus a design spec you can hand to a team.
-
 ## Install
 
 ```bash
