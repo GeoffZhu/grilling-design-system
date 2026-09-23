@@ -1,6 +1,6 @@
 # Prepare the repository-specific usage handoff
 
-The final reply must explain how to use the delivered component library in the repository that now exists. Treat this as part of delivery, not optional follow-up documentation. Write the handoff in the user's language.
+The final reply must explain how to use the delivered component library in the repository that now exists. For optimization, first name the actual updated pages and their shared components. Marketing consumers copy the source snapshot closure and required dependencies; do not instruct them to install shadcn. Treat this as part of delivery, not optional follow-up documentation. Write the handoff in the user's language.
 
 ## Reinspect the final result
 

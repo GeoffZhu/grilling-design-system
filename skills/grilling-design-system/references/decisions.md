@@ -1,6 +1,6 @@
 # Plan the visual decision tree
 
-Before asking, map the full visual tree in PROJECT/decision-tree.md using interpretation.md and visual-translation.md from visual-analysis.md. This is an agent planning artifact, not a questionnaire for the user. Cover each branch below, its dependencies, known evidence, remaining alternatives, and the downstream rules each answer would settle. Infer content and page structure; ask only about an unresolved visible treatment. Preserve treatments that coexist in the image instead of making the user choose between them.
+After product intake, before asking a visual preference, map the full visual tree in PROJECT/decision-tree.md using interpretation.md and visual-translation.md from visual-analysis.md. This is an agent planning artifact, not a questionnaire for the user. Cover each branch below, its dependencies, known evidence, remaining alternatives, and the downstream rules each answer would settle. Infer content and page structure; ask only about an unresolved visible treatment. Preserve treatments that coexist in the image instead of making the user choose between them.
 
 | Branch | Component evidence | Downstream decisions |
 | --- | --- | --- |
@@ -17,7 +17,7 @@ Record known user preferences and image evidence first. Mark decisions as user-s
 
 Rank unresolved decisions using three factors: visible impact, number of affected component families, and uncertainty after considering the reference. Prefer one answer that settles several related rules. Do not combine unrelated differences into a confusing choice. For each possible answer, describe which branches become fixed and which meaningful uncertainty remains.
 
-Default to a maximum of three initial preference questions across all stages. Use a smaller explicit user budget when provided. Reserve questions for the highest-ranked unresolved nodes; derive the rest consistently. Do not spend the budget on font names, pixel values, technical implementation, product context, or questions already answered.
+Required product/homepage and unresolved optimization-scope questions are separate and do not require visual specimens. Default to a maximum of three initial visual preference questions across all stages. Use a smaller explicit user budget when provided. Reserve questions for the highest-ranked unresolved nodes; derive the rest consistently. Do not spend the budget on font names, pixel values, technical implementation, product context, or questions already answered.
 
 For each selected node, record:
 

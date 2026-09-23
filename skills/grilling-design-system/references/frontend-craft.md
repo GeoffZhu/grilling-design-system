@@ -1,5 +1,7 @@
 # Frontend craft
 
+Apply component-specific rules only to the selected product/task inventory from product-flows.md. Marketing uses custom core families; existing SaaS preserves host components. Do not expand scope to satisfy an admin-only check.
+
 Apply this before designing a direction, before showing key components, and after expanding the full library. The method draws on [Anthropic's frontend-design skill](https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/plugins/frontend-design/skills/frontend-design/SKILL.md), read 2026-09-16. This is an adaptation for image-led design systems, not an instruction to adopt a house style.
 
 ## Preserve the brief
@@ -25,7 +27,7 @@ Before coding, compare the plan to the image. Remove choices that could have bee
 
 ## Pass 2: build and inspect the actual components
 
-Use official shadcn APIs and interaction primitives as the structural base. Design the actual variant classes, state treatments and component geometry. Merely assigning global colors and a large radius is not a completed system.
+For shadcn-based SaaS only, use official shadcn APIs and interaction primitives as the structural base. Design the actual variant classes, state treatments and component geometry. Merely assigning global colors and a large radius is not a completed system.
 
 | Area | What to inspect at actual size |
 | --- | --- |

@@ -250,6 +250,15 @@ export function button_group_css() { return BUTTON_GROUP; }
 export function tabs_line_css() { return TABS_LINE; }
 export function input_group_composition_css() { return INPUT_GROUP_COMPOSITION; }
 
+/** Custom products supply their own component styles and states. */
+export function foundation_css(t, tailwind = true) {
+  let variables = ":root{" + declarations(t) + "}\n";
+  if (py_truthy(t.alternate)) variables += "." + t.alternate.mode + "{" + Object.entries(t.alternate.colors).map(([key, value]) => "--" + key + ":" + value).join(";") + ";color-scheme:" + t.alternate.mode + "}\n";
+  const base = "*{box-sizing:border-box}body{margin:0;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:var(--body-size);line-height:var(--body-leading);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}button,input,select,textarea{font:inherit}";
+  const aliases = Object.keys(t.colors).map(key => "--color-" + key + ":var(--" + key + ")").join(";");
+  return (tailwind ? '@import "tailwindcss";\n@custom-variant dark (&:is(.dark *));\n@theme inline{' + aliases + ";}\n" : "") + variables + base + "\n";
+}
+
 export function css(t, tailwind = true, hooks = null) {
   let variables = ":root{" + declarations(t) + "}\n";
   if (py_truthy(t.alternate)) variables += "." + t.alternate.mode + "{" + Object.entries(t.alternate.colors).map(([key, value]) => "--" + key + ":" + value).join(";") + ";color-scheme:" + t.alternate.mode + "}\n";

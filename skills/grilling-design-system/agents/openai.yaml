@@ -1,4 +1,4 @@
 interface:
   display_name: "Grilling Design System"
-  short_description: "Image to usable shadcn/ui system and guide"
-  default_prompt: "Use $grilling-design-system to analyze this image's content hierarchy and visual relationships, carry its distinct treatments into a design system, ask only key visual questions with native single-select tools, and deliver the complete library, DESIGN.md, and verified repository-specific usage instructions."
+  short_description: "Create or improve SaaS and marketing UI from an image"
+  default_prompt: "Use $grilling-design-system to read a reference image, ask SaaS or Marketing and optional SaaS homepage, then create a design system or improve existing pages with appropriate components, DESIGN.md and verified usage instructions."

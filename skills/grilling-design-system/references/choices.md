@@ -1,5 +1,7 @@
 # Preview links and native single-select questions
 
+Product/homepage and unresolved scope questions follow product-flows.md using the host single-select tool without preview candidates. This document applies to visual preferences only.
+
 ## Publish the planned visual choice
 
 Select the next high-impact unresolved node from decision-tree.md. Publish two comparable specimens with reviewType: choice. Use only enough UI to make the visual difference clear. Keep HTML free of feedback forms, checkboxes for choosing a design, and decision buttons; controls within specimens remain interactive.

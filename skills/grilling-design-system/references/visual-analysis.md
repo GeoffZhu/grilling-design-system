@@ -68,7 +68,7 @@ Choose the smallest appropriate implementation layer:
 
 - **Foundation token:** a repeated semantic value, such as color roles, type roles, spacing, or depth. Supply explicit craft and family signature values where the generator supports them.
 - **Component rule or variant:** role-specific typography, density, surface, geometry, or state behavior. Use theme-overrides.css or host-native styles when tokens cannot express the rule. Preserve supported APIs and accessible primitive behavior.
-- **Custom component:** a recurring anatomy or interaction absent from the standard inventory. Give it a specific name, real props, and a registered preview. Do not create a custom component merely to restyle Button or Card.
+- **Custom component:** a recurring anatomy or interaction absent from the standard inventory. Give it a specific name, real props, and a registered preview. For shadcn-based SaaS, do not create a custom component merely to restyle Button or Card. Marketing and SaaS homepage families are deliberately custom; follow product-flows.md.
 - **Asset:** an image, illustration, texture, or icon essential to the reference's composition. Preserve authorized assets; identify interpretations and placeholders. Placeholder imagery preserves aspect ratio, crop, placement, and visual mass but does not prove fidelity to the original imagery. Follow the skill's image-source policy.
 - **Docs composition:** reading order, section scale, asymmetry, or media placement that belongs in the integrated Key Visual. Compose delivered components without exporting a business page as a reusable component.
 

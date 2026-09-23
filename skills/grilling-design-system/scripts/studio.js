@@ -6,6 +6,8 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { translated_copy } from './language.js';
+import { product_context, assert_same_product, assert_target_build, validate_custom_coverage } from './product.js';
+import { validate_source_snapshot } from './source_snapshot.js';
 import { completion_errors } from './design_document.js';
 import { execute_build, validate_build, image_dimensions, sha256, fingerprint } from './verification.js';
 
@@ -365,7 +367,8 @@ function check_published_evidence(root, state) {
   }
 }
 
-export function init(root, source, name, simulation = false, language = 'en', ui_copy = undefined) {
+export function init(root, source, name, simulation = false, language = 'en', ui_copy = undefined, context = undefined) {
+  if (context) context = product_context(context);
   const labels = translated_copy(language, ui_copy);
   root = path.resolve(String(root));
   const project = temporary_project(root);
@@ -378,6 +381,7 @@ export function init(root, source, name, simulation = false, language = 'en', ui
   fs.cpSync(source, target, { preserveTimestamps: true });
   const state = { schemaVersion: 3, name, image: path.basename(target), simulation, language, uiCopy: labels,
     nextStage: 'direction', status: 'needs-agent', revision: 0, round: null, accepted: {}, history: [], approval: null };
+  if (context) { state.context = context; write(path.join(project, 'project-context.json'), context); }
   fs.writeFileSync(path.join(project, TEMP_MARKER), 'Temporary files owned by grilling-design-system.\n');
   save(root, state);
   return state;
@@ -539,9 +543,10 @@ export function finish(root, evidence) {
   }
   const contextPath = path.join(path.dirname(root), 'project-context.json');
   const generated = state.generated;
-  let mode;
+  let mode, context = state.context;
   if (isFile(contextPath)) {
-    const context = read(contextPath);
+    context = read(contextPath);
+    assert_same_product(state.context, context);
     mode = context.mode;
     if (!['integrated', 'standalone'].includes(mode)) throw new Error('project-context.json needs mode integrated or standalone');
     const docRoot = path.resolve(mode === 'integrated' ? context.webRoot : context.output);
@@ -557,12 +562,24 @@ export function finish(root, evidence) {
   if (mode === 'standalone' && (!generated || path.resolve(generated.path) !== output || generated.tokenHash !== expected)) {
     throw new Error('Standalone delivery requires library.js --deliver for the approved tokens first');
   }
+  const product = product_context(context ?? generated?.context);
   const errors = completion_errors(fs.readFileSync(evidence.designDoc, 'utf8'), path.dirname(evidence.designDoc));
   if (errors.length) throw new Error('Complete DESIGN.md before delivery: ' + errors.join('; '));
   const receipt = build_receipt(root, state, evidence.buildId);
   if (!Object.keys(receipt.sourceFiles).some((file) => file.startsWith(output + path.sep))) throw new Error('Verified build must include the delivered component source');
+  assert_target_build(product, receipt);
   const approvedBuild = state.verifications?.[state.approval.buildId];
   if (!approvedBuild) throw new Error('The approved presentation needs a verified build');
+  if (product.taskType === 'optimize') {
+    assert_target_build(product, approvedBuild);
+    const implementationFile = file => /[.](?:[cm]?[jt]sx?|vue|svelte|html|css|scss|sass|less|svg|mdx?)$/.test(file) || /(?:package(?:-lock)?[.]json|pnpm-lock[.]yaml|yarn[.]lock|bun[.]lockb?)$/.test(file);
+    for (const [file, hash] of Object.entries(approvedBuild.sourceFiles)) {
+      if (implementationFile(file) && receipt.sourceFiles[file] !== hash) throw new Error('Confirmed page or dependency changed; present the final implementation again: ' + file);
+    }
+    for (const file of Object.keys(receipt.sourceFiles)) {
+      if (implementationFile(file) && !(file in approvedBuild.sourceFiles)) throw new Error('Page build inputs changed; present the final implementation again: ' + file);
+    }
+  }
   for (const [file, hash] of Object.entries(approvedBuild.sourceFiles)) {
     if (file.startsWith(output + path.sep) && (file.includes('/src/') || file.includes('/components/') || /[.](?:[cm]?[jt]sx?|vue|svelte|html|css|scss|sass|less|svg|mdx?)$/.test(file))) {
       if (receipt.sourceFiles[file] !== hash) throw new Error('Confirmed component or style changed; present the final implementation again: ' + file);
@@ -574,14 +591,22 @@ export function finish(root, evidence) {
   }
   if (mode === 'standalone') {
     const tokens = read(path.join(output, 'tokens.json'));
-    const snapshot = read(path.join(output, 'shadcn-snapshot.json'));
+    const snapshot = read(contained(output, generated.snapshotPath ?? 'shadcn-snapshot.json'));
+    validate_custom_coverage(snapshot.custom ?? [], product, true);
     if (digest(tokens) !== expected || snapshot.deliverySha256 !== evidence.snapshotHash || generated.snapshotHash !== evidence.snapshotHash) throw new Error('Delivered tokens or source snapshot do not match generation');
     if ((snapshot.ui?.length ?? 0) + (snapshot.custom?.length ?? 0) !== evidence.componentCount || generated.componentCount !== evidence.componentCount) throw new Error('Delivered component inventory does not match generation');
-    const registry = read(path.join(output, 'public/r/all.json'));
+    if (product.productType === 'marketing') validate_source_snapshot(output, snapshot);
+    const registry = product.productType === 'marketing' ? { files: [] } : read(path.join(output, 'public/r/all.json'));
     for (const file of registry.files ?? []) {
       const local = contained(output, file.path);
       if (!isFile(local) || fs.readFileSync(local, 'utf8') !== file.content) throw new Error('Registry differs from delivered source: ' + file.path);
     }
+  }
+  if (mode === 'integrated' && (product.productType === 'marketing' || product.includeMarketingHomepage)) {
+    const snapshot = read(path.join(output, 'source-snapshot.json'));
+    validate_custom_coverage(snapshot.custom ?? [], product, true);
+    validate_source_snapshot(output, snapshot, [context.webRoot]);
+    if (snapshot.deliverySha256 !== evidence.snapshotHash || (snapshot.ui?.length ?? 0) + (snapshot.custom?.length ?? 0) !== evidence.componentCount) throw new Error('Custom delivery inventory or snapshot does not match evidence');
   }
   state.status = 'delivered';
   state.delivery = { ...evidence, mode, build: { command: receipt.command, exitCode: receipt.exitCode, at: receipt.at },
@@ -684,6 +709,7 @@ commands:
   finish     record verified delivery
 
 options:
+  --context  inspected project context JSON (init only)
   -h, --help  show this help message and exit`;
 
 function parseCli(argv) {
@@ -716,7 +742,7 @@ export async function main(argv = process.argv.slice(2)) {
   if (parsed.help) { console.log(CLI_HELP); return; }
   const { command, values } = parsed;
   const root = path.resolve(values.session);
-  if (command === 'init') init(root, values.image, values.name, values.simulation ?? false, values.language, values['ui-copy'] ? read(values['ui-copy']) : undefined);
+  if (command === 'init') init(root, values.image, values.name, values.simulation ?? false, values.language, values['ui-copy'] ? read(values['ui-copy']) : undefined, values.context ? read(values.context) : undefined);
   else if (command === 'verify') { console.log(pretty(verify(root, read(values.spec)))); return; }
   else if (command === 'snapshot') { console.log(pretty(snapshot(root, values.dist, values.name))); return; }
   else if (command === 'publish') publish(root, read(values.spec));

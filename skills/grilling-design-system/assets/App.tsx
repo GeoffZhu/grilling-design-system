@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { MouseEvent } from 'react'
 import { Github, Menu, Search, X } from 'lucide-react'
-import { Input } from '@/components/ui/input'
 import { componentEntries, ComponentPreview } from './FullGallery'
 import IntegratedPreview from './IntegratedPreview'
 import tokens from '../tokens.json'
@@ -46,7 +45,7 @@ export default function App() {
   }
 
   const sidebar = <div className="catalog-sidebar-inner">
-    <div className="catalog-search"><Search aria-hidden="true"/><Input value={query} onChange={event => setQuery(event.target.value)} placeholder={text['Search components']} aria-label={text['Search components']} /></div>
+    <div className="catalog-search"><Search aria-hidden="true"/><input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder={text['Search components']} aria-label={text['Search components']} /></div>
     <nav aria-label={text['Component navigation']}>
       <a className={!active ? 'sidebar-link active' : 'sidebar-link'} href={window.location.pathname} onClick={event => navigate(event)}>{text['Components overview']}</a>
       {categories.map(category => {

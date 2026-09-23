@@ -12,7 +12,8 @@
 .catalog-sidebar-inner{display:flex;flex-direction:column;gap:20px;padding:24px 20px 48px}
 .catalog-search{position:relative;margin:0}
 .catalog-search>svg{position:absolute;z-index:1;left:12px;top:50%;width:16px;height:16px;transform:translateY(-50%);color:var(--muted-foreground)}
-.catalog-search input{height:38px;padding-left:38px;background:var(--background)}
+.catalog-search input{width:100%;min-width:0;height:38px;padding:8px 12px 8px 38px;background:var(--background);color:var(--foreground);border:1px solid var(--border);border-radius:var(--control-radius)}
+.catalog-search input:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
 .catalog-sidebar nav{display:flex;flex-direction:column;gap:2px;min-width:0}
 .sidebar-group{display:flex;flex-direction:column;gap:2px;margin-top:24px}
 .sidebar-group h2{margin:0 0 6px;padding:0 10px;color:var(--muted-foreground);font:600 11px/1.4 var(--font-sans);letter-spacing:.08em;text-transform:uppercase}

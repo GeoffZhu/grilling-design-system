@@ -1,5 +1,7 @@
 # Design translation rules
 
+Apply component-specific rules only to the selected product/task inventory from product-flows.md. Marketing uses custom core families; existing SaaS preserves host components. Do not expand scope to satisfy an admin-only check.
+
 Read visual-analysis.md first. Base these rules on the region map in interpretation.md and the evidence-to-implementation mapping in visual-translation.md. Preserve content hierarchy and the relationships among treatments, not just individual visual attributes.
 
 ## UI images

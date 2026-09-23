@@ -7,6 +7,8 @@ import { afterEach, beforeEach, describe, test } from 'node:test';
 import { deflateSync } from 'node:zlib';
 
 import { translated_copy } from '../skills/grilling-design-system/scripts/language.js';
+import { required_custom } from '../skills/grilling-design-system/scripts/product.js';
+import { custom_source_snapshot } from '../skills/grilling-design-system/scripts/source_snapshot.js';
 import { registry } from '../skills/grilling-design-system/scripts/library.js';
 import { COLOR_KEYS } from '../skills/grilling-design-system/scripts/theme.js';
 import {
@@ -422,6 +424,54 @@ describe('workflow', () => {
     assert.equal(existsSync(project), false);
     assert.equal(existsSync(module), true);
     assert.equal(existsSync(documentPath), true);
+  });
+
+  test('optimization refuses page changes outside the component directory after confirmation', () => {
+    const host = temporaryDirectory;
+    const module = path.join(host, 'src/design-system');
+    mkdirSync(module, { recursive: true });
+    const page = path.join(host, 'src/settings.vue');
+    writeFileSync(page, '<template><button>Save</button></template>');
+    writeFileSync(path.join(module, 'theme.css'), 'button{color:black}');
+    const documentPath = path.join(host, 'DESIGN.md');
+    writeFileSync(documentPath, completedDesignDocument());
+    write(path.join(project, 'project-context.json'), {
+      mode: 'integrated', webRoot: host, output: module, productType: 'saas', taskType: 'optimize',
+      includeMarketingHomepage: false, targetPaths: ['src/settings.vue', 'src/design-system/theme.css'],
+    });
+    advance(); choose('approve');
+    const state = read(path.join(root, 'session.json'));
+    writeFileSync(page, '<template><button>Changed after approval</button></template>');
+    const evidence = { path: module, designDoc: documentPath, tokenHash: state.approval.tokenHash,
+      componentCount: 1, snapshotHash: 'fixture', buildId: verifyFixture().buildId, checks: { build: 'passed' } };
+    assert.throws(() => finish(root, evidence), /Confirmed page or dependency changed/);
+    assert.equal(existsSync(project), true);
+  });
+
+  test('marketing standalone finishes with custom coverage and a source snapshot, without registry', () => {
+    const library = path.join(temporaryDirectory, 'marketing');
+    mkdirSync(library);
+    const names = required_custom({ productType: 'marketing' });
+    const entries = names.map(name => {
+      const file = name + '.js';
+      writeFileSync(path.join(library, file), 'export const component = "' + name + '"');
+      return { name, files: [file], preview: { path: name + '.preview.js' } };
+    });
+    writeFileSync(path.join(library, 'DESIGN.md'), completedDesignDocument());
+    write(path.join(library, 'tokens.json'), tokenFixture());
+    const source = custom_source_snapshot(library, entries, {}, ['tokens.json']);
+    write(path.join(library, 'source-snapshot.json'), source);
+    const context = {mode:'standalone', output:library, productType:'marketing', taskType:'new', includeMarketingHomepage:false, targetPaths:[]};
+    write(path.join(project, 'project-context.json'), context);
+    advance(); choose('approve');
+    const state = read(path.join(root, 'session.json'));
+    state.generated = {path:library, tokenHash:state.approval.tokenHash, componentCount:9, snapshotHash:source.deliverySha256, snapshotPath:'source-snapshot.json', context};
+    write(path.join(root, 'session.json'), state);
+    const evidence = {path:library, designDoc:path.join(library,'DESIGN.md'), tokenHash:state.approval.tokenHash,
+      componentCount:9, snapshotHash:source.deliverySha256, buildId:verifyFixture().buildId, checks:{build:'passed'}};
+    const result = finish(root, evidence);
+    assert.equal(result.status,'delivered');
+    assert.equal(existsSync(path.join(library,'public/r/all.json')),false);
   });
 
   test('delivery refuses final output inside temporary project', () => {

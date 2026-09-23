@@ -14,7 +14,7 @@
 - session/candidates/: agent-authored tokens, HTML and content. Use new paths each revision.
 - LIBRARY: final component module or standalone app selected by project-output.md.
 - DESIGN_DOC: Web application root/DESIGN.md in integrated mode; LIBRARY/DESIGN.md in standalone mode.
-- PROJECT/project-context.json: inspected environment and output paths; PROJECT is the owned `.tmp/grilling-design-system` namespace and holds session/, cache/, evidence/, drafts, translations, and other non-final artifacts.
+- PROJECT/project-context.json: inspected environment, output paths and productType/taskType/includeMarketingHomepage/targetPaths (see product-flows.md); PROJECT is the owned `.tmp/grilling-design-system` namespace and holds session/, cache/, evidence/, drafts, translations, and other non-final artifacts.
 - A successful `studio.js finish` deletes PROJECT. A failed validation or pending user decision leaves it intact for resume. Never place temporary workflow files in a legacy working directory or elsewhere in LIBRARY.
 - Keep LIBRARY and DESIGN_DOC outside PROJECT. Stop the local Studio server before `finish`; its preview becomes unavailable when PROJECT is deleted.
 - evidence/: available screenshots, source observations, and explicit verification limitations.
@@ -22,7 +22,7 @@
 - interpretation.md: region IDs, content hierarchy, visual relationships, observations, and uncertainty from visual-analysis.md.
 - visual-translation.md: important evidence mapped to implementation layers, actual files/variants, scope, verification, and adaptations. Distill durable rules into design-notes.md before cleanup.
 
-Node.js scripts use built-in modules. library.js scaffolds standalone React/Vite apps and uses npm only in that mode. In Web projects, --sources-only fetches upstream inputs without scaffolding; follow project-output.md to integrate with the host framework and tooling. Local serving binds 127.0.0.1. No account or hosted backend is required.
+Node.js scripts use built-in modules. studio.js init --context stores inspected context in the session. library.js --context scaffolds standalone React/Vite apps and uses npm only in that mode. Marketing performs no upstream download and writes source-snapshot.json; Standalone new SaaS retains its shadcn snapshot and registry; existing SaaS uses host-native evidence as described in existing-project.md. Legacy commands without product context retain SaaS behavior. Product/scope changes require a new session. In Web projects, --sources-only fetches upstream inputs without scaffolding; follow project-output.md to integrate with the host framework and tooling. Local serving binds 127.0.0.1. No account or hosted backend is required.
 
 ## Tokens
 
@@ -50,7 +50,7 @@ Expand colors to the complete required map: background, foreground, card, card-f
 
 Optional alternate: {"mode":"dark","colors":{complete map}}. Only on request. If icons differ from Lucide, replace imports consistently and update dependencies. Token text alone does not install fonts or change icon geometry.
 
-Optional craft group controls component-specific details without replacing shadcn APIs. Values are examples, not a preferred style:
+Optional craft group controls component-specific details; preserve actual component APIs, including shadcn APIs where used. Values are examples, not a preferred style:
 
 ~~~json
 "craft": {
@@ -66,7 +66,7 @@ Switch uses an independent transparent hit area (at least 44×44) around its vis
 
 ## Boards
 
-Boards and standalone libraries use the same browser-native component CSS. Use the delivered `cn-*` class hooks in board HTML; arbitrary agent-authored markup does not acquire component behavior. The two modes differ only in Tailwind imports and aliases. Use the same custom overrides in both previews when present.
+Shadcn-based SaaS boards and standalone libraries use the same browser-native component CSS. Marketing boards set content.productType: marketing; non-shadcn host boards set content.componentStyle: custom; they use foundation CSS and agent-authored component rules without cn-* or shadcn styles. Only shadcn boards use the delivered `cn-*` class hooks in board HTML; arbitrary agent-authored markup does not acquire component behavior. Within the shadcn branch, HTML boards and libraries differ in Tailwind imports and aliases. Use the same custom overrides in both previews when present.
 
 Optional signature tokens configure each family: actions, inputs, selection, navigation, data-display, overlays, feedback. Every family accepts shadow (CSS value) and borderWidth (px, 0–16). Actions, selection and navigation also accept pressedOffset; feedback accepts accentWidth. Other family/property combinations are rejected. Example:
 
@@ -187,9 +187,11 @@ Add buildId at the top level of a presentation spec and delivery evidence. Live 
 
 Keep the final library/source snapshot and DESIGN.md in agreement by agent inspection. Structured checks and image headers cannot establish aesthetic quality, screenshot authenticity or natural-language meaning. Decision events and approval are explicitly marked host-reported: only submit actual host-tool/chat answers. The local API is not an identity-verification boundary.
 
-Resolve paths with project-output.md first. These generator details apply to standalone delivery. Draft uses --tokens and core shadcn sources plus a neutral starter. --full preflights the entire snapshot. --deliver reads approved foundations from --session, requires --build, and records session.generated; it never marks the session delivered. Upstream inputs are fetched before any file is written, and LIBRARY/.tmp/grilling-design-system/standalone-owner marks generator-owned output so an interrupted run can be retried in place. The marker is temporary and removed after delivery; later maintenance also recognizes the generated package and snapshot. If TLS verification fails behind an intercepting system proxy, retry with no_proxy="*". Use --output LIBRARY directly, without a library/ wrapper; App.tsx and custom files remain. Never run this scaffold in a host Web project. Both modes finish with studio.js finish and actual delivery evidence (see project-output.md); finish rejects an incomplete DESIGN.md.
+Resolve paths with project-output.md first. These generator details apply to standalone delivery. Draft uses --tokens and --context. Marketing starts with the custom gallery shell; author its nine families before --full. New SaaS uses core shadcn sources plus a neutral starter, and --full preflights the entire upstream snapshot. --deliver reads approved foundations from --session, requires --build, and records session.generated; it never marks the session delivered. For new SaaS, upstream inputs are fetched before any generated app file is written, and LIBRARY/.tmp/grilling-design-system/standalone-owner marks generator-owned output so an interrupted run can be retried in place. The marker is temporary and removed after delivery; later maintenance also recognizes the generated package and snapshot. If TLS verification fails behind an intercepting system proxy, retry with no_proxy="*". Use --output LIBRARY directly, without a library/ wrapper; App.tsx and custom files remain. Never run this scaffold in a host Web project. Both modes finish with studio.js finish and actual delivery evidence (see project-output.md); finish rejects an incomplete DESIGN.md.
 
 DESIGN.md is drafted from assets/DESIGN.template.md with all 13 numbered sections. scripts/design_document.js fills facts available from tokens and existing paths, preserving evidence within sections 8 and 13. Complete the remaining fields from actual source and accepted choices before delivering. A generated draft (still containing the draft notice) is refreshed in place. A completed DESIGN.md is never overwritten: the refreshed draft goes to PROJECT/DESIGN.draft.md (LIBRARY/.tmp/grilling-design-system by default) and must be merged back, reapplying completed values and translations. Follow design-document.md and run its completion check; generating source artifacts alone does not complete the document.
+
+The following source, style and registry details apply only to standalone shadcn SaaS.
 
 Upstream behavior/API source: `apps/v4/registry/bases/base/` in `shadcn-ui/ui`, discovered through that repository's generated `public/r/index.json`. Pin both metadata and raw files to the same full commit SHA in library.js; update that pin deliberately, never follow `main` during generation. This raw Base UI layer exposes `cn-*` semantic hooks without selecting Nova, Vega, or another shadcn visual preset. The generator must style those hooks from approved tokens and component decisions. Before writing output, extract every `cn-*` hook from the selected source set, classify it as explicit visual, semantically inferred visual, or structural, and fail on missing or unclassified hooks. Enforce the complete required Base UI state matrix with visible-property declarations, while separately recording states observed in source. The generated design slug identifies the custom style in components.json; it must not claim to be an official shadcn preset. shadcn-snapshot.json records repository and commit, metadata/source/generator/lockfile hashes, toolchain versions, primitive family, hook classifications, names, state coverage, and any upstream `registry:ui` entries that currently have no files. Gallery lazily imports raw Base UI examples. Next image/link examples adapt to React HTML for Vite; icon placeholders adapt to Lucide. Sonner observes the document color-mode class through a local hook. Supplemental demos cover current UI items whose upstream examples are unsuitable for the standalone gallery; add further demos if the snapshot grows. SHADCN-LICENSE.txt accompanies source and registry.
 
@@ -198,3 +200,11 @@ Known fixed-color Checkbox, Badge and Toggle examples are translated into semant
 Keep custom CSS under src/components/custom/ and import it from custom TSX, or use src/theme-overrides.css. These files are preserved and distributed. Fontsource imports must be backed by package.json dependencies; those are preserved across generation. Avoid manual edits to generated main.tsx or index.css. Copy scripts' output artifacts into source control as appropriate; omit node_modules and build caches.
 
 Standalone registry: LIBRARY/public/r/all.json. Serve public/ and install the URL via npx shadcn@4.21.0 add into React + Tailwind 4 with initialized shadcn configuration and src/ root. Include required custom fonts/assets in the registry. This is source distribution; publishing/deployment is not implied.
+
+## Product-specific snapshots
+
+Marketing standalone generation records source-snapshot.json: custom component names and componentFiles, portable files and SHA-256 hashes, dependencies, and deliverySha256. No shadcn registry is created. Generated state records snapshotPath; old state defaults to shadcn-snapshot.json.
+
+For host-native marketing or SaaS-homepage integration, use custom_source_snapshot(output, entries, dependencies, seeds, options) from scripts/source_snapshot.js. entries use name/files/preview; seeds include actual theme/tokens and other reusable source. Set options.allowedRoots to the inspected host root, options.aliases to real alias prefixes and absolute source roots, and options.ui to the admin inventory when included. Only mixed SaaS may set options.allowShadcn. The helper follows literal local imports; review nonliteral imports/assets and include their concrete files in seeds. Import the helper normally from JS without app scaffolding. Save the returned JSON under LIBRARY/source-snapshot.json and use its deliverySha256 and ui/custom counts in finish evidence.
+
+finish validates marketing coverage and snapshot files in the recorded output/host root, and verifies optimization targetPaths occur in both approved and final build inputs. Preserve snapshot/context and authored files across --deliver regeneration; changed page/component/style sources need a new presentation.

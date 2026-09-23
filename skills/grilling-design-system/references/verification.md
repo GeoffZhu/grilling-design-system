@@ -2,9 +2,11 @@
 
 ## Available capabilities
 
-Use the host's available browser and image tools, following their actual schemas. No named browser package, CLI, extension, or installation is a prerequisite. Do not install a browser tool just to satisfy this skill. Use existing capabilities when present; otherwise inspect source, run build and contrast checks, serve HTML for the user, and record the missing visual or interaction checks explicitly.
+Follow host browser instructions: default to agent-browser for local development validation and playwriter for other browser tasks when available. Use actual tool schemas. No named browser package, CLI, extension, or installation is a prerequisite. Do not install a browser tool just to satisfy this skill. Use existing capabilities when present; otherwise inspect source, run build and contrast checks, serve HTML for the user, and record the missing visual or interaction checks explicitly.
 
 Keep known defects separate from unavailable verification. Fix defects before showing the result. Use visualReview.method: source-inspection with nonempty limitations when screenshot inspection is unavailable. Never use a placeholder image as review evidence or label unexecuted checks as passed. Placeholder imagery inside the reviewed UI must follow the policy in SKILL.md and be replaced before production. Carry limitations into DESIGN.md and the delivery response.
+
+Apply the checks below only to components in the recorded inventory; do not add admin components to a marketing site for validation. For optimization, inspect actual target pages and affected shared consumers as well as the gallery.
 
 ## Per preview
 
@@ -31,16 +33,16 @@ Keep known defects separate from unavailable verification. Fix defects before sh
 
 Use temporary --simulation sessions for explicitly requested simulated runs. Record simulated responses through studio.js decide; never add decision controls to HTML or edit session state to skip a pending response. Keep simulation status visible in state and DESIGN.md.
 
-Cover a planned visual choice, the real available single-select tool when a human participates, a derived checkpoint, one integrated presentation, revision feedback, updated foundations/components, explicit confirmation, and full source/registry/DESIGN.md delivery. Automated tests can submit simulated protocol responses but cannot claim they tested a real question popup. Check resume and retained history. Ensure feedback causes a visible change.
+Cover a planned visual choice, the real available single-select tool when a human participates, a derived checkpoint, one integrated presentation, revision feedback, updated foundations/components, explicit confirmation, and source/applicable registry/DESIGN.md delivery and real updated pages for optimization. Automated tests can submit simulated protocol responses but cannot claim they tested a real question popup. Check resume and retained history. Ensure feedback causes a visible change.
 
 ## Final delivery
 
-- Fetch all registry:ui items from one recorded snapshot; use its manifest rather than a permanently hardcoded count.
+- New SaaS: fetch all registry:ui items from one snapshot. Existing SaaS: cover target pages and related components with the host library. Marketing: cover nine custom families; SaaS homepages add nine marketing-* families. Verify source attribution and inventory against the chosen branch.
 - Verify the requested output directory takes priority. In Web projects put the module there or under the actual source root/design-system, and DESIGN.md at the application root. Outside Web projects put the complete app and DESIGN.md at the selected app root.
-- Include components, gallery, tokens, native styles, snapshot, licenses, and DESIGN_DOC. Web integration reuses the host manifest/lockfile and includes a compatible registry where supported. Standalone delivery includes its own manifest/lockfile and registry. Both components and DESIGN_DOC are mandatory.
+- Include components, gallery, tokens, native styles, snapshot, licenses, and DESIGN_DOC. Web integration reuses the host manifest/lockfile and includes a compatible registry where supported. Standalone delivery includes its own manifest/lockfile and applicable registry; marketing uses a source snapshot without a registry. Both components and DESIGN_DOC are mandatory.
 - Run the final build through studio.js verify and include buildId in delivery evidence. Build, source or artifact changes invalidate the receipt. Where browser access exists, inspect lazy gallery rendering, runtime errors, and visual consistency across forms, navigation, overlays, charts, and feedback components.
-- In Web projects verify host build/typecheck/lint, imports, framework boundaries, formatting, aliases, and dependencies. Test any registry in a consumer matching that stack. For standalone delivery, serve LIBRARY/public and install r/all.json into a clean React + Tailwind 4 consumer, then build and check theme imports.
-- Verify registry includes source imports, dependency versions, theme files, and required assets/fonts.
+- In Web projects verify host build/typecheck/lint, imports, framework boundaries, formatting, aliases, and dependencies. Test any registry in a consumer matching that stack. For standalone SaaS delivery, serve LIBRARY/public and install r/all.json into a clean React + Tailwind 4 consumer, then build and check theme imports.
+- For marketing, copy the snapshot file closure and dependencies into a clean compatible consumer and build it; verify no shadcn imports or dependencies. For a registry, verify source imports, dependency versions, theme files and required assets/fonts.
 - Verify custom theme rules take effect after generated defaults in both the local application and registry consumer. Compare representative computed styles when a browser is available; file presence alone does not establish the CSS cascade.
 - Reconcile visual-translation.md with final source and previews. Document important adaptations, omissions, and imagery limitations; preserve the durable mapping in design-notes.md and DESIGN.md before temporary files are removed.
 - Search generated application, gallery, example, and registry sources for non-dummy placeholder services and random-photo URLs. Every remote `img`, `Image`, and Avatar image source in downloaded/generated examples and blocks must use `dummyimage.com`; preserve verified user-authored references, imported assets, and licensed assets outside generated example source.

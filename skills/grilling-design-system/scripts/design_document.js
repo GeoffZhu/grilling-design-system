@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { digest, read } from './studio.js';
 import { contrast, geometry, style_provenance } from './theme.js';
+import { product_context, MARKETING_COMPONENTS } from './product.js';
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 export const TEMPLATE = path.resolve(SCRIPT_DIR, '..', 'assets', 'DESIGN.template.md');
@@ -79,7 +80,8 @@ function recursivelyList(root) {
 export function document(output, tokens, state, snapshot, checks, context = null) {
   /** Generate an intermediate draft for agent completion before delivery. */
   output = resolveExistingPath(output);
-  context = context ?? {};
+  context = product_context(context ?? state?.context ?? {});
+  const marketing = context.productType === 'marketing';
   const integrated = context.mode === 'integrated';
   const docRoot = integrated ? resolveExistingPath(context.webRoot) : output;
   const template = readText(TEMPLATE);
@@ -109,11 +111,13 @@ export function document(output, tokens, state, snapshot, checks, context = null
   }
 
   function source(sourcePath) {
+    if (/^(?:Not applicable|N\/A|不适用)/i.test(sourcePath ?? '')) return sourcePath;
     if (!sourcePath) return '[fill here: existing path or Not applicable with reason]';
     const actual = resolveExistingPath(docRoot, sourcePath);
     return exists(actual) ? posixRelative(docRoot, actual) : '[fill here: existing path or Not applicable with reason]';
   }
 
+  sections.get(1)[1] = sections.get(1)[1].replace('Product type:\n\n' + String.fromCharCode(96) + '[fill here]' + String.fromCharCode(96), 'Product type: ' + (marketing ? 'Marketing site' : 'SaaS app'));
   const colors = tokens.colors;
   const craft = geometry(tokens);
   const aliases = {
@@ -181,7 +185,21 @@ export function document(output, tokens, state, snapshot, checks, context = null
     + `${DRAFT_NOTICE} Complete every placeholder and verify all rules against the final library before delivery. `
     + 'Infer missing documentation from the project and confirmed visual choices; do not turn template fields into a user questionnaire.');
 
-  append(4, '### Public API mapping\n\n' + (integrated
+  if (marketing || context.includeMarketingHomepage) append(4, '### Marketing components\n\n' + MARKETING_COMPONENTS.map(name => '- ' + (marketing ? name : 'marketing-' + name) + ': document its actual custom API, states and responsive behavior.').join('\n'));
+  if (marketing) {
+    for (const name of ['Modal', 'Drawer', 'Tabs', 'Table']) {
+      const section = sections.get(4);
+      const start = section[1].indexOf('### ' + name + '\n');
+      const end = section[1].indexOf('\n### ', start + 1);
+      if (start >= 0) {
+        const block = section[1].slice(start, end < 0 ? undefined : end).replace('[fill here]', 'Not applicable: outside the marketing core inventory.');
+        section[1] = section[1].slice(0, start) + block + (end < 0 ? '' : section[1].slice(end));
+      }
+    }
+  }
+  append(4, '### Public API mapping\n\n' + (marketing
+    ? (context.apiMapping ?? 'Use the actual custom component exports. Do not map custom APIs to shadcn variants. Input / Form is one family containing inputs and form composition.')
+    : integrated
     ? (context.apiMapping ?? '[fill here: map design roles to actual host component APIs]')
     : 'Preserve shadcn/ui APIs. The design role primary maps to Button variant="default"; '
       + 'size md maps to size="default". Keep secondary, ghost, destructive, sm, and lg identifiers unchanged. '
@@ -212,20 +230,22 @@ export function document(output, tokens, state, snapshot, checks, context = null
   fields(9, {
     Framework: integrated ? (context.framework ?? '[fill here: actual host framework]') : 'React + TypeScript + Vite',
     Styling: integrated ? (context.styling ?? '[fill here: actual host styling]') : 'Tailwind CSS 4 + semantic CSS variables',
-    'Component library': integrated ? (context.componentLibrary ?? '[fill here: actual compatible component library]') : 'shadcn/ui',
+    'Component library': marketing ? 'Custom marketing components' : integrated ? (context.componentLibrary ?? '[fill here: actual compatible component library]') : 'shadcn/ui',
     'Icon library': tokens.icons.family,
-    'UI components': source(integrated ? implementation['UI components'] : 'src/components/ui'),
+    'UI components': source(integrated ? implementation['UI components'] : marketing ? 'src/components/custom' : 'src/components/ui'),
     'Shared components': source(integrated ? implementation['Shared components'] : 'src/components/shared'),
     'Domain components': source(integrated ? implementation['Domain components'] : 'src/components/custom'),
     'Design tokens': source(integrated ? implementation['Design tokens'] : 'tokens.json'),
     'Working directory': integrated ? (context.workingDirectory ?? '[fill here: repository-relative command directory]') : '.',
     'Start or install': integrated ? (context.startOrInstall ?? '[fill here: exact host start or install command]') : 'npm install; npm run dev to browse locally',
-    'Global styles': integrated ? (context.globalStyles ?? '[fill here: exact stylesheet import and entry file]') : 'src/main.tsx imports src/index.css once; registry consumers install the generated theme CSS import',
-    'Root providers': integrated ? (context.rootProviders ?? '[fill here: required providers or None]') : 'TooltipProvider wraps the app; mount one Toaster when using toast()',
-    'Public imports': integrated ? (context.publicImports ?? '[fill here: verified public import convention]') : '@/components/ui/<component> after registry installation',
+    'Global styles': marketing && !integrated ? 'src/main.tsx imports src/index.css once and theme-overrides.css when present; copy the snapshot source closure' : integrated ? (context.globalStyles ?? '[fill here: exact stylesheet import and entry file]') : 'src/main.tsx imports src/index.css once; registry consumers install the generated theme CSS import',
+    'Root providers': marketing && !integrated ? (context.rootProviders ?? 'No generated providers; document any required by custom components') : integrated ? (context.rootProviders ?? '[fill here: required providers or None]') : 'TooltipProvider wraps the app; mount one Toaster when using toast()',
+    'Public imports': marketing && !integrated ? '@/components/custom/<component>; preserve transitive local imports' : integrated ? (context.publicImports ?? '[fill here: verified public import convention]') : '@/components/ui/<component> after registry installation',
     'Gallery or docs': integrated ? (context.galleryDocs ?? '[fill here: exact command and route, or Not applicable with reason]') : 'npm run dev; open the root route',
   });
-  append(9, '### Build and distribution\n\n' + (integrated
+  append(9, '### Build and distribution\n\n' + (marketing && !integrated
+    ? 'Run npm install, npm run dev, and npm run build. Copy the files and dependencies recorded in source-snapshot.json; load src/index.css and any theme-overrides.css once. Exclude gallery and preview modules. No registry installation is required.'
+    : integrated
     ? (context.buildInstructions ?? '[fill here: actual host install, build, and preview commands]')
     : 'Run npm install, npm run dev, and npm run build. Import src/index.css once. '
       + 'The installable registry is public/r/all.json; install it with npx shadcn@4.21.0 add <registry-url> '
@@ -243,20 +263,20 @@ export function document(output, tokens, state, snapshot, checks, context = null
   ];
   fields(12, Object.fromEntries(canonicalFiles.map(([name, filename]) => [
     name,
-    source(integrated ? (context.canonicalPaths ?? {})[name] : `src/components/ui/${filename}.tsx`),
+    source(integrated ? (context.canonicalPaths ?? {})[name] : marketing ? (['button', 'input', 'select'].includes(filename) ? 'src/components/custom/' + (filename === 'input' ? 'input-form' : filename) + '.tsx' : 'Not applicable: outside the marketing core inventory') : `src/components/ui/${filename}.tsx`),
   ])));
 
   const extra = [
     '### Source snapshot',
     '',
-    `Source: ${snapshot.url}; fetched: ${snapshot.fetchedAt}.`,
+    `Source: ${snapshot.url ?? snapshot.sourceLayer ?? 'Host components'}${snapshot.fetchedAt ? '; fetched: ' + snapshot.fetchedAt : ''}.`,
     `Token hash: ${digest(tokens)}.`,
     '',
     '| Component | Source |',
     '| --- | --- |',
   ];
-  const inventorySource = integrated ? (context.componentLibrary ?? 'shadcn-derived; verify host adaptation') : 'shadcn/ui';
-  extra.push(...snapshot.ui.map((name) => `| ${name} | ${inventorySource} |`));
+  const inventorySource = marketing ? 'Custom marketing components' : integrated ? (context.componentLibrary ?? 'shadcn-derived; verify host adaptation') : 'shadcn/ui';
+  extra.push(...(snapshot.ui ?? []).map((name) => `| ${name} | ${inventorySource} |`));
   const customRoot = integrated && implementation['Domain components']
     ? resolveExistingPath(docRoot, implementation['Domain components'])
     : path.join(output, integrated ? 'custom' : 'src/components/custom');

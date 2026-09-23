@@ -6,16 +6,16 @@ Resolve DESIGN_DOC with project-output.md: Web application root/DESIGN.md for in
 
 ## Fill from evidence
 
-- Design Direction: infer product type from existing context or describe a neutral component library when no product exists. Record the image's content hierarchy, defining visual relationships, coexisting treatments, and selected direction. Explain concrete principles with their image/user/agent basis instead of only style adjectives. Do not invent product requirements.
+- Design Direction: use the recorded product type and optimization scope from intake; do not infer a different product. Record the image's content hierarchy, defining visual relationships, coexisting treatments, and selected direction. Explain concrete principles with their image/user/agent basis instead of only style adjectives. Do not invent product requirements.
 - Design Tokens: name every allowed value and semantic role used in source. Map surface to card and text-primary to foreground where appropriate. For text-secondary, primary-hover, success, and warning, inspect the actual token or state implementation; define missing semantic roles consistently in code before documenting them. Do not invent a hex value only in the document.
 - Typography, spacing, and radius: record the actual role scale, padding, gaps, and component geometry. Start from the template's allowed spacing scale; if the confirmed system uses another scale, document that exact scale and its rationale. Reconcile starter CSS and component overrides rather than declaring compliance with a scale they do not use.
 - Layout and Interaction Patterns: inspect the implementation for widths, breakpoints, responsive rules, forms, search, and save behavior. Use a concise "Not applicable: reason" for features absent from the component-library scope. Do not build unrelated product pages merely to fill the template.
-- Components: retain the required usage rules and preserve official shadcn APIs. Explain primary/default and md/default mappings. Add custom components within this section when needed.
+- Components: retain applicable usage rules and actual public APIs. Explain primary/default and md/default mappings only for shadcn components. Marketing documents the nine custom families and actual exports; mark unsupported admin features not applicable without adding them. Add custom components within this section when needed.
 - UI States, UX Writing, Accessibility, and AI Rules: retain the template's rules. Document the chosen writing style, relevant states, target sizes, and actual verification limits. Accessibility targets are not evidence of passing.
 - Implementation, Reference Screens, and Canonical Components: use existing paths relative to the directory containing DESIGN_DOC. In Web projects these are relative to the application root, even when the component destination is elsewhere. Inspect custom/shared components and reference screens. In section 9, record the repository-specific start or install command, global stylesheet entry, required root providers, public import convention, and gallery/docs command when present; keep these consistent with the final usage handoff. Mark absent screen types as not applicable with a reason; never fabricate paths or duplicate components to fill a field.
 - Project-Specific Rules: distill visual-translation.md into durable rules, scope and exceptions, actual component/style/asset mappings, and reasons for adaptations or omissions. Link design-notes.md when useful. Preserve snapshot, decision summaries, custom guidance, and source attribution as subsections within section 13; do not copy temporary session artifacts. Keep contrast and verification evidence inside section 8.
 
-Do not turn template fields into questions. Reuse project context, the reference, accepted choices, and consistent agent-derived rules. Only an unresolved high-impact visual choice can use the remaining question budget.
+Do not turn template fields into questions. Reuse project context, the reference, accepted choices, and consistent agent-derived rules. Product and unresolved page scope are resolved during intake; only unresolved high-impact visual choices consume the visual question budget.
 
 ## Regeneration and completion
 
@@ -24,7 +24,7 @@ Before regenerating, preserve the completed DESIGN_DOC with the normal project b
 Before reporting delivery:
 
 1. Complete every placeholder, example-only value, empty field, and reference path. Retain all 13 sections even when a field is not applicable. Remove the generated-draft notice after completing the document; preserve approval/simulation status and verification limits.
-2. Verify colors, type scale, spacing, radii, icons, layout, interactions, and canonical paths against the final library and registry. Fix drift in code or documentation according to the accepted specification.
+2. Verify colors, type scale, spacing, radii, icons, layout, interactions, and canonical paths against the final implementation and applicable registry/source snapshot. Fix drift in code or documentation according to the accepted specification.
 3. Run the structural completion check:
 
 ~~~sh
