@@ -173,6 +173,8 @@ Rules:
 Rules:
 
 * Select: short option lists.
+* Theme both the Select trigger and option popup, including focus, selected and disabled options. Document any intentional native picker separately.
+* Record the actual value/change/ref API, keyboard behavior and supported form submission, validation and reset behavior.
 * Combobox: long/searchable lists.
 * Radio: small visible choices.
 * Switch: immediate on/off state.

@@ -30,12 +30,14 @@ Custom marketing families use these manifest identifiers:
 | card | Card | Feature, case study and pricing compositions |
 | footer | Footer | Brand information and core links |
 | input-form | Input / Form | Inputs, labels, validation and form composition |
-| select | Select | Selection and applicable interaction states |
+| select | Select | Themed trigger, option popup, selection and applicable interaction states |
 | icon | Icon | Icon style, size and accessible meaning |
 
 Use variants and composition inside these families; do not inflate the inventory with separate feature/pricing/business blocks. Input and Form may be separate exports/files in one input-form manifest entry. Header and Navbar are one family.
 
-Author all nine from the reference. Do not fetch, copy, wrap or style shadcn components for marketing. Use native semantic elements and the host's suitable unstyled interaction primitives when needed. An existing icon library is allowed. Preserve keyboard interaction, visible focus, form labels, errors, disabled/loading states, and mobile behavior. Use a native select unless its required behavior needs a more capable accessible primitive.
+Author all nine from the reference. Do not fetch, copy, wrap or style shadcn components for marketing. Use native semantic elements and the host's suitable unstyled interaction primitives when needed; using an unstyled accessible primitive does not require shadcn. An existing icon library is allowed. Preserve keyboard interaction, visible focus, form labels, errors, disabled/loading states, and mobile behavior.
+
+Default Select to an accessible custom option popup styled with the delivered system, even for short lists. Styling a native select's closed field does not style its browser/OS picker. Follow the Select rules in design-rules.md, including documented native exceptions and form compatibility; verify the opened popup as specified in verification.md.
 
 For SaaS homepages, prefix manifest identifiers with marketing- and public component exports with Marketing, e.g. marketing-button / MarketingButton. Apply scoped custom styles; do not inherit the backend's cn-* styling through wrappers. Share brand colors and typography foundations while defining suitable section rhythm and scale. The admin component catalog remains present. Homepage Key Visual is the overview composition when enabled; otherwise use an admin scene.
 
