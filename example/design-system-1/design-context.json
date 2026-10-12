@@ -1,0 +1,28 @@
+{
+  "productType": "marketing",
+  "taskType": "new",
+  "includeMarketingHomepage": false,
+  "targetPaths": [],
+  "mode": "standalone",
+  "cwd": "/Volumes/Code/Github/glimpse-ui-design-system",
+  "webRoot": null,
+  "sourceRoot": null,
+  "output": "/Volumes/Code/Github/glimpse-ui-design-system/design-system",
+  "designDoc": "/Volumes/Code/Github/glimpse-ui-design-system/design-system/DESIGN.md",
+  "workDir": "/Volumes/Code/Github/glimpse-ui-design-system/design-system/.tmp/grilling-design-system",
+  "userSpecifiedOutput": true,
+  "evidence": [
+    "/Users/bytedance/Desktop/Films_Guardians_Milano_M_012.jpg"
+  ],
+  "packageManager": "npm",
+  "lockfiles": [
+    "/Volumes/Code/Github/glimpse-ui-design-system/design-system/package-lock.json"
+  ],
+  "scripts": {
+    "build": "npm run build",
+    "dev": "npm run dev"
+  },
+  "framework": "React 19 + TypeScript + Vite",
+  "styling": "Tailwind CSS 4 foundation with authored custom component CSS",
+  "componentLibrary": "Native semantic React marketing components"
+}

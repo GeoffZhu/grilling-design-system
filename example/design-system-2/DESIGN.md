@@ -4,32 +4,30 @@
 
 Product type:
 
-`面向品牌洞察与策略审计产品的深色 Web 组件库；同时包含可浏览的组件文档与品牌审计参考页面。`
+`SaaS administration application with a brand-led marketing homepage`
 
 Style:
 
-* `仪器化、精确`
-* `编辑感大字排版`
-* `深色、克制`
-* `数据优先`
+* Deep navy application canvas
+* Warm gold focal actions
+* Precise administrative structure
+* Organic brand geometry in marketing regions
 
 Principles:
 
-1. `橙色只表达动作、焦点与活动信号。`
-2. `普通表面保持平整深黑，依靠细边框而非阴影分层。`
-3. `轨道与十字轴只用于测量、扫描或状态语义。`
+1. Use the deep blue field as the stable product environment and reserve warm gold for the most important action or status.
+2. Keep administration surfaces precise, bordered, and information-led; use flowing shapes only in marketing and brand moments.
+3. Reuse the same semantic tokens, typography, and interaction states across the marketing homepage and the authenticated workspace.
 
 ### Source and status
 
-Name: Ember Signal
+Name: Starry Current Workbench
 
 Status: Approved
 
-Mode: dark
+Mode: Dark only
 
-用户选择仪器纯黑方向。普通组件使用无阴影深黑分层；橙色只承担活动、焦点和关键数据。
-
-参考图中的 UI 与品牌视觉已扩展为完整 shadcn/ui 组件语言。字体与色值为基于栅格图的近似实现，并使用可再分发的开源字体。
+The reference establishes a large dark-blue field with a small warm focal area. The delivered direction translates that relationship into a marketing Key Visual and a structured SaaS workspace without copying the reference content. Marketing regions may use directional curves and orbit-like decoration; administration regions use a sidebar, restrained borders, and aligned data surfaces.
 
 ---
 
@@ -38,20 +36,20 @@ Mode: dark
 ### Colors
 
 ```txt
-background: var(--background) = #070606
-surface: var(--card) = #12100F
-border: var(--border) = #4C403B
+background: var(--background) = #071532
+surface: var(--card) = #0D2250
+border: var(--border) = #385A93
 
-text-primary: var(--foreground) = #F4F0EA
-text-secondary: var(--secondary-foreground) = #E8D8CA
-text-muted: var(--muted-foreground) = #B9AAA1
+text-primary: var(--foreground) = #F4F0D8
+text-secondary: var(--muted-foreground) = #AFC2E8
+text-muted: var(--muted-foreground) = #AFC2E8
 
-primary: var(--primary) = #F05A20
-primary-hover: color-mix(in srgb, var(--primary) 90%, transparent)
+primary: var(--primary) = #E5C94A
+primary-hover: var(--primary) at 85% opacity
 
-success: var(--success) = #82B78B
-warning: var(--warning) = #DFA35F
-error: var(--destructive) = #E05A52
+success: var(--success) = #8FCFAD
+warning: var(--warning) = #F2C66D
+error: var(--destructive) = #FF7B7B
 ```
 
 Rules:
@@ -59,16 +57,56 @@ Rules:
 * Use semantic tokens.
 * No arbitrary colors.
 
+### Complete semantic color map
+
+| Token | Value |
+| --- | --- |
+| `--background` | `#071532` |
+| `--foreground` | `#F4F0D8` |
+| `--card` | `#0D2250` |
+| `--card-foreground` | `#F4F0D8` |
+| `--popover` | `#132B5F` |
+| `--popover-foreground` | `#F4F0D8` |
+| `--primary` | `#E5C94A` |
+| `--primary-foreground` | `#10204A` |
+| `--secondary` | `#17366F` |
+| `--secondary-foreground` | `#F4F0D8` |
+| `--muted` | `#10275A` |
+| `--muted-foreground` | `#AFC2E8` |
+| `--accent` | `#79B7C9` |
+| `--accent-foreground` | `#071532` |
+| `--destructive` | `#FF7B7B` |
+| `--border` | `#385A93` |
+| `--input` | `#4E70A8` |
+| `--ring` | `#F2D665` |
+| `--chart-1` | `#E5C94A` |
+| `--chart-2` | `#79B7C9` |
+| `--chart-3` | `#8297E3` |
+| `--chart-4` | `#B4DFA3` |
+| `--chart-5` | `#F49B73` |
+| `--sidebar` | `#050D24` |
+| `--sidebar-foreground` | `#F4F0D8` |
+| `--sidebar-primary` | `#E5C94A` |
+| `--sidebar-primary-foreground` | `#10204A` |
+| `--sidebar-accent` | `#10275A` |
+| `--sidebar-accent-foreground` | `#F4F0D8` |
+| `--sidebar-border` | `#263F72` |
+| `--sidebar-ring` | `#F2D665` |
+| `--success` | `#8FCFAD` |
+| `--warning` | `#F2C66D` |
+| `--info` | `#8BC7E6` |
+
 ### Typography
 
 ```txt
-font-family: Manrope, 'Noto Sans SC', sans-serif
+font-family: 'Noto Sans SC Variable', 'Noto Sans SC', system-ui, sans-serif
+heading-family: 'Noto Serif SC Variable', 'Noto Serif SC', serif
 
-page-title: clamp(38px, 5vw, 64px); weight 500; line-height 0.98; tracking -0.045em
-section-title: 24px; weight 500; line-height 0.98; tracking -0.045em
-body: 16px; line-height 1.6; var(--font-sans)
-small: 12–13px; line-height 1.4–1.6
-label: 11–12px; weight 600; tracking 0.08–0.18em for short metadata only
+page-title: 38–64px responsive; weight 700; line-height 1.08; tracking -0.025em
+section-title: 24–32px; weight 700; line-height 1.08; tracking -0.025em
+body: 16px; line-height 1.65; var(--font-sans)
+small: 12–14px; role-dependent line-height
+label: 14px; weight 600
 ```
 
 Rules:
@@ -79,124 +117,93 @@ Rules:
 ### Spacing
 
 ```txt
-Allowed:
-4 / 8 / 12 / 16 / 24 / 32 / 48 / 64
+Base unit: 4px
+Allowed: 4 / 8 / 12 / 16 / 24 / 32 / 48 / 64
+Component exceptions: 2 / 6 / 10 / 18 / 20 / 28 / 40 / 56 / 72 / 88, only where already defined in source
 
-Card padding: 24px desktop / 18px compact Mobile
+Card padding: 20px
 Form gap: 12–16px
-Section gap: 32 / 48 / 64px
-Page padding: 32–88px desktop / 20px Mobile
+Section gap: 48–64px
+Page padding: 20px Mobile; 40–88px Desktop
 ```
 
 Rules:
 
 * No arbitrary spacing.
+* Reuse the core scale first; component exceptions are fixed implementation values, not a license for one-off spacing.
 
 ### Radius
 
 ```txt
-sm: 2.4px; --radius-sm
-md: 3.2px; --radius-md
-lg: 4px; --radius-lg
-full: 9999px; pill or circle
+sm: 9.6px; var(--radius-sm)
+md: 12.8px; var(--radius-md)
+lg: 16px; var(--radius-lg)
+surface: 20px; var(--surface-radius)
+overlay: 24px; var(--overlay-radius)
+full: 9999px; pill or circle only
 ```
 
 ### Icons
 
 ```txt
-Library: Lucide
-Sizes: 20px base; inspect component overrides
+Library: Lucide rounded outline
+Sizes: 20px default; 16px compact; 18px supporting; stroke 1.75
 ```
 
 Rules:
 
 * Use one icon library.
 * No emoji as UI icons.
+* Decorative brand marks may use CSS geometry but must not replace functional icons.
 
-### Complete semantic color map
+### Depth and motion tokens
 
-| Token | Value |
-| --- | --- |
-| --background | #070606 |
-| --foreground | #F4F0EA |
-| --card | #12100F |
-| --card-foreground | #F4F0EA |
-| --popover | #171312 |
-| --popover-foreground | #F4F0EA |
-| --primary | #F05A20 |
-| --primary-foreground | #120806 |
-| --secondary | #211C1A |
-| --secondary-foreground | #E8D8CA |
-| --muted | #1B1817 |
-| --muted-foreground | #B9AAA1 |
-| --accent | #D0925D |
-| --accent-foreground | #120A07 |
-| --destructive | #E05A52 |
-| --border | #4C403B |
-| --input | #6C5B54 |
-| --ring | #FF7A3D |
-| --chart-1 | #F05A20 |
-| --chart-2 | #D0925D |
-| --chart-3 | #F4F0EA |
-| --chart-4 | #9D5B3E |
-| --chart-5 | #79645C |
-| --sidebar | #0D0A09 |
-| --sidebar-foreground | #F4F0EA |
-| --sidebar-primary | #F05A20 |
-| --sidebar-primary-foreground | #120806 |
-| --sidebar-accent | #1B1715 |
-| --sidebar-accent-foreground | #F4F0EA |
-| --sidebar-border | #3D3531 |
-| --sidebar-ring | #FF7A3D |
-| --success | #82B78B |
-| --warning | #DFA35F |
-
-### Additional implemented tokens
-
-- Heading family: Manrope, 'Noto Sans SC', sans-serif; weight 500.
-- Heading line-height: 0.98; tracking: -0.045em; label weight: 600.
-- Spacing base: 4px; control height: 46px.
-- Control radius: 2px; surface radius: 4px; overlay radius: 6px.
-- Control inline padding: 18px; icon gap: 8px; icon stroke: 1.5.
-- Shadow: none.
-- Motion: 160ms cubic-bezier(0.22, 1, 0.36, 1); honor reduced motion.
-- Font smoothing: -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale.
-- Reconcile role sizes, allowed spacing, and component overrides with the final source before delivery.
+```txt
+control height: 46px
+action shadow: 0 8px 24px #02081666
+data shadow: 0 12px 34px #02081633
+overlay shadow: 0 28px 70px #02081680
+feedback shadow: 0 16px 38px #02081655
+transition: 160ms cubic-bezier(0.22, 1, 0.36, 1)
+reduced motion: 0.01ms with smooth scrolling disabled
+```
 
 ---
 
 ## 3. Layout
 
 ```txt
-Max content width: 1600px for gallery shell; 1120px for documentation content
-Page padding: clamp(32px, 6vw, 88px); Mobile 20px
-Sidebar width: 260px desktop; Mobile drawer max 340px
-Form max width: 720px for focused forms and Signal Audit Panel
+Max content width: 1600px application shell; 1120px documentation content
+Page padding: 20px Mobile; 40px Tablet; clamp(32px, 6vw, 88px) Desktop
+Sidebar width: 260px documentation; 210px integrated workspace
+Form max width: 640px for focused forms
 ```
 
 Breakpoints:
 
 ```txt
-mobile: < 760px; integrated presentation stacks at < 900px
+mobile: below 760px
 tablet: 760–1099px
-desktop: >= 1100px
+desktop: 1100px and above
 ```
 
 Responsive rules:
 
 ```txt
 Sidebar:
-Desktop -> sticky 260px component navigation
-Mobile -> hidden by default; opens as a drawer from the header
+Desktop -> sticky left rail with searchable component navigation
+Mobile -> hidden rail replaced by an accessible navigation drawer
 
 Grid:
-Desktop -> three-column directory; integrated page 48.5% / 51.5% split
-Tablet -> two-column directory; integrated page stacks below 900px
-Mobile -> one-column directory and vertical content flow
+Desktop -> three-column directory and three-column workspace metrics
+Tablet -> two-column directory and reduced workspace density
+Mobile -> one column; toolbar, actions, cards, and marketing copy stack vertically
 
 Table:
-Mobile -> keep semantic table when comparison is essential; otherwise use labeled rows or horizontal ScrollArea without shrinking type
+Mobile -> preserve readable type and use local horizontal scrolling or a purpose-built stacked view
 ```
+
+The homepage Key Visual reflows from a split marketing composition into a single-column sequence. The integrated workspace keeps content hierarchy and touch targets while hiding its decorative sidebar at narrow widths. Component examples respond to their preview container and must never force document-level horizontal overflow.
 
 ---
 
@@ -206,21 +213,26 @@ Mobile -> keep semantic table when comparison is essential; otherwise use labele
 
 ```txt
 Variants:
-primary
+default (design role: primary)
 secondary
+outline
 ghost
 destructive
+link
 
 Sizes:
+xs
 sm
-md
+default (design role: md)
 lg
+icon / icon-xs / icon-sm / icon-lg
 ```
 
 Rules:
 
 * One primary action per action group.
 * No custom button colors.
+* Primary buttons use the warm focal color; lower-priority actions use secondary, outline, ghost, or link treatment.
 
 ### Input
 
@@ -229,13 +241,18 @@ Rules:
 * Always use a visible label.
 * Placeholder is not a label.
 * Show validation near the field.
+* Use the 46px default control height, semantic input border, and ring token.
 
 ### Select
 
 Rules:
 
 * Select: short option lists.
-* Combobox: long/searchable lists.
+* Theme both the Select trigger and option popup, including focus, selected and disabled options.
+* `Select` is the Base UI root and supports controlled `value`, uncontrolled `defaultValue`, `onValueChange`, `name`, `required`, and reset behavior from the underlying primitive.
+* Keyboard behavior is provided by Base UI: arrow navigation, selection, Escape dismissal, and focus restoration.
+* Use `NativeSelect` only when the platform picker is intentionally preferred; its popup appearance is platform-controlled.
+* Combobox: long or searchable lists.
 * Radio: small visible choices.
 * Switch: immediate on/off state.
 
@@ -245,29 +262,31 @@ Rules:
 
 * Use only for meaningful grouping.
 * Avoid nested cards.
+* Use the 20px surface radius and data-display shadow for primary grouped content; lighter list items may omit the shadow.
 
 ### Modal
 
 Use for:
 
-`聚焦编辑、确认或需要阻断背景操作的短任务；使用 Dialog。`
+`Focused decisions, short forms, confirmations, and destructive actions that must interrupt the current task.`
 
 Rules:
 
 * Keep tasks focused.
 * Clearly explain destructive actions.
+* Modal maps to `Dialog`; use `AlertDialog` when explicit confirmation is required.
 
 ### Drawer
 
 Use for:
 
-`Mobile 导航、补充筛选或不应遮挡整页上下文的次级任务。`
+`Mobile navigation, supporting controls, and narrow-screen tasks that should preserve the current page context.`
 
 ### Tabs
 
 Use for:
 
-`同一对象下的并列视图，例如周/月视图或概览/活动记录。`
+`Peer views within the same local context, such as activity, configuration, and members.`
 
 Rules:
 
@@ -282,14 +301,23 @@ Rules:
 * Numbers right aligned.
 * Actions right aligned.
 * Support empty state.
+* Keep wide tables in a local scroll container on Mobile.
+
+### Marketing components
+
+* `MarketingButton` accepts native button props plus `variant`, `size`, `loading`, `leadingIcon`, and `trailingIcon`; `MarketingLinkButton` provides the same visual variants for links.
+* `MarketingHeader` accepts brand, home link, navigation items, and workspace action props. It converts navigation to an accessible expandable menu on Mobile.
+* `MarketingHero` accepts eyebrow, title, description, primary and secondary links, and an optional visual node. Actions stack on narrow screens.
+* `MarketingSection` accepts heading content, `tone`, children, and an optional anchor id. It owns page-width and vertical rhythm.
+* `MarketingCard` accepts content, optional value and action, and `feature`, `project`, or `pricing` variants. `MarketingCardGrid` owns responsive grouping.
+* `MarketingFooter` accepts brand context and grouped links; navigation groups remain semantic and wrap on narrow screens.
+* `MarketingInput`, `MarketingForm`, and `MarketingNewsletterForm` provide labels, hints, errors, native form props, and an honest demonstration status.
+* `MarketingSelect` accepts label, options, controlled or uncontrolled value, `onValueChange`, `name`, required, disabled, and error props. Its Base UI popup includes highlighted, selected, and disabled states.
+* `MarketingIcon` accepts a Lucide icon, optional accessible label, and tone. `MarketingStarMark` is decorative only.
 
 ### Public API mapping
 
-Preserve shadcn/ui APIs. The design role primary maps to Button variant="default"; size md maps to size="default". Keep secondary, ghost, destructive, sm, and lg identifiers unchanged. Inspect the actual Button source before documenting extra variants. Modal maps to Dialog; Toast maps to Sonner.
-
-### Custom components
-
-`SignalAuditPanel` combines a score, labeled metrics, signal gap, next move, and one action. It accepts data through props and does not bake preview content into its API. Use it only for analysis or diagnostic contexts. Source: `src/components/custom/signal-audit-panel.tsx`.
+Preserve the shadcn component APIs in `src/components/ui`. The primary design role maps to `Button variant="default"`; medium size maps to `size="default"`. Modal maps to `Dialog`. Toast notifications map to `sonner.tsx`; the Base UI toast host remains available through `toast.tsx`. Custom marketing components use their explicit exports from `src/components/custom` and are not shadcn variants.
 
 ---
 
@@ -305,13 +333,15 @@ Secondary actions
 Content
 ```
 
+Marketing pages may begin with brand context and a Key Visual before product proof. Authenticated workspace pages use the standard title-and-actions sequence.
+
 ### Forms
 
 ```txt
-Layout: single column by default; group related fields with 12–16px gaps
-Validation: inline message beside the relevant field; preserve entered values
-Save behavior: show an in-button spinner for short work, then a global success toast
-Unsaved changes: product-level concern; add a specific confirmation guard when implementing editable screens
+Layout: single column by default; group only closely related short fields
+Validation: inline beside the affected field with aria-invalid and aria-describedby
+Save behavior: keep the action visible, disable duplicate submission, and show progress on the initiating control
+Unsaved changes: preserve entered values after recoverable errors; prompt before abandoning material edits
 ```
 
 Rules:
@@ -322,9 +352,9 @@ Rules:
 ### Search
 
 ```txt
-Trigger: immediate client-side filtering in the component gallery
-Debounce: not required for the small local inventory; use 200–300ms for remote queries
-No-result behavior: show “没有找到组件。” and preserve the search query
+Trigger: update local component filtering as the user types
+Debounce: none for the in-memory documentation index; use 200–300ms for remote product queries
+No-result behavior: show a clear empty message and retain the query
 ```
 
 ### Filters
@@ -341,6 +371,14 @@ Rules:
 * State exactly what will be deleted.
 * State whether it is reversible.
 * Avoid vague "Are you sure?" copy.
+
+### Motion
+
+* Use the 160ms motion token for hover, focus, selection, popup, dialog, sheet, and drawer transitions.
+* Entering overlays fade in while the content uses its primitive-defined transform; exiting reverses the same relationship.
+* State changes must be interruptible and must not delay input.
+* Loading spinners communicate active work, not decoration.
+* Reduced-motion mode shortens transitions and animations to 0.01ms and disables smooth scrolling.
 
 ---
 
@@ -362,6 +400,8 @@ Rules:
 * Spinner for short actions.
 * Preserve user input after errors.
 * Do not use toast for field validation.
+* Use semantic tokens, text, icons, or shape together so status never depends on color alone.
+* Keep disabled controls legible and non-interactive; do not use disabled styling to represent read-only content.
 
 ---
 
@@ -369,22 +409,30 @@ Rules:
 
 Style:
 
-`简练、专业、技术性适中`
+`Concise, professional, direct, and lightly optimistic.`
 
 Rules:
 
 * Sentence case.
 * Prefer specific verbs.
 * Avoid vague labels like `OK` and `Submit`.
+* Keep navigation labels short and stable.
+* Put field errors directly below the field; put page-level failures near the affected content.
+* Mark illustrative content honestly and never imply that a demo action changed production data.
 
 Examples:
 
 ```txt
-开始品牌审计
-生成策略简报
-保存更改
-删除工作区
+Create project
+Save changes
+Delete workspace
+Send invite
+Enter workspace
+No components found
+Demo submission recorded. No real subscription was sent.
 ```
+
+The documentation UI, component examples, registry metadata, and accessible labels use English only.
 
 ---
 
@@ -399,68 +447,73 @@ Examples:
 
 Target size:
 
-`44x44 CSS px minimum for primary touch targets`
+`44x44 CSS px minimum for primary touch targets; compact desktop controls retain an accessible surrounding hit area where applicable.`
 
 Standard:
 
-`WCAG AA target; not a claim of full compliance`
+`WCAG 2.2 AA target; this is not a claim of full compliance.`
 
 ### Accessibility evidence
 
-Token contrast results cover only these pairs. Verify rendered colors, labels, keyboard behavior, focus, and layout separately.
+Token contrast results cover only the listed color pairs. Rendered states, labels, focus order, keyboard operation, and responsive layout require separate verification.
 
 | Mode | Pair | Ratio | Minimum | Result |
-| --- | --- | --- | --- | --- |
-| dark | foreground/background | 17.83 | 4.5 | Pass |
-| dark | card-foreground/card | 16.71 | 4.5 | Pass |
-| dark | primary-foreground/primary | 5.82 | 4.5 | Pass |
-| dark | secondary-foreground/secondary | 12.13 | 4.5 | Pass |
-| dark | muted-foreground/muted | 7.84 | 4.5 | Pass |
-| dark | accent-foreground/accent | 7.42 | 4.5 | Pass |
-| dark | popover-foreground/popover | 16.25 | 4.5 | Pass |
-| dark | destructive/background | 5.54 | 4.5 | Pass |
-| dark | sidebar-foreground/sidebar | 17.38 | 4.5 | Pass |
-| dark | sidebar-primary-foreground/sidebar-primary | 5.82 | 4.5 | Pass |
-| dark | sidebar-accent-foreground/sidebar-accent | 15.68 | 4.5 | Pass |
-| dark | ring/background | 7.81 | 3 | Pass |
-| dark | input/background | 3.14 | 3 | Pass |
+| --- | --- | ---: | ---: | --- |
+| dark | foreground/background | 15.75 | 4.5 | Pass |
+| dark | card-foreground/card | 13.44 | 4.5 | Pass |
+| dark | primary-foreground/primary | 9.63 | 4.5 | Pass |
+| dark | secondary-foreground/secondary | 10.20 | 4.5 | Pass |
+| dark | muted-foreground/muted | 8.02 | 4.5 | Pass |
+| dark | accent-foreground/accent | 8.11 | 4.5 | Pass |
+| dark | popover-foreground/popover | 11.90 | 4.5 | Pass |
+| dark | destructive/background | 7.20 | 4.5 | Pass |
+| dark | sidebar-foreground/sidebar | 16.80 | 4.5 | Pass |
+| dark | sidebar-primary-foreground/sidebar-primary | 9.63 | 4.5 | Pass |
+| dark | sidebar-accent-foreground/sidebar-accent | 12.54 | 4.5 | Pass |
+| dark | ring/background | 12.55 | 3.0 | Pass |
+| dark | input/background | 3.62 | 3.0 | Pass |
 
 ### Verification and limitations
 
-- build: npm run build：通过，TypeScript 与 Vite 构建成功。
-- desktop: agent-browser：1440×900 通过，无横向或纵向溢出。
-- mobile: agent-browser：390×844 与 360×800 通过，无横向溢出。
-- keyboard: 组件页可访问树包含导航、链接、输入与有名称的按钮；焦点环由全局样式提供。
-- contrast: 语义令牌报告全部达到 AA 阈值；实际画面文字与边界另经截图检查。
+* The final gallery build completed successfully under Studio verification with build id `build-81af26fdb457ff53`; the approved presentation remains recorded as `build-714673e1ee8ddd91`.
+* All 71 component pages were checked at 1440px and 390px with no visible CJK text, document overflow, or preview-canvas overflow.
+* Select keyboard operation, Dialog dismissal and focus return, form feedback, and Toast announcements were exercised in the final English preview.
+* The semantic contrast report passes every required pair listed above.
+* The aggregate registry installed 81 files into a clean React 19, Vite, and Tailwind CSS 4 consumer; representative official and custom components then passed a production build and browser interaction check.
+* Automated and targeted manual checks do not establish complete WCAG conformance; production teams must test real product content, assistive technology, zoom, and end-to-end task flows.
 
 ---
 
 ## 9. Implementation
 
 ```txt
-Framework: React + TypeScript + Vite
+Framework: React 19 + TypeScript + Vite
 Styling: Tailwind CSS 4 + semantic CSS variables
-Component library: shadcn/ui
-Icon library: Lucide
+Component library: shadcn source components on Base UI primitives
+Icon library: Lucide rounded outline
 
-UI components: src/components/ui
+UI components:
+src/components/ui
 
-Shared components: Not applicable：当前共享基础均属于 src/components/ui，领域组合位于 src/components/custom
+Shared components:
+src/components
 
-Domain components: src/components/custom
+Domain components:
+src/components/custom
 
-Design tokens: tokens.json
+Design tokens:
+tokens.json
 ```
 
 ### Usage
 
 ```txt
-Working directory: .
-Start or install: npm install; npm run dev（浏览库）；npm run build（生产构建）
-Global styles: src/main.tsx imports src/index.css once; registry consumers install the generated theme CSS import
-Root providers: TooltipProvider wraps the app; mount one Toaster when using toast()
-Public imports: 本仓库使用 @/components/ui/<component> 与 @/components/custom/signal-audit-panel
-Gallery or docs: npm run dev；根路由为组件目录，?component=signal-audit-panel 为自定义组件详情
+Working directory: design-system-2
+Start or install: npm install; npm run dev
+Global styles: src/main.tsx imports src/index.css and src/theme-overrides.css once
+Root providers: TooltipProvider; one Sonner Toaster; one Base UI Toaster when Base toast APIs are used
+Public imports: @/components/ui/<component> and @/components/custom/<component>
+Gallery or docs: npm run dev; open the root route
 ```
 
 Before creating a component:
@@ -483,7 +536,9 @@ duplicate components
 
 ### Build and distribution
 
-在此目录运行 `npm install`、`npm run dev` 与 `npm run build`。`src/main.tsx` 全局载入字体与 `src/index.css`，并挂载一个 `TooltipProvider` 与一个 `Toaster`。可安装注册表为 `public/r/all.json`；先用 `npm run dev` 服务该文件，再在已初始化的 React + Tailwind 4 + shadcn 项目中执行 `npx shadcn@4.21.0 add http://127.0.0.1:5173/r/all.json`。注册表安装 `src/ember-signal.css`、组件、依赖与字体包。
+Run `npm install`, `npm run dev`, and `npm run build` from `design-system-2`. The gallery already imports global styles and providers through `src/main.tsx`.
+
+For a compatible React 19, Vite, and Tailwind CSS 4 consumer, serve this project and install the aggregate registry from `/r/all.json` with shadcn 4.21.0. The aggregate registry installs the UI and custom sources, the `cn` utility dependency, required packages, fonts, and `src/starry-current.css`. In the consumer entry, import the host stylesheet first and then import `./starry-current.css` exactly once so this theme wins the cascade. Keep `SHADCN-LICENSE.txt` and `shadcn-snapshot.json` when redistributing upstream-derived source.
 
 ---
 
@@ -499,6 +554,8 @@ Do not:
 * Add unnecessary icons.
 * Create new patterns when an existing one works.
 * Create one-off components without reason.
+* Move organic marketing geometry into dense administration screens.
+* Translate the delivered English documentation or sample UI unless a later request explicitly changes the product language.
 
 When uncertain:
 
@@ -512,22 +569,23 @@ When uncertain:
 ## 11. Reference Screens
 
 ```txt
-App shell: src/App.tsx
+App shell:
+src/App.tsx
 
 List page:
-src/App.tsx（组件目录首页）
+src/App.tsx
 
 Detail page:
-src/App.tsx（`?component=<name>` 详情状态）
+src/App.tsx
 
 Form page:
-Not applicable：组件库提供 Field、Form、Input、Select 等表单组件，但不虚构产品表单页
+src/examples/field-example.tsx
 
 Settings:
-Not applicable：当前交付没有产品设置页
+Not applicable: the delivery is a component documentation application, not a product settings implementation.
 ```
 
-Match these when this file does not specify a detail.
+The root view in `src/App.tsx` is the canonical documentation list and integrated Key Visual. Its `?component=<name>` state is the canonical component detail view. `src/IntegratedPreview.tsx` is a documentation-only composition that demonstrates the marketing-to-workspace transition and is not a reusable business component.
 
 ---
 
@@ -549,106 +607,51 @@ Tabs: src/components/ui/tabs.tsx
 Toast: src/components/ui/sonner.tsx
 ```
 
-Prefer these over creating local replacements.
+Prefer these over creating local replacements. Use `src/components/ui/toast.tsx` only for the Base UI toast API; do not mount duplicate hosts for the same toast system.
 
 ---
 
 ## 13. Project-Specific Rules
 
 ```txt
-- 普通卡片、表单、菜单与 Dialog 使用纯黑分层，不添加暖色光晕或投影。
-- 橙色仅用于主要动作、焦点、活动进度和小型信号点。
-- 轨道/十字轴图形只用于测量、扫描、状态或分析空状态。
-- 控件、表面、浮层依次使用 2px、4px、6px 圆角；胶囊形仅用于紧凑状态。
-- PC 可使用非对称左右分栏；Mobile 先堆叠内容并移除装饰侧标，不缩小触控区。
+- Keep the deep navy canvas dominant and reserve warm gold for a small number of focal actions, active metrics, and brand marks.
+- Use exact borders, aligned grids, and restrained depth in administration surfaces; use orbit lines and organic curves only in marketing regions.
+- Keep the marketing homepage and SaaS workspace visually related through semantic tokens, typography, icon stroke, and motion rather than identical layout.
+- Use English for every visible documentation string, example, registry title, status, error, and accessible label.
+- Keep the documentation Key Visual before the component directory and do not register it as a reusable component.
+- Preserve the approved token hash unless a future visual revision is explicitly approved.
 ```
+
+### Reference translation
+
+The reference image supplies relationships rather than product content. Its dark field maps to `--background` and `--sidebar`; its small warm focus maps to `--primary`; cool supporting structure maps to `--accent`, `--secondary`, borders, and chart colors. Directional reference texture becomes restrained orbit geometry in marketing only. The management UI intentionally replaces organic composition with stable navigation, cards, lists, fields, and overlays so operational content remains readable.
+
+Actual mappings live in `src/index.css`, `src/theme-overrides.css`, `src/components/custom/marketing.css`, and `src/IntegratedPreview.tsx`. Durable decision history and maintenance guidance live in `design-notes.md`.
+
+### Decision summary
+
+* Accepted: a dark-only system with deep blue dominance, warm gold focal actions, serif display headings, sans-serif interface text, 10px controls, 20px surfaces, and 24px overlays.
+* Accepted: a brand-led marketing homepage Key Visual paired with a precise authenticated workspace.
+* Accepted: complete English UI and documentation for Desktop and Mobile Web.
+* Ruled out: applying flowing marketing geometry to dense administration components because it weakens scanning and boundary clarity.
+* Superseded: an earlier localized documentation pass was replaced by the approved English-only presentation; visual tokens and component geometry did not change.
+
+### Assets and content
+
+No approved production brand imagery was provided. The orbit artwork is CSS-based and illustrative. Sample names, metrics, projects, prices, links, and form outcomes are demonstration content and must be replaced with approved product content before production release. Do not claim conversion or performance improvements from this presentation.
 
 ### Source snapshot
 
-Source: https://ui.shadcn.com/r/styles/new-york-v4/registry.json; fetched: 2026-09-17.
-Token hash: cc2d7a5097d85f57734b97bcc2656e3529f7c550b7171b205e1cc638101a2a3f.
+Source: `https://github.com/shadcn-ui/ui` at commit `a87a63b2ca25143d26c8bd0903e4e9bc77b3f824`, fetched 2026-10-12 from the Base UI registry layer.
 
-| Component | Source |
-| --- | --- |
-| accordion | shadcn/ui |
-| alert | shadcn/ui |
-| alert-dialog | shadcn/ui |
-| aspect-ratio | shadcn/ui |
-| avatar | shadcn/ui |
-| badge | shadcn/ui |
-| breadcrumb | shadcn/ui |
-| button | shadcn/ui |
-| button-group | shadcn/ui |
-| calendar | shadcn/ui |
-| card | shadcn/ui |
-| carousel | shadcn/ui |
-| chart | shadcn/ui |
-| checkbox | shadcn/ui |
-| collapsible | shadcn/ui |
-| combobox | shadcn/ui |
-| command | shadcn/ui |
-| context-menu | shadcn/ui |
-| dialog | shadcn/ui |
-| drawer | shadcn/ui |
-| dropdown-menu | shadcn/ui |
-| empty | shadcn/ui |
-| field | shadcn/ui |
-| form | shadcn/ui |
-| hover-card | shadcn/ui |
-| input | shadcn/ui |
-| input-group | shadcn/ui |
-| input-otp | shadcn/ui |
-| item | shadcn/ui |
-| label | shadcn/ui |
-| menubar | shadcn/ui |
-| navigation-menu | shadcn/ui |
-| pagination | shadcn/ui |
-| popover | shadcn/ui |
-| progress | shadcn/ui |
-| radio-group | shadcn/ui |
-| resizable | shadcn/ui |
-| scroll-area | shadcn/ui |
-| select | shadcn/ui |
-| separator | shadcn/ui |
-| sheet | shadcn/ui |
-| sidebar | shadcn/ui |
-| skeleton | shadcn/ui |
-| slider | shadcn/ui |
-| sonner | shadcn/ui |
-| spinner | shadcn/ui |
-| switch | shadcn/ui |
-| table | shadcn/ui |
-| tabs | shadcn/ui |
-| textarea | shadcn/ui |
-| toggle | shadcn/ui |
-| toggle-group | shadcn/ui |
-| tooltip | shadcn/ui |
-| kbd | shadcn/ui |
-| native-select | shadcn/ui |
-| direction | shadcn/ui |
-| attachment | shadcn/ui |
-| bubble | shadcn/ui |
-| marker | shadcn/ui |
-| message | shadcn/ui |
-| message-scroller | shadcn/ui |
-| src/components/custom/signal-audit-panel.preview.tsx | Custom component |
-| src/components/custom/signal-audit-panel.tsx | Custom component |
+Snapshot: `shadcn-snapshot.json`
 
-### Decisions
+License: `SHADCN-LICENSE.txt`
 
-- direction / select: b   
-- foundations / derive: derived-foundations   颜色与纯黑表面继承用户选择的 B 方向；字体比例、方形几何、细线图标与克制动效均由参考图中清晰可见的模式推导。
-- components / derive: derived-components   组件处理直接继承用户选择的仪器纯黑方向和已确定的基础规范。完整 shadcn API 保持不变，参考图特有的轨道与评分结构被实现为独立自定义组件。
-- preview / approve: ember-signal-presentation   
+Inventory: 62 official UI components plus 9 custom marketing components, 71 total.
 
-### Additional project rules
+Token hash: `410218678f58e801d19c3b11a3fa4a4d379a0995797c2b7d436aaa560a7e5a5b`.
 
-#### Ember Signal visual guidance
+### Maintenance
 
-- Keep ordinary surfaces flat and near-black. Do not add warm glow or drop shadow to routine cards, forms, menus, or dialogs.
-- Use orange for primary action, focus, active progress, and a small signal point. Do not distribute it evenly across every component.
-- Use the orbit/axis motif only where a component represents measurement, scanning, status, or empty analysis.
-- Controls use 2 px corners, ordinary surfaces 4 px, and overlays 6 px. Pills are reserved for compact status only.
-- Use Manrope for interface text and numbers. Cormorant Garamond Italic is an editorial accent, not a form or navigation font.
-- Keep labels short, tracked, and quiet. Pair status color with text, icon, or progress geometry.
-- Desktop may use deliberate left/right asymmetry. Mobile stacks content and removes ornamental side labels before reducing type or targets.
+Read this file, `design-notes.md`, `tokens.json`, `shadcn-snapshot.json`, and the relevant source before changing the system. Update source, registry artifacts, examples, and documentation together. Re-run the production build, contrast report, Desktop and Mobile overflow checks, interaction checks, English-only scan, and clean-consumer registry installation after any material change.

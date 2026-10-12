@@ -1,92 +1,92 @@
 [
   {
-    "mode": "light",
+    "mode": "dark",
     "pair": "foreground/background",
-    "ratio": 10.39,
+    "ratio": 16.7,
     "minimum": 4.5,
     "passAA": true
   },
   {
-    "mode": "light",
+    "mode": "dark",
     "pair": "card-foreground/card",
-    "ratio": 15.53,
+    "ratio": 16.36,
     "minimum": 4.5,
     "passAA": true
   },
   {
-    "mode": "light",
+    "mode": "dark",
     "pair": "primary-foreground/primary",
-    "ratio": 5.97,
+    "ratio": 5.76,
     "minimum": 4.5,
     "passAA": true
   },
   {
-    "mode": "light",
+    "mode": "dark",
     "pair": "secondary-foreground/secondary",
-    "ratio": 9.0,
+    "ratio": 11.28,
     "minimum": 4.5,
     "passAA": true
   },
   {
-    "mode": "light",
+    "mode": "dark",
     "pair": "muted-foreground/muted",
-    "ratio": 4.54,
+    "ratio": 8.51,
     "minimum": 4.5,
     "passAA": true
   },
   {
-    "mode": "light",
+    "mode": "dark",
     "pair": "accent-foreground/accent",
-    "ratio": 7.14,
+    "ratio": 9.36,
     "minimum": 4.5,
     "passAA": true
   },
   {
-    "mode": "light",
+    "mode": "dark",
     "pair": "popover-foreground/popover",
-    "ratio": 16.25,
+    "ratio": 17.84,
     "minimum": 4.5,
     "passAA": true
   },
   {
-    "mode": "light",
+    "mode": "dark",
     "pair": "destructive/background",
-    "ratio": 5.05,
+    "ratio": 6.85,
     "minimum": 4.5,
     "passAA": true
   },
   {
-    "mode": "light",
+    "mode": "dark",
     "pair": "sidebar-foreground/sidebar",
-    "ratio": 14.95,
+    "ratio": 14.58,
     "minimum": 4.5,
     "passAA": true
   },
   {
-    "mode": "light",
+    "mode": "dark",
     "pair": "sidebar-primary-foreground/sidebar-primary",
-    "ratio": 5.97,
+    "ratio": 5.76,
     "minimum": 4.5,
     "passAA": true
   },
   {
-    "mode": "light",
+    "mode": "dark",
     "pair": "sidebar-accent-foreground/sidebar-accent",
-    "ratio": 8.32,
+    "ratio": 11.53,
     "minimum": 4.5,
     "passAA": true
   },
   {
-    "mode": "light",
+    "mode": "dark",
     "pair": "ring/background",
-    "ratio": 3.82,
+    "ratio": 11.55,
     "minimum": 3,
     "passAA": true
   },
   {
-    "mode": "light",
+    "mode": "dark",
     "pair": "input/background",
-    "ratio": 3.29,
+    "ratio": 3.92,
     "minimum": 3,
     "passAA": true
   }

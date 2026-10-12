@@ -1,16 +1,24 @@
-# 图像特征组件说明
+# Ember Orbit design notes
 
-本设计系统从参考图提炼出四个自定义组件。它们位于 `src/components/custom/`，并已注册到组件画廊与 `public/r/`。
+## Reference translation
 
-- `WorkshopSchedule`：桌面为多列排期，900px 以下改为信息卡。支持传入 `items`，并通过 `onOpen` 处理行操作。
-- `EngagementChart`：使用胶囊柱表达参与度；周期按钮使用 `aria-pressed`，图表提供完整文本等价信息。
-- `BrandFocusCard`：仅此类品牌焦点内容使用近黑绿大面积表面；普通业务卡不应复制该处理。
-- `EcosystemDashboard`：参考整合页，组合以上三种模式并演示 Dialog。
+- The near-black canvas maps to `--background` and `--card`.
+- Amber maps to telemetry, labels, status readouts, and secondary emphasis through `--accent` and `--secondary-foreground`.
+- Ember orange maps to primary actions, active status, selected emphasis, and the central orbital focus through `--primary`.
+- Dense edge telemetry and an open center become the three-column Desktop Hero; Mobile removes the side telemetry before reducing the primary narrative.
+- Straight technical frames map to 2px control, surface, and overlay radii. Circular geometry is reserved for the orbital mark, nodes, icon-only actions, spinners, and status dots.
 
-使用规则：
+## Durable decisions
 
-1. 苔藓绿用于主操作和选中态；近黑绿只用于文字与特殊品牌面板。
-2. 大面板、普通卡、控件、标签分别使用 44/36–24/14/full 的圆角层级。
-3. 列表默认通过背景色差分组；仅浮层和主要容器使用阴影。
-4. 移动端保持正文大小，重排信息而不是压缩成横向表格。
-5. 所有仅图标按钮必须有中文可访问名称，所有图表必须有文本等价信息。
+- Product scope is a standalone Marketing design system with nine custom component families.
+- The approved version is English-only in gallery chrome, examples, metadata, accessibility labels, and `DESIGN.md`.
+- The language revision did not alter the approved palette, density, type hierarchy, or interaction model.
+- Rajdhani is reserved for display hierarchy, Inter for body and controls, and IBM Plex Mono for telemetry and labels.
+- Saturated color is scarce by design: primary orange is for action or active state; amber carries information; muted gold supports secondary copy.
+- The Select uses a custom portaled popup so the trigger, options, selected state, disabled state, collision handling, and keyboard behavior share the same theme.
+
+## Scope and exceptions
+
+- Modal, tabs, table, toast, admin navigation, and destructive workflows are not part of this Marketing inventory.
+- The integrated Key Visual is documentation-only. It imports delivered components and is not a tenth reusable component.
+- Preview modules, gallery files, `IntegratedPreview.tsx`, and build output are not part of the portable component source set.

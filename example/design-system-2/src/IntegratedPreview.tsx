@@ -1,42 +1,81 @@
-import { ArrowRight, ArrowUpRight, Play } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { SignalAuditPanel } from "@/components/custom/signal-audit-panel"
-import "./integrated-preview.css"
+import { ArrowUpRight, CalendarDays, CheckCircle2, CircleDot, Clock3, FolderKanban, LayoutDashboard, MessageSquareText, Plus, Search, Sparkles } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Progress } from '@/components/ui/progress'
+import { MarketingCard, MarketingCardGrid } from '@/components/custom/marketing-card'
+import { MarketingFooter } from '@/components/custom/marketing-footer'
+import { MarketingHeader } from '@/components/custom/marketing-header'
+import { MarketingHero } from '@/components/custom/marketing-hero'
+import { MarketingNewsletterForm } from '@/components/custom/marketing-input-form'
+import { MarketingSection } from '@/components/custom/marketing-section'
+
+const navItems = [
+  { label: 'Capabilities', href: '#capabilities' },
+  { label: 'How it works', href: '#workspace' },
+  { label: 'Design language', href: '#design-language' },
+]
+
+function WorkspacePreview() {
+  return <div className="starry-workspace" aria-label="Project management interface example">
+    <aside className="starry-workspace-sidebar">
+      <div className="starry-workspace-brand"><span aria-hidden="true" />Starry Current</div>
+      <nav aria-label="Workspace navigation">
+        <a className="active" href="#workspace"><LayoutDashboard aria-hidden="true" />Project overview</a>
+        <a href="#reviews"><MessageSquareText aria-hidden="true" />Review queue</a>
+        <a href="#calendar"><CalendarDays aria-hidden="true" />Team calendar</a>
+        <a href="#projects"><FolderKanban aria-hidden="true" />All projects</a>
+      </nav>
+    </aside>
+    <div className="starry-workspace-main">
+      <header className="starry-workspace-toolbar">
+        <div><span>Workspace</span><h3>Project overview</h3></div>
+        <div className="starry-workspace-actions"><div className="starry-workspace-search"><Search aria-hidden="true" /><Input aria-label="Search projects" placeholder="Search projects" /></div><Button><Plus aria-hidden="true" />New project</Button></div>
+      </header>
+      <div className="starry-stat-grid">
+        <Card><CardHeader><CardDescription>In progress</CardDescription><CardTitle>12</CardTitle></CardHeader><CardContent><Progress value={68} aria-label="In-progress projects at 68 percent" /><span>3 added this week</span></CardContent></Card>
+        <Card><CardHeader><CardDescription>Awaiting review</CardDescription><CardTitle>03</CardTitle></CardHeader><CardContent><Clock3 aria-hidden="true" /><span>Earliest deadline · 18:30</span></CardContent></Card>
+        <Card><CardHeader><CardDescription>Completed this week</CardDescription><CardTitle>08</CardTitle></CardHeader><CardContent><CheckCircle2 aria-hidden="true" /><span>7 completed on time</span></CardContent></Card>
+      </div>
+      <Card className="starry-project-list">
+        <CardHeader><div><CardTitle>Recent projects</CardTitle><CardDescription>Ordered by the next action required</CardDescription></div><Button variant="ghost" size="sm">View all<ArrowUpRight aria-hidden="true" /></Button></CardHeader>
+        <CardContent>
+          <div className="starry-project-row"><CircleDot aria-hidden="true" /><div><strong>Autumn launch plan</strong><span>Brand and Product teams · Today, 18:30</span></div><Badge>Awaiting review</Badge></div>
+          <div className="starry-project-row"><Sparkles aria-hidden="true" /><div><strong>Star Map mobile update</strong><span>Experience team · Tomorrow, 11:00</span></div><Badge variant="secondary">In progress</Badge></div>
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+}
 
 export default function IntegratedPreview() {
-  return <main className="signal-page">
-    <section className="signal-story">
-      <div className="signal-brand"><i /> AI 品牌洞察工作室</div>
-      <div className="signal-story__body">
-        <h1><span>解读信号。</span><span>设计<em className="editorial-accent">系统。</em></span></h1>
-        <p>我们把分散的产品、市场与品牌输入，转化为更鲜明的定位、更一致的识别系统，以及可以直接发布的数字体验。</p>
-        <div className="signal-stats">
-          <div><strong>87%</strong><span>清晰度提升</span></div>
-          <div><strong>14D</strong><span>审计周期</span></div>
-          <div><strong>3X</strong><span>发布聚焦</span></div>
-        </div>
-        <div className="signal-actions">
-          <Button size="lg">开始品牌审计 <ArrowUpRight /></Button>
-          <Button variant="ghost" size="lg">查看系统 <Play /></Button>
-        </div>
-      </div>
-      <div className="signal-rail">EMBER SIGNAL — BRAND INTELLIGENCE SYSTEM</div>
-    </section>
-
-    <section className="signal-workspace">
-      <div className="signal-workspace__rings" aria-hidden="true"><i /></div>
-      <div className="signal-index">SIGNAL / 04</div>
-      <SignalAuditPanel
-        score={87}
-        metrics={[
-          { label: "定位强度", value: 92 },
-          { label: "信息层级", value: 76, tone: "accent" },
-          { label: "发布准备度", value: 84, tone: "neutral" },
-        ]}
-        signalGap="定价叙事"
-        nextMove="梳理转化路径"
-      />
-      <a className="signal-next" href="#next">查看下一个信号 <ArrowRight /></a>
-    </section>
-  </main>
+  return <div className="starry-integrated-page">
+    <MarketingHeader items={navItems} />
+    <MarketingHero
+      title="Keep every project moving on a clear path"
+      description="Bring planning, reviews, and delivery into one shared workspace. Starry Current is an illustrative SaaS used to demonstrate this design system, not a real product claim."
+      primaryAction={{ label: 'Enter workspace', href: '#workspace' }}
+      secondaryAction={{ label: 'View projects', href: '#capabilities' }}
+      visual={<div className="marketing-orbit-panel"><span className="marketing-card-label">Tonight's project orbit</span><div className="marketing-orbit-value">12</div><div className="marketing-orbit-meta"><span>3 awaiting review</span><span>8 completed this week</span></div></div>}
+    />
+    <MarketingSection id="capabilities" eyebrow="Clear collaboration" title="Expansive expression and focused work, each with its own rhythm" description="The brand area establishes direction, while the management interface keeps tasks clear and actionable. Both share the same warm–cool palette and type hierarchy without repeating one decorative treatment across every component.">
+      <MarketingCardGrid>
+        <MarketingCard label="Project orbit" title="See priorities before moving work forward" description="See active work, pending reviews, and approaching deadlines in one view." value="12" action={<Button variant="outline" size="sm">View example<ArrowUpRight aria-hidden="true" /></Button>} />
+        <MarketingCard label="Awaiting review" title="3 projects" description="Use explicit status and timing details to sequence reviews." value="03" />
+        <MarketingCard label="Completed this week" title="Keep a steady rhythm" description="Example data is used only to demonstrate information hierarchy." value="08" variant="project" />
+      </MarketingCardGrid>
+    </MarketingSection>
+    <MarketingSection id="workspace" tone="quiet" eyebrow="Real component composition" title="Enter a calm, precise workspace" description="The sidebar, cards, buttons, inputs, badges, and progress indicators all use delivered components rather than one-off imitations created for the Key Visual.">
+      <WorkspacePreview />
+    </MarketingSection>
+    <MarketingSection id="design-language" tone="raised" eyebrow="Example contact form" title="Complete an action with clear feedback" description="Submission only displays a result in this demo. It does not imply that an account was created or a real subscription was sent.">
+      <MarketingNewsletterForm />
+    </MarketingSection>
+    <MarketingFooter groups={[
+      { title: 'Product', links: [{ label: 'Project overview', href: '#workspace' }, { label: 'Review queue', href: '#workspace' }] },
+      { title: 'Resources', links: [{ label: 'Design language', href: '#design-language' }, { label: 'Component directory', href: '#components' }] },
+      { title: 'About', links: [{ label: 'Example notes', href: '#capabilities' }] },
+    ]} />
+  </div>
 }

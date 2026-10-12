@@ -1,13 +1,27 @@
-@import "@fontsource/manrope/300.css";
-@import "@fontsource/manrope/400.css";
-@import "@fontsource/manrope/500.css";
-@import "@fontsource/manrope/600.css";
-@import "@fontsource/manrope/700.css";
-@import "@fontsource/cormorant-garamond/500-italic.css";
-@import "@fontsource/noto-sans-sc/400.css";
-@import "@fontsource/noto-sans-sc/500.css";
-@import "@fontsource/noto-sans-sc/600.css";
+@import "@fontsource-variable/noto-sans-sc";
+@import "@fontsource-variable/noto-serif-sc";
 
-.editorial-accent{font-family:'Cormorant Garamond','Noto Serif SC',serif;font-style:italic;color:var(--accent)}
-:where([data-slot="progress"]){height:4px;border-radius:0;background:color-mix(in srgb,var(--foreground) 11%,transparent)}
-:where([data-slot="progress-indicator"]){border-radius:0}
+/* Reference-derived refinements layered after the generated Base UI contract. */
+.cn-card { box-shadow: var(--data-display-shadow); }
+.cn-card-title,.cn-dialog-title,.cn-alert-dialog-title { font-family: var(--font-heading); }
+.cn-button-variant-default { box-shadow: var(--actions-shadow); }
+.cn-button-variant-default:active { transform: translateY(var(--actions-pressed-offset)); }
+.cn-select-content,.cn-dialog-content,.cn-popover-content,.cn-dropdown-menu-content { background: var(--popover); box-shadow: var(--overlays-shadow); }
+.cn-dialog-overlay,.cn-alert-dialog-overlay { z-index:80!important; }
+.cn-dialog-content,.cn-alert-dialog-content { z-index:81!important; }
+.cn-select-item[data-highlighted],.cn-dropdown-menu-item[data-highlighted] { background: var(--accent); color: var(--accent-foreground); }
+.cn-tabs-trigger[data-active]:not([data-active="false"]) { outline: 1px solid color-mix(in srgb,var(--ring) 44%,transparent); outline-offset: -1px; }
+.cn-alert { box-shadow: var(--feedback-shadow); }
+.cn-checkbox::after,.cn-radio-group-item::after,.cn-switch::after {
+  inset:auto!important;
+  left:50%!important;
+  top:50%!important;
+  width:max(100%,44px)!important;
+  height:max(100%,44px)!important;
+  transform:translate(-50%,-50%)!important;
+}
+.cn-checkbox-indicator { inset:-1px!important; width:auto!important; height:auto!important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cn-button-variant-default:active { transform: none; }
+}

@@ -1,0 +1,82 @@
+{
+  "sourceLayer": "Custom components",
+  "ui": [],
+  "custom": [
+    "button",
+    "header",
+    "hero",
+    "section",
+    "card",
+    "footer",
+    "input-form",
+    "select",
+    "icon"
+  ],
+  "componentFiles": {
+    "button": [
+      "src/components/custom/button.tsx",
+      "src/components/custom/system.css"
+    ],
+    "header": [
+      "src/components/custom/header.tsx",
+      "src/components/custom/button.tsx",
+      "src/components/custom/icon.tsx",
+      "src/components/custom/system.css"
+    ],
+    "hero": [
+      "src/components/custom/hero.tsx",
+      "src/components/custom/button.tsx",
+      "src/components/custom/system.css"
+    ],
+    "section": [
+      "src/components/custom/section.tsx",
+      "src/components/custom/system.css"
+    ],
+    "card": [
+      "src/components/custom/card.tsx",
+      "src/components/custom/system.css"
+    ],
+    "footer": [
+      "src/components/custom/footer.tsx",
+      "src/components/custom/icon.tsx",
+      "src/components/custom/system.css"
+    ],
+    "input-form": [
+      "src/components/custom/input-form.tsx",
+      "src/components/custom/button.tsx",
+      "src/components/custom/system.css"
+    ],
+    "select": [
+      "src/components/custom/select.tsx",
+      "src/components/custom/system.css"
+    ],
+    "icon": [
+      "src/components/custom/icon.tsx",
+      "src/components/custom/system.css"
+    ]
+  },
+  "files": {
+    "src/components/custom/button.tsx": "a4e6443e0d60cde6533947cc6cef8c2e5a50cf17efdf98f1bd47ca617f58dd91",
+    "src/components/custom/card.tsx": "8efb57f08e174800023b6925b6a33674fc232e5467ea2a7d9d75d2f77017a591",
+    "src/components/custom/footer.tsx": "a4dc18db7fb2a2a4d403d2692ea149cf9e8edfd12e611eee651db6266fc09d30",
+    "src/components/custom/header.tsx": "eee4cada8a6310e59aba0d647e255e2a6776005503f3442a8919b8e20f8b6875",
+    "src/components/custom/hero.tsx": "a56916634bb322475ce21b69310bca986a02859778b526d90a8ea4b243997537",
+    "src/components/custom/icon.tsx": "87e6b050bbdc4ad6b2a544e1be3a7463b575495f8947eb2aad20052d22174a2c",
+    "src/components/custom/input-form.tsx": "f265e65a59175cf12600bd442682307d22c9d965f6b763734cb3c4e2abd77ea3",
+    "src/components/custom/section.tsx": "522eb3a2586e24dab78f82b17e7e8244eb963ed2dba88ef64ff589a395605e8c",
+    "src/components/custom/select.tsx": "35a83f0c2aeea71901acf1025534c3c984ca131e09e8a7866172c19b7eb01026",
+    "src/components/custom/system.css": "6cedbe1b3fc955155d4c2ff1f671ef125e0b2b7f0bf58600d3c69ee8e434fbe9",
+    "src/index.css": "1b7ab903dccea6e647144bfd089684c611a13a942b52da0c68b9d50e8d341f77",
+    "tokens.json": "5f4414225dff8997915c8b80329b25148ba59a41b7447be7359c840e36cb9aff"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@fontsource/inter": "5.3.0",
+    "@fontsource/rajdhani": "5.3.0",
+    "lucide-react": "0.468.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tailwindcss": "^4.1.0"
+  },
+  "deliverySha256": "ed5b3e3e9b2d3cd934b33516f1a81d8438f52fc8876b3a0551d85755210fb40f"
+}

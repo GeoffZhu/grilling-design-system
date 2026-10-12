@@ -15,6 +15,14 @@ Resolve DESIGN_DOC with project-output.md: Web application root/DESIGN.md for in
 - Implementation, Reference Screens, and Canonical Components: use existing paths relative to the directory containing DESIGN_DOC. In Web projects these are relative to the application root, even when the component destination is elsewhere. Inspect custom/shared components and reference screens. In section 9, record the repository-specific start or install command, global stylesheet entry, required root providers, public import convention, and gallery/docs command when present; keep these consistent with the final usage handoff. Mark absent screen types as not applicable with a reason; never fabricate paths or duplicate components to fill a field.
 - Project-Specific Rules: distill visual-translation.md into durable rules, scope and exceptions, actual component/style/asset mappings, and reasons for adaptations or omissions. Link design-notes.md when useful. Preserve snapshot, decision summaries, custom guidance, and source attribution as subsections within section 13; do not copy temporary session artifacts. Keep contrast and verification evidence inside section 8.
 
+Complete the applicable specialist notes without adding numbered sections or machine fields:
+
+- Section 2: final host-token mappings from [token-audit.md](token-audit.md), with meaningful exceptions and affected scope in section 13. Literal counts and search hits are not verification.
+- Section 5: actual motion triggers, enter/exit rules, timing and interruption behavior from [motion.md](motion.md); keep reduced-motion behavior and verification limits in section 8.
+- Section 7: writing style, terminology and real action/error/confirmation examples from [ux-writing.md](ux-writing.md), including the host message location when relevant. Preserve sections 5 and 6 for interaction and state behavior.
+- Section 13/design-notes.md: scoped accepted, explicitly ruled-out and superseded decisions from [decisions.md](decisions.md#preserve-decisions-across-revisions). Preserve provenance and replacement relationships; never convert an unselected option into a rejection or fabricate missing reasons. Use the existing design-notes import/merge mechanism.
+- Marketing sections 1, 5, 7 and 13: record applicable page/journey rules, factual assumptions and deliberate adaptations from [marketing-review.md](marketing-review.md). Label illustrative content and missing approved assets; do not claim measured conversion improvements without data.
+
 Do not turn template fields into questions. Reuse project context, the reference, accepted choices, and consistent agent-derived rules. Product and unresolved page scope are resolved during intake; only unresolved high-impact visual choices consume the visual question budget.
 
 ## Regeneration and completion

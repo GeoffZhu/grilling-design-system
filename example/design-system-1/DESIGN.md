@@ -4,30 +4,30 @@
 
 Product type:
 
-`生态教育与课程运营组件库`
+`Marketing site`
 
 Style:
 
-* `自然、克制`
-* `编辑感标题`
-* `宽松信息密度`
-* `柔和数据表达`
+* `Cinematic sci-fi`
+* `Technical and precise`
+* `Dense at the edges, open at the center`
+* `High contrast with restrained saturation`
 
 Principles:
 
-1. `内容优先，装饰退后`
-2. `苔藓绿表达操作，近黑绿只作文字与品牌焦点`
-3. `大表面、普通卡、控件和标签使用不同圆角层级`
+1. `Preserve information hierarchy before decoration.` The reference separates a central focal object from dense edge telemetry; the system keeps primary narrative space open and support data compact.
+2. `Use color by role.` Amber carries information, ember orange marks action and active state, and near-black surfaces provide depth.
+3. `Separate structural geometry by purpose.` Everyday controls and cards use straight technical frames; circles are reserved for orbit, identity, loading, and status.
 
 ### Source and status
 
-Name: 植物主调
+Name: Ember Orbit
 
-Status: Approved by user on 2026-09-17
+Status: Approved
 
-Mode: light only
+Mode: Dark only
 
-参考图的奶白排期面板、鼠尾草数据面板和近黑品牌卡构成主要层级。用户选择 B：苔藓绿承担主操作和选中态，近黑绿仅用于文字与特殊品牌面板。
+The reference image is translated through a near-black canvas, dense perimeter telemetry, thin amber linework, and a central orbital focus. The approved language is English for all runtime previews, examples, metadata, accessible labels, and documentation. The design decisions are preserved in `design-notes.md`.
 
 ---
 
@@ -36,157 +36,150 @@ Mode: light only
 ### Colors
 
 ```txt
-background: var(--background) = #CED0C3
-surface: var(--card) = #FAFAF6
-border: var(--border) = #D9DCCF
+background: var(--background) = #050403
+surface: var(--card) = #0B0704
+border: var(--border) = #814313
 
-text-primary: var(--foreground) = #192315
-text-secondary: var(--secondary-foreground) = #304329
-text-muted: var(--muted-foreground) = #66715E
+text-primary: var(--foreground) = #F4E7C9
+text-secondary: var(--secondary-foreground) = #F8C46A
+text-muted: var(--muted-foreground) = #C9AA74
 
-primary: var(--primary) = #516B3D
-primary-hover: color-mix(in srgb, var(--primary) 90%, transparent)
+primary: var(--primary) = #F05A14
+primary-hover: var(--accent) = #F5A21A
 
-success: var(--chart-2) = #7F9A67
-warning: var(--chart-4) = #AFC396 with text-primary label
-error: var(--destructive) = #8E332B
+success: no standalone semantic token; use labeled active status in existing components
+warning: no standalone semantic token; add one in tokens.json before introducing warning UI
+error: var(--destructive) = #FF6048
 ```
 
 Rules:
 
 * Use semantic tokens.
 * No arbitrary colors.
+* Do not use orange as decoration; reserve it for actions, selection, active state, or critical focal data.
 
 ### Typography
 
 ```txt
-font-family: Manrope Variable; Noto Sans SC fallback
+font-family: Inter, sans-serif
+display-family: Rajdhani, sans-serif
+telemetry-family: IBM Plex Mono, monospace
 
-page-title: Fraunces Variable / Noto Serif SC; 48–64px; 700; line-height 1.02; tracking -0.035em
-section-title: Fraunces Variable / Noto Serif SC; 24–36px; 700; line-height 1.08
-body: Manrope Variable / Noto Sans SC; 16px; 400–500; line-height 1.55
-small: Manrope Variable / Noto Sans SC; 12–13px; 400–600; line-height 1.45
-label: Manrope Variable / Noto Sans SC; 14px; 600; line-height 1.4
+page-title: Rajdhani 600; clamp(54px, 6vw, 88px); line-height 0.92
+section-title: Rajdhani 600; clamp(42px, 6vw, 76px); line-height 0.96
+body: Inter 400; 16px; line-height 1.65
+small: Inter 400 or 500; 12px to 14px; line-height 1.5 to 1.7
+label: IBM Plex Mono 600; 10px to 11px; uppercase; 0.08em to 0.14em tracking
 ```
 
 Rules:
 
 * Use defined typography only.
 * No arbitrary font sizes.
-
-Fraunces 与 Manrope 通过 Fontsource 安装。两者均为 SIL Open Font License 授权。中文使用系统可用的 Noto Serif SC 与 Noto Sans SC 回退。
+* Rajdhani is for display hierarchy, not long body copy.
+* IBM Plex Mono is for labels, measurements, identifiers, and technical status.
 
 ### Spacing
 
 ```txt
-Allowed: 4 / 8 / 12 / 16 / 24 / 32 / 48 / 64
+Allowed: 4 / 8 / 12 / 16 / 18 / 20 / 24 / 28 / 30 / 32 / 38 / 44 / 48 / 64 / 72 / 92 / 110 / 140
+Base unit: 4px
 
-Card padding: 24 / 32 / 48
-Form gap: 8 label-to-field; 16 field-to-field
-Section gap: 24 compact; 48 standard; 64 page section
-Page padding: 24 desktop; 12 mobile for the dashboard; 20 mobile for documentation
+Card padding: 24px
+Form gap: 18px
+Section gap: 38px to 72px between heading and content
+Page padding: clamp(20px, 5vw, 72px)
 ```
 
 Rules:
 
 * No arbitrary spacing.
+* Use the compact values for controls and telemetry; use the larger values only for Marketing composition.
 
 ### Radius
 
 ```txt
-sm: 14px; controls
-md: 24px; mobile rows and overlays
-lg: 32–36px; content cards
-full: 9999px; tags, tabs, chart bars and desktop schedule rows
+sm: 1.2px; --radius-sm
+md: 1.6px; --radius-md
+lg: 2px; --radius-lg, --control-radius, --surface-radius, --overlay-radius
+full: 9999px; reserved for circles, icon actions, status dots, and orbital geometry
 ```
-
-The reference-led workshop shell is the single 44px exception.
 
 ### Icons
 
 ```txt
-Library: Lucide
-Sizes: 16px compact; 20px default; 24px prominent
+Library: Lucide geometric plus the custom OrbitMark
+Sizes: 20px base; 16px for Select disclosure; 44px hit area for icon actions
+Stroke: 1.5px
 ```
 
 Rules:
 
 * Use one icon library.
 * No emoji as UI icons.
-* Use 1.75px rounded strokes and align icons to the text baseline.
+* Use `OrbitMark` only for Ember Orbit identity, not as a generic action icon.
 
 ### Complete semantic color map
 
-| Token | Value | Role |
-| --- | --- | --- |
-| --background | #CED0C3 | warm page canvas |
-| --foreground | #192315 | primary text |
-| --card | #FAFAF6 | primary content surface |
-| --card-foreground | #192315 | card text |
-| --popover | #FFFFFF | raised overlay |
-| --popover-foreground | #192315 | overlay text |
-| --primary | #516B3D | primary action and selected state |
-| --primary-foreground | #FFFFFF | text on primary |
-| --secondary | #E9EDDF | secondary action surface |
-| --secondary-foreground | #304329 | secondary text |
-| --muted | #F0F2E9 | quiet rows and fields |
-| --muted-foreground | #66715E | supporting copy |
-| --accent | #9DB386 | data panel |
-| --accent-foreground | #192315 | text on accent |
-| --destructive | #8E332B | destructive and invalid state |
-| --border | #D9DCCF | structural separators |
-| --input | #69705F | essential field boundary |
-| --ring | #516B3D | keyboard focus |
-| --chart-1…5 | #516B3D / #7F9A67 / #192315 / #AFC396 / #D7E1C8 | chart series |
-| --sidebar | #F5F6F0 | documentation navigation |
-| --sidebar-primary | #516B3D | active navigation |
+| Token | Value |
+| --- | --- |
+| `--background` | `#050403` |
+| `--foreground` | `#F4E7C9` |
+| `--card` | `#0B0704` |
+| `--card-foreground` | `#F4E7C9` |
+| `--popover` | `#100A05` |
+| `--popover-foreground` | `#FFF3D6` |
+| `--primary` | `#F05A14` |
+| `--primary-foreground` | `#190700` |
+| `--secondary` | `#211307` |
+| `--secondary-foreground` | `#F8C46A` |
+| `--muted` | `#171009` |
+| `--muted-foreground` | `#C9AA74` |
+| `--accent` | `#F5A21A` |
+| `--accent-foreground` | `#170900` |
+| `--destructive` | `#FF6048` |
+| `--border` | `#814313` |
+| `--input` | `#A75718` |
+| `--ring` | `#FFB43B` |
 
-Component-specific named values live in `src/components/custom/organic-components.css`: `--organic-white`, four quiet avatar tones, `--organic-chart-bar`, `--organic-brand`, and `--organic-brand-mark`. Do not reuse `--organic-brand` as a routine card background.
-
-### Motion and depth
-
-```txt
-duration: 160ms
-easing: cubic-bezier(0.22, 1, 0.36, 1)
-surface shadow: 0 18px 48px rgba(25, 35, 21, 0.14)
-```
-
-Animate hover, selection and overlay transitions only. Disable nonessential motion under `prefers-reduced-motion`.
+Additional chart and sidebar roles are defined in `tokens.json` and emitted in `src/index.css`. Component geometry, family shadows, border widths, motion, and control metrics are also emitted as CSS variables from the same token source.
 
 ---
 
 ## 3. Layout
 
 ```txt
-Max content width: 1600px documentation; fluid dashboard
-Page padding: 24px desktop; 12px mobile dashboard
-Sidebar width: 260px
-Form max width: 448px
+Max content width: 1180px for Marketing sections; 1120px for gallery content
+Page padding: clamp(20px, 5vw, 72px)
+Sidebar width: 260px in the component gallery
+Form max width: 560px
 ```
 
 Breakpoints:
 
 ```txt
-mobile: below 560px
-tablet: 560–899px
-desktop: 900px and above
+mobile: 0 to 760px
+tablet: 761px to 1100px
+desktop: above 1100px
 ```
 
 Responsive rules:
 
 ```txt
 Sidebar:
-Desktop -> persistent searchable 260px sidebar
-Mobile -> modal drawer opened from a 44px menu control
+Desktop -> sticky 260px component navigation
+Mobile -> hidden sidebar with a 44px menu trigger and modal navigation layer
 
 Grid:
-Desktop -> full-width schedule above a 1.15fr / 0.85fr feature grid
-Tablet -> single-column feature cards; schedule rows become information cards
-Mobile -> single column; 12px outer gap; preserve readable type and touch targets
+Desktop -> three Hero columns and three Card columns
+Tablet -> gallery directory reduces from three columns to two
+Mobile -> telemetry sidebars hide; Hero, Section headings, Cards, and Footer reflow to one primary column
 
 Table:
-Mobile -> hide column headers and expose field labels inside each schedule card
+Mobile -> Not applicable; no Table component is delivered
 ```
+
+The Hero keeps its primary narrative before support telemetry. At 760px and below, side telemetry is removed rather than shrinking core text. The emphasized Mobile Hero line uses `0.78em` to prevent clipping at 360px while retaining the Desktop scale.
 
 ---
 
@@ -196,21 +189,25 @@ Mobile -> hide column headers and expose field labels inside each schedule card
 
 ```txt
 Variants:
-primary -> variant="default"
-secondary -> variant="secondary"
-ghost -> variant="ghost"
-destructive -> variant="destructive"
+primary
+secondary (default)
+ghost
+destructive: not implemented in this Marketing inventory
 
 Sizes:
-sm -> size="sm"
-md -> size="default"
-lg -> size="lg"
+sm: 44px minimum height
+md: 48px default height
+lg: not implemented
 ```
 
 Rules:
 
 * One primary action per action group.
 * No custom button colors.
+* Use `loading` to disable the action and show the built-in spinner.
+* Use `iconOnly` only with an accessible `aria-label`.
+
+API: `EmberButton` extends native button attributes and adds `variant`, `size`, `loading`, `icon`, and `iconOnly`.
 
 ### Input
 
@@ -219,16 +216,21 @@ Rules:
 * Always use a visible label.
 * Placeholder is not a label.
 * Show validation near the field.
-* Default height is 46px with a 14px radius.
+* Use `EmberInput` and `EmberTextarea`; both accept native field attributes plus `label`, `help`, and `error`.
+* `error` sets `aria-invalid` and connects the message with `aria-describedby`.
 
 ### Select
 
 Rules:
 
 * Select: short option lists.
-* Combobox: long/searchable lists.
-* Radio: small visible choices.
-* Switch: immediate on/off state.
+* Theme both the Select trigger and option popup, including focus, selected and disabled options. The delivered popup is custom, not native.
+* `EmberSelect` accepts `label`, `options`, controlled `value`, uncontrolled `defaultValue`, `placeholder`, `name`, `required`, `disabled`, `error`, and `onValueChange`.
+* Arrow keys move between enabled options; Home and End jump; Enter or Space opens or selects; Escape closes; type-ahead matches the first label character.
+* Selection closes the popup and returns focus to the trigger. A hidden input supplies the form value when `name` is present. Form reset restores `defaultValue`.
+* Combobox: long or searchable lists; not delivered.
+* Radio: small visible choices; not delivered.
+* Switch: immediate on/off state; not delivered.
 
 ### Card
 
@@ -236,13 +238,14 @@ Rules:
 
 * Use only for meaningful grouping.
 * Avoid nested cards.
-* Reserve the near-black surface for `BrandFocusCard`; routine cards use `card`, `muted`, or `accent`.
+* `EmberCard` supports index, title, description, status, active state, readout, action, children, and `default` or `signal` variants.
+* Use `active` only for the current or live item; retain a text status so color is not the only cue.
 
 ### Modal
 
 Use for:
 
-`Focused review, confirmation, or editing that must interrupt the current view.`
+`Not applicable: Modal is outside the approved Marketing component inventory.`
 
 Rules:
 
@@ -253,13 +256,13 @@ Rules:
 
 Use for:
 
-`Mobile component navigation and secondary tasks that benefit from preserved page context.`
+`Not applicable: no reusable Drawer is delivered; the documentation gallery owns its private Mobile navigation layer.`
 
 ### Tabs
 
 Use for:
 
-`Peer views such as 7-day and 30-day data ranges or account sections.`
+`Not applicable: no peer-view tab pattern is present in the approved Marketing composition.`
 
 Rules:
 
@@ -274,16 +277,20 @@ Rules:
 * Numbers right aligned.
 * Actions right aligned.
 * Support empty state.
-* Convert wide schedules to labeled information cards on Mobile.
+* Not applicable to the delivered inventory; add a canonical Table before introducing tabular product UI.
 
-### Custom components
+### Marketing components
 
-* `WorkshopSchedule`: responsive course list with instructor, level, date, time and row action.
-* `EngagementChart`: 7/30-day segmented range and accessible text-equivalent bar chart.
-* `BrandFocusCard`: near-black editorial focal surface with two icon actions.
-* `EcosystemDashboard`: integrated reference composition and Dialog interaction.
+- `EmberHeader`: brand, current navigation state, compact action, and expandable Mobile navigation.
+- `EmberHero`: orbital visual, display copy, telemetry, and primary and secondary actions.
+- `EmberSection`: content-width, heading relationship, vertical rhythm, and responsive layout wrapper.
+- `EmberFooter`: brand note, grouped links, and system status footer.
+- `EmberContactForm`: honest demo composition using `EmberInput`, `EmberTextarea`, and `EmberButton`.
+- `EmberIcon`, `IconButton`, and `OrbitMark`: icon wrapper, accessible circular action, and brand geometry.
 
-All standard components preserve shadcn/ui public APIs. Modal maps to `Dialog`; Toast maps to `Sonner`.
+### Public API mapping
+
+Import named exports directly from `src/components/custom/<component>.tsx`. There is no barrel export and no shadcn variant mapping. The `input-form` family intentionally contains the Input, Textarea, and Contact Form exports.
 
 ---
 
@@ -299,27 +306,32 @@ Secondary actions
 Content
 ```
 
+Marketing pages may place telemetry around the narrative on Desktop, but DOM order and Mobile layout must keep the primary message and action understandable without it.
+
 ### Forms
 
 ```txt
-Layout: one column by default; group only closely related short fields
-Validation: inline beside or below the field, using text and destructive styling
-Save behavior: primary button changes to a stable-width loading state, then a success message
-Unsaved changes: preserve input after errors; use a focused confirmation before destructive navigation
+Layout: single column, 18px gaps, 560px maximum width
+Validation: inline below the affected field; preserve entered values
+Save behavior: the demo form reports success in a live status region and sends no network request
+Unsaved changes: Not applicable; the delivered demo does not persist or navigate away
 ```
 
 Rules:
 
 * Prefer single-column forms.
 * Group related fields.
+* Do not claim a submission was sent when the example is local only.
 
 ### Search
 
 ```txt
-Trigger: type in the visible component search field
-Debounce: immediate for the local component directory; 200ms for remote data
-No-result behavior: show “未找到组件。” in the current context
+Trigger: immediate component-title and category filtering in the documentation sidebar
+Debounce: none; the local nine-item inventory filters synchronously
+No-result behavior: show “No components found.”
 ```
+
+Search is documentation-only and is not part of the portable Marketing components.
 
 ### Filters
 
@@ -327,7 +339,7 @@ Rules:
 
 * Show active filters.
 * Provide reset when needed.
-* Use pill segments only for short peer ranges such as 7天 / 30天.
+* Not applicable to the delivered Marketing inventory.
 
 ### Destructive Actions
 
@@ -336,6 +348,11 @@ Rules:
 * State exactly what will be deleted.
 * State whether it is reversible.
 * Avoid vague "Are you sure?" copy.
+* No destructive workflow is included; define both behavior and semantic styling before adding one.
+
+### Motion
+
+Use the 180ms `cubic-bezier(0.22, 1, 0.36, 1)` token for hover, focus-adjacent state, disclosure rotation, and popup-related visual transitions. Button press offset lasts 100ms. The spinner uses a continuous 700ms rotation only while loading. Motion must be interruptible; `prefers-reduced-motion: reduce` reduces animation and transition durations to `0.01ms` and disables smooth scrolling.
 
 ---
 
@@ -344,11 +361,11 @@ Rules:
 Every relevant screen must handle:
 
 ```txt
-loading: preserve control width and use Spinner for short actions
-empty: show a clear explanation and one next action
-error: pair destructive color with specific repair text
-success: use a confirmation message or Sonner for global feedback
-disabled: reduce opacity while retaining labels and context
+loading: EmberButton spinner, disabled while loading
+empty: documentation search empty message; product empty patterns are not delivered
+error: field border, inline message, aria-invalid, and preserved input
+success: inline role=status feedback in EmberContactForm and Select preview
+disabled: reduced opacity and no pointer action for Button and Select options
 ```
 
 Rules:
@@ -357,7 +374,7 @@ Rules:
 * Spinner for short actions.
 * Preserve user input after errors.
 * Do not use toast for field validation.
-* Selected states combine fill, text, border, or `aria-pressed`; never use color alone.
+* Hover, focus, active, selected, disabled, invalid, and loading states must retain the same semantic color roles and geometry.
 
 ---
 
@@ -365,22 +382,25 @@ Rules:
 
 Style:
 
-`简练、专业、友好`
+`Concise, professional, technical, and concrete`
 
 Rules:
 
-* Sentence case.
+* Sentence case for actions and explanatory copy; uppercase is a visual treatment for telemetry labels only.
 * Prefer specific verbs.
-* Avoid vague labels like `OK` and `Submit`.
-* Product examples and accessible labels use Chinese; component names and code identifiers remain English.
+* Avoid vague labels like `OK` and bare `Submit`.
+* Do not invent performance, conversion, customer, or product claims.
+* Keep sample screens honest about local-only behavior.
+* Runtime copy lives in component source files under `src/components/custom`, component metadata in `custom-components.json`, and gallery chrome in `src/review-copy.ts`.
 
 Examples:
 
 ```txt
-安排课程
-保存更改
-删除工作区
-发送邀请
+Explore components
+View design rules
+Confirm channel
+Enter a complete email address.
+Demo submitted. No message was sent.
 ```
 
 ---
@@ -396,17 +416,24 @@ Examples:
 
 Target size:
 
-`Primary touch targets are at least 44×44 CSS px.`
+`44x44 CSS px minimum for visible Mobile interactive targets`
 
 Standard:
 
-`WCAG 2.2 AA target; verification is scoped to the checks recorded below.`
+`WCAG 2.2 AA target; not a claim of full conformance`
 
-### Evidence
+### Accessibility evidence
 
-Token contrast checks passed: foreground/background 10.39:1, card text/card 15.53:1, primary text/primary 5.97:1, muted text/muted 4.54:1, focus ring/background 3.82:1, and input boundary/background 3.29:1.
+All pairs in `contrast-report.json` pass their configured threshold. Key text pairs exceed 4.5:1; ring and input boundary pairs exceed 3:1. Browser checks covered semantic labels, visible focus behavior, Mobile target size, Select keyboard interaction, disabled options, focus return, and inline form feedback.
 
-`agent-browser` checks covered 1440×900, 390×844, and 360×800 layouts; 7/30-day selection; Dialog open, Escape close, and focus return; visible keyboard focus; accessible labels; and browser console errors. No automated screen-reader announcement test or physical-device touch test was run.
+### Verification and limitations
+
+- `agent-browser` verified the gallery and all nine detail views at 1440x900, 390x844, and 360x800.
+- No page or preview canvas overflow remained; the English Hero title was measured for clipping at both Mobile widths.
+- Select was exercised with pointer, Arrow keys, Home, End, Enter, Escape, disabled options, and focus return.
+- The component gallery and Header Mobile navigation were opened and closed in the browser.
+- The production TypeScript and Vite build passed.
+- Automated contrast, browser interaction, and source review do not constitute a full manual screen-reader audit.
 
 ---
 
@@ -414,18 +441,29 @@ Token contrast checks passed: foreground/background 10.39:1, card text/card 15.5
 
 ```txt
 Framework: React 19 + TypeScript + Vite 6
-Styling: Tailwind CSS 4 + semantic CSS variables
-Component library: shadcn/ui new-york-v4 snapshot
-Icon library: Lucide
+Styling: Tailwind CSS 4 foundation, semantic CSS variables, authored component CSS
+Component library: Native semantic React Marketing components
+Icon library: lucide-react plus OrbitMark
 
-UI components: src/components/ui
-
-Shared components: Not applicable; this standalone library separates standard and domain components.
-
-Domain components: src/components/custom
-
-Design tokens: tokens.json and src/index.css
+UI components: src/components/custom
+Shared components: src/components/custom
+Domain components: Not applicable; this is a standalone component system
+Design tokens: tokens.json
+Generated token CSS: src/index.css
 ```
+
+### Usage
+
+```txt
+Working directory: design-system
+Start or install: npm install; npm run dev
+Global styles: src/main.tsx imports src/index.css once; each delivered component imports src/components/custom/system.css
+Root providers: none
+Public imports: @/components/custom/<component> inside this Vite app, or relative paths after copying source
+Gallery or docs: npm run dev and open http://127.0.0.1:5173/; npm run preview serves dist after npm run build
+```
+
+The development port may move when 5173 is occupied; use the URL printed by Vite. The gallery uses the `@` alias configured in `vite.config.ts`. No install step is needed to use components inside this generated app.
 
 Before creating a component:
 
@@ -445,9 +483,9 @@ arbitrary shadows
 duplicate components
 ```
 
-Run `npm install`, `npm run dev`, and `npm run build`. Import `src/index.css` once. The installable aggregate registry is `public/r/all.json`; individual custom registry items are under `public/r/`. Font packages are listed in `package.json`.
+### Build and distribution
 
-Mount singleton UI hosts once at the application root. This application renders `Toaster` beside `App` inside `TooltipProvider`; calling `toast()` without that host does not produce visible feedback.
+Run `npm run build` from `design-system`. For a compatible external React project, copy the source closure described in `source-snapshot.json`, install `lucide-react` and the three Fontsource packages listed in `package.json`, load the target project's token foundation once, and preserve the component CSS imports. Do not install shadcn; this Marketing system does not use it.
 
 ---
 
@@ -463,6 +501,8 @@ Do not:
 * Add unnecessary icons.
 * Create new patterns when an existing one works.
 * Create one-off components without reason.
+* Reintroduce non-English runtime or documentation copy without explicit approval.
+* Register `IntegratedPreview` as a reusable component.
 
 When uncertain:
 
@@ -477,15 +517,13 @@ When uncertain:
 
 ```txt
 App shell: src/App.tsx
-
-List page: src/components/custom/workshop-schedule.tsx
-
-Detail page: src/App.tsx?component=ecosystem-dashboard
-
-Form page: Not applicable; form patterns are demonstrated in component detail previews.
-
-Settings: Not applicable; the library has no product settings route.
+List page: src/App.tsx (Overview and component directory)
+Detail page: src/App.tsx
+Form page: src/components/custom/input-form.preview.tsx
+Settings: Not applicable; no settings screen is in scope
 ```
+
+The canonical integrated Marketing composition is `src/IntegratedPreview.tsx`. It imports delivered components and appears before the component directory on the overview route.
 
 Match these when this file does not specify a detail.
 
@@ -494,19 +532,25 @@ Match these when this file does not specify a detail.
 ## 12. Canonical Components
 
 ```txt
-Button: src/components/ui/button.tsx
+Button: src/components/custom/button.tsx
+Input: src/components/custom/input-form.tsx
+Select: src/components/custom/select.tsx
+Dialog: Not applicable; outside the Marketing core inventory
+Table: Not applicable; outside the Marketing core inventory
+Tabs: Not applicable; outside the Marketing core inventory
+Toast: Not applicable; outside the Marketing core inventory
+```
 
-Input: src/components/ui/input.tsx
+Additional canonical families:
 
-Select: src/components/ui/select.tsx
-
-Dialog: src/components/ui/dialog.tsx
-
-Table: src/components/ui/table.tsx
-
-Tabs: src/components/ui/tabs.tsx
-
-Toast: src/components/ui/sonner.tsx
+```txt
+Header: src/components/custom/header.tsx
+Hero: src/components/custom/hero.tsx
+Section: src/components/custom/section.tsx
+Card: src/components/custom/card.tsx
+Footer: src/components/custom/footer.tsx
+Icon: src/components/custom/icon.tsx
+Shared visual rules: src/components/custom/system.css
 ```
 
 Prefer these over creating local replacements.
@@ -516,26 +560,37 @@ Prefer these over creating local replacements.
 ## 13. Project-Specific Rules
 
 ```txt
-- Use warm gray only as the page canvas; place readable content on cream, white, sage, or near-black surfaces.
-- Use moss green for primary actions and selected data; reserve near-black green for primary text and special brand panels.
-- Preserve the desktop schedule / two-card composition and the Mobile stacked information-card adaptation.
+- Keep the canvas near-black and use thin amber borders; do not brighten all surfaces.
+- Reserve primary orange for action, active state, selection, or the central focal object.
+- Keep support telemetry compact and subordinate to the primary narrative.
+- Use 2px geometry for controls and surfaces; reserve circles for orbital, status, loading, and icon-action roles.
+- Keep all preview, metadata, accessible-label, and documentation copy in English.
+- Preserve a 44px Mobile hit area and verify 360px and 390px layouts after copy changes.
 ```
+
+### Reference-derived implementation map
+
+| Reference relationship | Implementation |
+| --- | --- |
+| Near-black void | `--background`, `--card`, and low-opacity line grid |
+| Amber telemetry | `--accent`, `--secondary-foreground`, IBM Plex Mono labels |
+| Ember action emphasis | `--primary`, primary Button, active Card status |
+| Central orbit | `OrbitVisual` inside `EmberHero` |
+| Dense edge data | Desktop `.eo-hero-telemetry` columns |
+| Straight frames versus circles | 2px surfaces; circular mark, nodes, status, spinner, and icon-only actions |
 
 ### Source snapshot
 
-Source: `https://ui.shadcn.com/r/styles/new-york-v4/registry.json`; fetched 2026-09-17. The snapshot contains 61 official `registry:ui` components, 88 examples, and 4 custom components. Exact names and hashes are recorded in `shadcn-snapshot.json`. The shadcn source license is preserved in `SHADCN-LICENSE.txt`.
+`source-snapshot.json` is the canonical portable-source manifest for the nine custom families. `custom-components.json` records their titles, descriptions, delivery files, preview modules, and dependencies. The approved token hash is `3ad80480ab49b96e858e0d05573c77525ff1c63da752ef7128387b8b2449f6db`.
+
+Portable implementation files are the delivered `.tsx` modules in `src/components/custom`, `src/components/custom/system.css`, `src/index.css` or an equivalent token foundation, `tokens.json`, and the dependencies in `package.json`. Do not copy `*.preview.tsx`, `src/App.tsx`, `src/FullGallery.tsx`, `src/IntegratedPreview.tsx`, `src/gallery.css`, `.tmp`, `dist`, or `node_modules` into a product solely to reuse components.
 
 ### Decisions
 
-* User-selected: B “植物主调”—苔藓绿用于主按钮与选中态，近黑绿用于文字与特殊品牌面板。
-* Image-derived: Fraunces/Manrope role split, large quiet surfaces, pill labels, thin icons, and restrained shadows.
-* Agent-derived: responsive card conversion below 900px, 44px minimum touch targets, 160ms state motion, and reduced-motion handling.
-* User-approved: integrated Desktop and Mobile presentation on 2026-09-17.
+- Accepted: one dark mode matching the reference; a second color mode was not requested.
+- Accepted: Marketing scope with Button, Header, Hero, Section, Card, Footer, Input/Form, Select, and Icon families.
+- Accepted: English-only runtime previews, accessible labels, metadata, and documentation. This supersedes the earlier localized draft without changing its visual direction.
+- Derived from the reference: sparse orange action emphasis, amber information hierarchy, 2px surfaces, Rajdhani display type, Inter body type, IBM Plex Mono telemetry, and restrained 180ms motion.
+- Adapted for Web accessibility: a 44px minimum Mobile target, responsive removal of side telemetry, reduced-motion overrides, and a keyboard-operable Select popup.
 
-### Custom guidance
-
-See `design-notes.md` for the APIs and usage limits of `WorkshopSchedule`, `EngagementChart`, `BrandFocusCard`, and `EcosystemDashboard`.
-
-### Verification limits
-
-The production build, semantic contrast report, browser screenshots, keyboard flow, representative overlay, chart control, and responsive layouts were checked locally. A full screen-reader pass and physical touch-device test remain outside this local verification.
+See `design-notes.md` for the durable visual translation and scope exceptions.

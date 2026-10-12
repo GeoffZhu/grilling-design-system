@@ -1,13 +1,85 @@
 {
   "components": [
     {
-      "name": "signal-audit-panel",
-      "title": "信号审计面板",
-      "description": "用于呈现评分、诊断指标、信号缺口和下一步动作的品牌分析面板。",
-      "files": ["src/components/custom/signal-audit-panel.tsx", "src/components/custom/signal-audit-panel.css"],
-      "preview": {"path": "src/components/custom/signal-audit-panel.preview.tsx", "export": "default"},
+      "name": "marketing-button",
+      "title": "Marketing Button",
+      "description": "Primary actions, secondary actions, links, and loading states for branded homepages.",
+      "files": ["src/components/custom/marketing-button.tsx", "src/components/custom/marketing.css"],
+      "preview": {"path": "src/components/custom/marketing-button.preview.tsx", "export": "default"},
+      "dependencies": ["lucide-react"],
+      "registryDependencies": []
+    },
+    {
+      "name": "marketing-header",
+      "title": "Marketing Header",
+      "description": "Brand identity, navigation, action entry points, and expandable mobile navigation.",
+      "files": ["src/components/custom/marketing-header.tsx", "src/components/custom/marketing.css"],
+      "preview": {"path": "src/components/custom/marketing-header.preview.tsx", "export": "default"},
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["marketing-button"]
+    },
+    {
+      "name": "marketing-hero",
+      "title": "Marketing Hero",
+      "description": "A branded hero with warm–cool focal contrast, real actions, and a responsive visual area.",
+      "files": ["src/components/custom/marketing-hero.tsx", "src/components/custom/marketing.css"],
+      "preview": {"path": "src/components/custom/marketing-hero.preview.tsx", "export": "default"},
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["marketing-button"]
+    },
+    {
+      "name": "marketing-section",
+      "title": "Marketing Section",
+      "description": "Page sections that align content width, heading relationships, and vertical rhythm.",
+      "files": ["src/components/custom/marketing-section.tsx", "src/components/custom/marketing.css"],
+      "preview": {"path": "src/components/custom/marketing-section.preview.tsx", "export": "default"},
       "dependencies": [],
-      "registryDependencies": ["button"]
+      "registryDependencies": []
+    },
+    {
+      "name": "marketing-card",
+      "title": "Marketing Card",
+      "description": "A varied card composition for capabilities, projects, and pricing information.",
+      "files": ["src/components/custom/marketing-card.tsx", "src/components/custom/marketing.css"],
+      "preview": {"path": "src/components/custom/marketing-card.preview.tsx", "export": "default"},
+      "dependencies": [],
+      "registryDependencies": ["marketing-button"]
+    },
+    {
+      "name": "marketing-footer",
+      "title": "Marketing Footer",
+      "description": "Brand context, grouped links, and clear notes about the example state.",
+      "files": ["src/components/custom/marketing-footer.tsx", "src/components/custom/marketing.css"],
+      "preview": {"path": "src/components/custom/marketing-footer.preview.tsx", "export": "default"},
+      "dependencies": [],
+      "registryDependencies": []
+    },
+    {
+      "name": "marketing-input-form",
+      "title": "Marketing Input and Form",
+      "description": "Branded forms with labels, hints, errors, and honest submission feedback.",
+      "files": ["src/components/custom/marketing-input-form.tsx", "src/components/custom/marketing.css"],
+      "preview": {"path": "src/components/custom/marketing-input-form.preview.tsx", "export": "default"},
+      "dependencies": [],
+      "registryDependencies": ["marketing-button"]
+    },
+    {
+      "name": "marketing-select",
+      "title": "Marketing Select",
+      "description": "A fully themed trigger, options popup, disabled items, and error states.",
+      "files": ["src/components/custom/marketing-select.tsx", "src/components/custom/marketing.css"],
+      "preview": {"path": "src/components/custom/marketing-select.preview.tsx", "export": "default"},
+      "dependencies": ["@base-ui/react", "lucide-react"],
+      "registryDependencies": []
+    },
+    {
+      "name": "marketing-icon",
+      "title": "Marketing Icon",
+      "description": "20px outline action icons with a separate decorative star mark.",
+      "files": ["src/components/custom/marketing-icon.tsx", "src/components/custom/marketing.css"],
+      "preview": {"path": "src/components/custom/marketing-icon.preview.tsx", "export": "default"},
+      "dependencies": ["lucide-react"],
+      "registryDependencies": []
     }
   ]
 }

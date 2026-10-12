@@ -1,21 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { MouseEvent } from 'react'
-import '@fontsource/manrope/300.css'
-import '@fontsource/manrope/400.css'
-import '@fontsource/manrope/500.css'
-import '@fontsource/manrope/600.css'
-import '@fontsource/manrope/700.css'
-import '@fontsource/cormorant-garamond/500-italic.css'
-import '@fontsource/noto-sans-sc/400.css'
-import '@fontsource/noto-sans-sc/500.css'
-import '@fontsource/noto-sans-sc/600.css'
 import { Github, Menu, Search, X } from 'lucide-react'
-import { Input } from '@/components/ui/input'
 import { componentEntries, ComponentPreview } from './FullGallery'
-import tokens from '../tokens.json'
+import IntegratedPreview from './IntegratedPreview'
 import { text } from './review-copy'
 import './gallery.css'
-import IntegratedPreview from './IntegratedPreview'
+
+const DOCUMENTATION_NAME = 'Starry Current Workbench'
 
 function readComponent() {
   return new URLSearchParams(window.location.search).get('component')
@@ -29,11 +20,6 @@ function go(component?: string) {
 }
 
 export default function App() {
-  const presentation = new URLSearchParams(window.location.search).get('view') === 'presentation' || window.location.pathname.endsWith('/presentation.html')
-  return presentation ? <IntegratedPreview /> : <ComponentCatalog />
-}
-
-function ComponentCatalog() {
   const [component, setComponent] = useState(readComponent)
   const [query, setQuery] = useState('')
   const [mobileNav, setMobileNav] = useState(false)
@@ -60,7 +46,7 @@ function ComponentCatalog() {
   }
 
   const sidebar = <div className="catalog-sidebar-inner">
-    <div className="catalog-search"><Search aria-hidden="true"/><Input value={query} onChange={event => setQuery(event.target.value)} placeholder={text['Search components']} aria-label={text['Search components']} /></div>
+    <div className="catalog-search"><Search aria-hidden="true"/><input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder={text['Search components']} aria-label={text['Search components']} /></div>
     <nav aria-label={text['Component navigation']}>
       <a className={!active ? 'sidebar-link active' : 'sidebar-link'} href={window.location.pathname} onClick={event => navigate(event)}>{text['Components overview']}</a>
       {categories.map(category => {
@@ -75,7 +61,7 @@ function ComponentCatalog() {
   return <div className="catalog-app">
     <header className="catalog-header">
       <button className="mobile-menu" type="button" onClick={() => setMobileNav(true)} aria-label={text['Open component navigation']}><Menu aria-hidden="true"/></button>
-      <a className="wordmark" href={window.location.pathname} onClick={event => navigate(event)}>{tokens.name}</a>
+      <a className="wordmark" href={window.location.pathname} onClick={event => navigate(event)}>{DOCUMENTATION_NAME}</a>
       <a className="github-link" href="https://github.com/GeoffZhu/grilling-design-system" target="_blank" rel="noreferrer" aria-label="GitHub"><Github aria-hidden="true"/></a>
     </header>
 
@@ -97,6 +83,10 @@ function Overview({ navigate }: { navigate: (event: MouseEvent<HTMLAnchorElement
       <h1>{text['Components']}</h1>
       <p>{text['Browse every component in this design system. Select one to inspect its visual treatment and interaction states.']}</p>
     </div>
+    <section className="integrated-showcase" data-slot="integrated-preview" aria-labelledby="integrated-preview-heading">
+      <div className="section-heading"><h2 id="integrated-preview-heading">{text['Integrated preview']}</h2><span>{text['Key Visual']}</span></div>
+      <div className="integrated-showcase-canvas"><IntegratedPreview /></div>
+    </section>
     <section className="component-directory" aria-labelledby="all-components">
       <div className="section-heading"><h2 id="all-components">{text['All components']}</h2><span>{componentEntries.length}</span></div>
       <div className="component-index">{componentEntries.map(item => <a href={`?component=${item.name}`} onClick={event => navigate(event, item.name)} key={item.name}><span>{item.title}</span><small>{item.category}</small></a>)}</div>

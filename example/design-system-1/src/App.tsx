@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { MouseEvent } from 'react'
 import { Github, Menu, Search, X } from 'lucide-react'
-import { Input } from '@/components/ui/input'
 import { componentEntries, ComponentPreview } from './FullGallery'
-import { EcosystemDashboard } from '@/components/custom/ecosystem-dashboard'
+import IntegratedPreview from './IntegratedPreview'
 import tokens from '../tokens.json'
 import { text } from './review-copy'
 import './gallery.css'
@@ -20,7 +19,6 @@ function go(component?: string) {
 }
 
 export default function App() {
-  const presentation = new URLSearchParams(window.location.search).get('presentation') === '1' || window.location.pathname.endsWith('/presentation.html')
   const [component, setComponent] = useState(readComponent)
   const [query, setQuery] = useState('')
   const [mobileNav, setMobileNav] = useState(false)
@@ -41,15 +39,13 @@ export default function App() {
     return () => window.removeEventListener('popstate', sync)
   }, [])
 
-  if (presentation) return <EcosystemDashboard />
-
   const navigate = (event: MouseEvent<HTMLAnchorElement>, name?: string) => {
     event.preventDefault()
     go(name)
   }
 
   const sidebar = <div className="catalog-sidebar-inner">
-    <div className="catalog-search"><Search aria-hidden="true"/><Input value={query} onChange={event => setQuery(event.target.value)} placeholder={text['Search components']} aria-label={text['Search components']} /></div>
+    <div className="catalog-search"><Search aria-hidden="true"/><input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder={text['Search components']} aria-label={text['Search components']} /></div>
     <nav aria-label={text['Component navigation']}>
       <a className={!active ? 'sidebar-link active' : 'sidebar-link'} href={window.location.pathname} onClick={event => navigate(event)}>{text['Components overview']}</a>
       {categories.map(category => {
@@ -82,13 +78,13 @@ export default function App() {
 function Overview({ navigate }: { navigate: (event: MouseEvent<HTMLAnchorElement>, name?: string) => void }) {
   return <>
     <div className="page-heading">
-      <p className="eyebrow">EcoSphere · {text['Design system']}</p>
-      <h1>让知识自然生长</h1>
+      <p className="eyebrow">{text['Design system']}</p>
+      <h1>{text['Components']}</h1>
       <p>{text['Browse every component in this design system. Select one to inspect its visual treatment and interaction states.']}</p>
     </div>
-    <section className="overview-showcase" aria-labelledby="showcase-heading">
-      <div className="section-heading"><h2 id="showcase-heading">整合预览</h2><a href="?presentation=1">全屏查看</a></div>
-      <div className="overview-showcase-frame"><EcosystemDashboard /></div>
+    <section className="integrated-showcase" data-slot="integrated-preview" aria-labelledby="integrated-preview-heading">
+      <div className="section-heading"><h2 id="integrated-preview-heading">{text['Integrated preview']}</h2><span>{text['Key Visual']}</span></div>
+      <div className="integrated-showcase-canvas"><IntegratedPreview /></div>
     </section>
     <section className="component-directory" aria-labelledby="all-components">
       <div className="section-heading"><h2 id="all-components">{text['All components']}</h2><span>{componentEntries.length}</span></div>

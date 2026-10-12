@@ -33,3 +33,23 @@ After every answer, update the tree and remove resolved questions. A canceled or
 Direction, foundations, and components are checkpoints. Use reviewType: choice only for a planned question. Questions need not be distributed evenly across stages: set continueStage: true on a choice round when the next planned decision belongs to the same stage. Keep previously selected rules fixed in subsequent candidates. Use reviewType: derived with one candidate and a derivation rationale when no question is needed. Record complete rules even if the specimen illustrates only one branch.
 
 The full-page stage uses reviewType: presentation with one integrated design. Preference discovery has ended. Invite freeform corrections or confirmation without another choice popup. If feedback reopens a branch, update only affected rules and questions; explicit feedback usually permits a derived revision without another preference question.
+
+## Preserve decisions across revisions
+
+Adapted from the explicit rejection history in [ui-skills /design-grill](https://github.com/dawitlabs/ui-skills/blob/6973cc6df7772780d31a4891fb60859f53f3e0b2/skills/design-grill/SKILL.md). Use the existing decision tree and durable design notes; do not create a second brief or add session fields.
+
+Record important decisions with a stable local ID, topic, scope, treatment, status, evidence and reason. Keep provenance separate from status: an accepted rule can be user-selected, image-derived or agent-derived without implying user approval. For user choices, preserve the actual meaning of the response; if no reason was supplied, record that instead of inventing one.
+
+| Status | Meaning |
+| --- | --- |
+| accepted | Current rule for its stated region/component scope; retain its provenance. |
+| ruled-out | Direction explicitly rejected by the user within that scope. |
+| superseded | Prior accepted or ruled-out decision replaced by a later decision; link the replacement ID and reason. |
+
+Choosing A means B was not selected in that comparison. It does not create a ruled-out entry for B. Cancellation, silence and timeout create no accepted or rejected decision; the protocol's pending round remains unchanged. Derived checkpoints remain agent-derived.
+
+Before treating requests as contradictory, compare their scopes. Dense table rows and spacious Marketing sections can coexist, as can quiet application motion and a more expressive homepage. Preserve those scopes. For incompatible high-impact treatments in the same scope, first use explicit user priorities and existing evidence; ask only when an unresolved visible choice merits the remaining question budget. Do not add a contradiction questionnaire or spend beyond the initial three-question ceiling. Accessibility constraints remain requirements, not competing preferences.
+
+When new feedback changes a rule, mark the old decision superseded, link its replacement and update only affected branches. A ruled-out direction stays excluded until the user reopens it or new concrete evidence makes revisiting it necessary; explain that evidence before asking within the existing choice process. Never silently re-propose it as a default. Explicit feedback usually supports a derived revision, which must still be shown before acceptance.
+
+Before PROJECT cleanup, distill current rules, explicit exclusions and relevant replacement relationships into LIBRARY/design-notes.md. Merge or reference them in DESIGN.md section 13 using [design-document.md](design-document.md). Preserve reasons and scopes, not entire temporary transcripts or candidate histories. On maintenance, read these records first and restore them into the working decision tree. Old projects without this record remain valid; never backfill rejections from historical unselected options.

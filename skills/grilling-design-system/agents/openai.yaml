@@ -1,4 +1,4 @@
 interface:
   display_name: "Grilling Design System"
   short_description: "Create or improve SaaS and marketing UI from an image"
-  default_prompt: "Use $grilling-design-system to read a reference image, ask SaaS or Marketing and optional SaaS homepage, then create a design system or improve existing pages with appropriate components, DESIGN.md and verified usage instructions."
+  default_prompt: "Use $grilling-design-system to read a reference image, resolve SaaS or Marketing and optional SaaS homepage, preserve design decisions, and create or improve the UI with applicable component, copy, motion, token and marketing reviews, DESIGN.md and verified usage instructions."

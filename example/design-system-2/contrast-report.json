@@ -2,91 +2,91 @@
   {
     "mode": "dark",
     "pair": "foreground/background",
-    "ratio": 17.83,
+    "ratio": 15.75,
     "minimum": 4.5,
     "passAA": true
   },
   {
     "mode": "dark",
     "pair": "card-foreground/card",
-    "ratio": 16.71,
+    "ratio": 13.44,
     "minimum": 4.5,
     "passAA": true
   },
   {
     "mode": "dark",
     "pair": "primary-foreground/primary",
-    "ratio": 5.82,
+    "ratio": 9.63,
     "minimum": 4.5,
     "passAA": true
   },
   {
     "mode": "dark",
     "pair": "secondary-foreground/secondary",
-    "ratio": 12.13,
+    "ratio": 10.2,
     "minimum": 4.5,
     "passAA": true
   },
   {
     "mode": "dark",
     "pair": "muted-foreground/muted",
-    "ratio": 7.84,
+    "ratio": 8.02,
     "minimum": 4.5,
     "passAA": true
   },
   {
     "mode": "dark",
     "pair": "accent-foreground/accent",
-    "ratio": 7.42,
+    "ratio": 8.11,
     "minimum": 4.5,
     "passAA": true
   },
   {
     "mode": "dark",
     "pair": "popover-foreground/popover",
-    "ratio": 16.25,
+    "ratio": 11.9,
     "minimum": 4.5,
     "passAA": true
   },
   {
     "mode": "dark",
     "pair": "destructive/background",
-    "ratio": 5.54,
+    "ratio": 7.2,
     "minimum": 4.5,
     "passAA": true
   },
   {
     "mode": "dark",
     "pair": "sidebar-foreground/sidebar",
-    "ratio": 17.38,
+    "ratio": 16.8,
     "minimum": 4.5,
     "passAA": true
   },
   {
     "mode": "dark",
     "pair": "sidebar-primary-foreground/sidebar-primary",
-    "ratio": 5.82,
+    "ratio": 9.63,
     "minimum": 4.5,
     "passAA": true
   },
   {
     "mode": "dark",
     "pair": "sidebar-accent-foreground/sidebar-accent",
-    "ratio": 15.68,
+    "ratio": 12.54,
     "minimum": 4.5,
     "passAA": true
   },
   {
     "mode": "dark",
     "pair": "ring/background",
-    "ratio": 7.81,
+    "ratio": 12.55,
     "minimum": 3,
     "passAA": true
   },
   {
     "mode": "dark",
     "pair": "input/background",
-    "ratio": 3.14,
+    "ratio": 3.62,
     "minimum": 3,
     "passAA": true
   }

@@ -4,7 +4,8 @@
 
 [![skills.sh](https://skills.sh/b/GeoffZhu/grilling-design-system)](https://skills.sh/GeoffZhu/grilling-design-system)
 
-Input an inspiration image and generate a complete UI design system.
+Input an inspiration image and get a complete UI design system.
+This skill can build SaaS admin dashboards or marketing pages from scratch, and can also optimize existing systems.
 
 ## Install
 
@@ -14,10 +15,18 @@ npx skills add GeoffZhu/grilling-design-system
 
 Then tell your coding assistant:
 
-> Use grilling-design-system. Take this image as inspiration, and confirm a design system for desktop and phone.
+> Use grilling-design-system. Take this image as inspiration and confirm the design system.
 
-## Examples
+## Usage examples
 
-The same few choices, four different systems.
+### Example 1
 
-![Four design systems generated from different images](example/examples.jpg)
+| Input image | Design system showcase |
+| --- | --- |
+| ![Van Gogh — The Starry Night](example/design-system-input-1.png) | ![Ember Orbit design system showcase](example/design-system-showcase-1.png) |
+
+### Example 2
+
+| Input image | Design system showcase |
+| --- | --- |
+| ![Guardians of the Galaxy — spaceship dashboard](example/design-system-input-2.jpg) | ![Starry Current design system showcase](example/design-system-showcase-2.png) |

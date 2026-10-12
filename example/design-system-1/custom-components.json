@@ -1,40 +1,13 @@
 {
   "components": [
-    {
-      "name": "workshop-schedule",
-      "title": "工作坊排期",
-      "description": "带讲师、级别、日期与时间的响应式课程排期。",
-      "files": ["src/components/custom/workshop-schedule.tsx", "src/components/custom/organic-components.css"],
-      "preview": {"path": "src/components/custom/workshop-schedule.preview.tsx", "export": "default"},
-      "dependencies": ["lucide-react"],
-      "registryDependencies": ["button"]
-    },
-    {
-      "name": "engagement-chart",
-      "title": "参与度图表",
-      "description": "可切换周期、带文本等价信息的胶囊柱状图。",
-      "files": ["src/components/custom/engagement-chart.tsx", "src/components/custom/organic-components.css"],
-      "preview": {"path": "src/components/custom/engagement-chart.preview.tsx", "export": "default"},
-      "dependencies": [],
-      "registryDependencies": []
-    },
-    {
-      "name": "brand-focus-card",
-      "title": "品牌焦点卡",
-      "description": "以近黑绿承载高对比品牌内容和次级操作。",
-      "files": ["src/components/custom/brand-focus-card.tsx", "src/components/custom/organic-components.css"],
-      "preview": {"path": "src/components/custom/brand-focus-card.preview.tsx", "export": "default"},
-      "dependencies": ["lucide-react"],
-      "registryDependencies": ["button"]
-    },
-    {
-      "name": "ecosystem-dashboard",
-      "title": "生态课程仪表盘",
-      "description": "组合排期、品牌焦点和参与度的完整响应式页面。",
-      "files": ["src/components/custom/ecosystem-dashboard.tsx", "src/components/custom/workshop-schedule.tsx", "src/components/custom/engagement-chart.tsx", "src/components/custom/brand-focus-card.tsx", "src/components/custom/organic-components.css"],
-      "preview": {"path": "src/components/custom/ecosystem-dashboard.preview.tsx", "export": "default"},
-      "dependencies": ["lucide-react"],
-      "registryDependencies": ["button", "dialog"]
-    }
+    {"name":"button","title":"Button","description":"Primary, secondary, ghost, compact, icon, loading, and unavailable actions.","files":["src/components/custom/button.tsx","src/components/custom/system.css"],"preview":{"path":"src/components/custom/button.preview.tsx","export":"default"},"dependencies":["lucide-react"]},
+    {"name":"header","title":"Header / Navbar","description":"Brand mark, desktop navigation, primary action, and expandable Mobile menu.","files":["src/components/custom/header.tsx","src/components/custom/button.tsx","src/components/custom/icon.tsx","src/components/custom/system.css"],"preview":{"path":"src/components/custom/header.preview.tsx","export":"default"},"dependencies":["lucide-react"]},
+    {"name":"hero","title":"Hero","description":"Central orbital focus, flanking telemetry, headline hierarchy, and primary action.","files":["src/components/custom/hero.tsx","src/components/custom/button.tsx","src/components/custom/system.css"],"preview":{"path":"src/components/custom/hero.preview.tsx","export":"default"}},
+    {"name":"section","title":"Section","description":"Consistent content width, vertical rhythm, heading relationships, and responsive reflow.","files":["src/components/custom/section.tsx","src/components/custom/system.css"],"preview":{"path":"src/components/custom/section.preview.tsx","export":"default"}},
+    {"name":"card","title":"Card","description":"Border-led containers for feature, signal, and telemetry content.","files":["src/components/custom/card.tsx","src/components/custom/system.css"],"preview":{"path":"src/components/custom/card.preview.tsx","export":"default"}},
+    {"name":"footer","title":"Footer","description":"Brand summary, essential links, and system status information.","files":["src/components/custom/footer.tsx","src/components/custom/icon.tsx","src/components/custom/system.css"],"preview":{"path":"src/components/custom/footer.preview.tsx","export":"default"}},
+    {"name":"input-form","title":"Input / Form","description":"Labels, help, errors, read-only fields, textareas, and honest demo feedback.","files":["src/components/custom/input-form.tsx","src/components/custom/button.tsx","src/components/custom/system.css"],"preview":{"path":"src/components/custom/input-form.preview.tsx","export":"default"}},
+    {"name":"select","title":"Select","description":"Themed trigger, keyboard listbox, selected and disabled states, and form value.","files":["src/components/custom/select.tsx","src/components/custom/system.css"],"preview":{"path":"src/components/custom/select.preview.tsx","export":"default"},"dependencies":["lucide-react"]},
+    {"name":"icon","title":"Icon","description":"Geometric line icons, circular actions, and the orbital brand mark.","files":["src/components/custom/icon.tsx","src/components/custom/system.css"],"preview":{"path":"src/components/custom/icon.preview.tsx","export":"default"},"dependencies":["lucide-react"]}
   ]
 }

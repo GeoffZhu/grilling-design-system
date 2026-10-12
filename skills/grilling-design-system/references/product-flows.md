@@ -43,6 +43,8 @@ For SaaS homepages, prefix manifest identifiers with marketing- and public compo
 
 The full homepage is docs-only: do not count, register or export IntegratedPreview as a component. Each of its nine reusable families must have a visual detail page and usable source exports. Do not create a real application homepage route unless separately requested.
 
+For Marketing and SaaS homepage composition, read [marketing-review.md](marketing-review.md). Review the offer, CTA journey, grounded copy and actual interaction results. Distinguish real pages from documentation: a gallery Key Visual does not require SEO, analytics, a business route or deployment. Use only supported product claims; the nine-family inventory does not require a fixed landing-page section order.
+
 ## Recorded context
 
 Extend the inspected project-context.json, retaining its real path/tooling fields:

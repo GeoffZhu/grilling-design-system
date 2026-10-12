@@ -1,0 +1,129 @@
+{
+  "craft": {
+    "controlRadius": {
+      "value": 2,
+      "source": "token"
+    },
+    "surfaceRadius": {
+      "value": 2,
+      "source": "token"
+    },
+    "overlayRadius": {
+      "value": 2,
+      "source": "token"
+    },
+    "bodyLineHeight": {
+      "value": 1.65,
+      "source": "token"
+    },
+    "headingLineHeight": {
+      "value": 0.96,
+      "source": "token"
+    },
+    "headingTracking": {
+      "value": 0.03,
+      "source": "token"
+    },
+    "labelWeight": {
+      "value": 600,
+      "source": "token"
+    },
+    "controlPadding": {
+      "value": 18,
+      "source": "token"
+    },
+    "iconGap": {
+      "value": 10,
+      "source": "token"
+    }
+  },
+  "signature": {
+    "actions": {
+      "shadow": {
+        "value": "none",
+        "source": "token"
+      },
+      "borderWidth": {
+        "value": 1,
+        "source": "token"
+      },
+      "pressedOffset": {
+        "value": 1,
+        "source": "token"
+      }
+    },
+    "inputs": {
+      "shadow": {
+        "value": "none",
+        "source": "token"
+      },
+      "borderWidth": {
+        "value": 1,
+        "source": "token"
+      }
+    },
+    "selection": {
+      "shadow": {
+        "value": "none",
+        "source": "token"
+      },
+      "borderWidth": {
+        "value": 1,
+        "source": "token"
+      },
+      "pressedOffset": {
+        "value": 0,
+        "source": "token"
+      }
+    },
+    "navigation": {
+      "shadow": {
+        "value": "none",
+        "source": "token"
+      },
+      "borderWidth": {
+        "value": 1,
+        "source": "token"
+      },
+      "pressedOffset": {
+        "value": 0,
+        "source": "token"
+      }
+    },
+    "data-display": {
+      "shadow": {
+        "value": "none",
+        "source": "token"
+      },
+      "borderWidth": {
+        "value": 1,
+        "source": "token"
+      }
+    },
+    "overlays": {
+      "shadow": {
+        "value": "0 18px 48px rgba(33, 9, 0, 0.52)",
+        "source": "token"
+      },
+      "borderWidth": {
+        "value": 1,
+        "source": "token"
+      }
+    },
+    "feedback": {
+      "shadow": {
+        "value": "none",
+        "source": "token"
+      },
+      "borderWidth": {
+        "value": 1,
+        "source": "token"
+      },
+      "accentWidth": {
+        "value": 2,
+        "source": "token"
+      }
+    }
+  },
+  "componentStyles": "Authored custom components; no generated shadcn visual layer"
+}

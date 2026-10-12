@@ -1,9 +1,10 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import App from "./App";
 import "./index.css";
 import { Toaster } from "@/components/ui/sonner";
+import { Toaster as BaseToaster } from "@/components/ui/toast";
 import "./theme-overrides.css";
+import { TooltipProvider } from "@/components/ui/tooltip";
 document.documentElement.classList.add("dark");
-createRoot(document.getElementById("root")!).render(<React.StrictMode><TooltipProvider><App /><Toaster /></TooltipProvider></React.StrictMode>);
+createRoot(document.getElementById("root")!).render(<React.StrictMode><TooltipProvider><App /><Toaster /><BaseToaster /></TooltipProvider></React.StrictMode>);

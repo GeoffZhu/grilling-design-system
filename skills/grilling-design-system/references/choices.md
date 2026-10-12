@@ -69,6 +69,8 @@ node "$SKILL/scripts/studio.js" decide --session "$PROJECT/session" --url http:/
 
 Use source: chat for chat responses and ask-user-question for native tool answers. Never fabricate an answer, edit session.json, or retry a stale response against a different round.
 
+After recording a real response, update the scoped decision notes using [decisions.md](decisions.md#preserve-decisions-across-revisions). Keep selections distinct from explicit rejections: an unselected option is not ruled out. Preserve the user's reason when supplied, and link superseded rules when feedback changes them. These are Markdown notes, not extra decision payload fields or a substitute for studio.js decide.
+
 ## Derived checkpoints and the full-page presentation
 
 For a checkpoint resolved by existing evidence, publish reviewType: derived with one candidate and a derivation rationale. Publishing advances automatically and records source: agent-derived, not a user choice. Do not ask a redundant question.

@@ -8,6 +8,8 @@ Read actual routes, representative screens, global styles, canonical components,
 
 If scope is missing, inspect first and ask whole site or selected pages with real candidates. Resolve concrete source paths, including changed shared styles, before initializing the session. Preserve unrelated user edits and existing assets.
 
+Once scope is resolved, apply [token-audit.md](token-audit.md) before editing styles. Identify token owners and page-to-component consumers, record candidate mappings and exceptions in PROJECT/token-audit.md, and prioritize broken UI and repeated shared issues. Keep scope boundaries explicit; a search hit does not authorize a global replacement. Read [ux-writing.md](ux-writing.md) when editing copy, including the host's message files and shared-key consumers.
+
 ## Adapt the real implementation
 
 Reuse the framework, language, package manager, aliases, component library and accessibility primitive family. Ant Design, Element Plus and other established libraries remain in place; do not migrate them to shadcn. An existing shadcn project keeps its established primitive family. If no library exists, adapt the project's native components rather than installing a complete inventory for an optimization task.
@@ -17,6 +19,8 @@ For marketing targets, implement the nine custom families in the host framework,
 Apply accepted rules directly to target pages and canonical components. Preserve route URLs, data fetching, permissions, forms, actions and error handling. Prefer scoped variants when shared/global changes would affect out-of-scope pages. Check impacted consumers; do not create a parallel unused component library while leaving the requested screens unchanged. Do not scaffold a nested app, second lockfile or another framework runtime.
 
 LIBRARY remains the design-system module/metadata location from project-output.md; canonical implementation may remain elsewhere in the host. Document actual imports, not duplicate copies. Show the optimized real screens and compare important baseline issues at Desktop and Mobile. A generated gallery is supplemental, not proof the old pages were updated.
+
+Track each shared fix with its affected pages. Reuse the repair on later pages and inspect it in their actual contexts rather than restyling it again. Apply [motion.md](motion.md) to changed transitions and [marketing-review.md](marketing-review.md) only when a Marketing page or homepage Key Visual is in scope.
 
 ## Evidence and handoff
 

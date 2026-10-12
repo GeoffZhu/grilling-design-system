@@ -19,6 +19,7 @@
 - Keep LIBRARY and DESIGN_DOC outside PROJECT. Stop the local Studio server before `finish`; its preview becomes unavailable when PROJECT is deleted.
 - evidence/: available screenshots, source observations, and explicit verification limitations.
 - decision-tree.md: planned visual branches, dependencies, question budget, choices, and derived rules.
+- token-audit.md: scoped source findings and token mappings for optimization tasks; keep it in PROJECT and distill final rules before cleanup. Scoped accepted/ruled-out/superseded decision notes belong in decision-tree.md, then design-notes.md/DESIGN.md; neither adds fields to session or decision payloads.
 - interpretation.md: region IDs, content hierarchy, visual relationships, observations, and uncertainty from visual-analysis.md.
 - visual-translation.md: important evidence mapped to implementation layers, actual files/variants, scope, verification, and adaptations. Distill durable rules into design-notes.md before cleanup.
 

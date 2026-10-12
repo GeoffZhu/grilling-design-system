@@ -1,0 +1,63 @@
+{
+  "productType": "saas",
+  "taskType": "new",
+  "includeMarketingHomepage": true,
+  "targetPaths": [],
+  "mode": "standalone",
+  "cwd": "/Volumes/Code/Github/glimpse-ui-design-system",
+  "webRoot": null,
+  "sourceRoot": null,
+  "output": "/Volumes/Code/Github/glimpse-ui-design-system/design-system-2",
+  "designDoc": "/Volumes/Code/Github/glimpse-ui-design-system/design-system-2/DESIGN.md",
+  "workDir": "/Volumes/Code/Github/glimpse-ui-design-system/design-system-2/.tmp/grilling-design-system",
+  "userSpecifiedOutput": true,
+  "evidence": [
+    "The repository root has no browser application entry or source tree.",
+    "The requested design-system-2 directory was absent before this run.",
+    "project.js classified the requested destination as standalone."
+  ],
+  "packageManager": "npm",
+  "lockfiles": [
+    "/Volumes/Code/Github/glimpse-ui-design-system/design-system-2/package-lock.json"
+  ],
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "framework": "React 19 + TypeScript + Vite",
+  "styling": "Tailwind CSS 4 with generated theme CSS and scoped overrides",
+  "componentLibrary": "shadcn raw Base UI source plus custom marketing families",
+  "apiMapping": "Official shadcn-compatible admin APIs; native semantic marketing APIs prefixed Marketing",
+  "buildInstructions": "npm run build",
+  "workingDirectory": "/Volumes/Code/Github/glimpse-ui-design-system/design-system-2",
+  "startOrInstall": "npm install && npm run dev",
+  "globalStyles": "src/index.css and src/starry-current.css",
+  "rootProviders": "No required product provider; component primitives keep their generated providers",
+  "publicImports": "Import admin components from src/components/ui and marketing components from src/components/custom",
+  "galleryDocs": "src/App.tsx and src/FullGallery.tsx",
+  "pathMappings": {
+    "implementationPaths": {
+      "UI components": "src/components/ui",
+      "Shared components": "src/components/custom",
+      "Domain components": "Not applicable; this is a standalone system",
+      "Design tokens": "tokens.json, src/starry-current.css, src/theme-overrides.css"
+    },
+    "referencePaths": {
+      "App shell": "src/App.tsx",
+      "List page": "src/FullGallery.tsx",
+      "Detail page": "src/FullGallery.tsx",
+      "Form page": "src/IntegratedPreview.tsx",
+      "Settings": "src/IntegratedPreview.tsx"
+    },
+    "canonicalPaths": {
+      "Button": "src/components/ui/button.tsx",
+      "Input": "src/components/ui/input.tsx",
+      "Select": "src/components/ui/select.tsx",
+      "Dialog": "src/components/ui/dialog.tsx",
+      "Table": "src/components/ui/table.tsx",
+      "Tabs": "src/components/ui/tabs.tsx",
+      "Toast": "src/components/ui/sonner.tsx"
+    }
+  }
+}

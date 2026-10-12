@@ -1,0 +1,128 @@
+{
+  "craft": {
+    "controlRadius": {
+      "value": 10,
+      "source": "token"
+    },
+    "surfaceRadius": {
+      "value": 20,
+      "source": "token"
+    },
+    "overlayRadius": {
+      "value": 24,
+      "source": "token"
+    },
+    "bodyLineHeight": {
+      "value": 1.65,
+      "source": "token"
+    },
+    "headingLineHeight": {
+      "value": 1.08,
+      "source": "token"
+    },
+    "headingTracking": {
+      "value": -0.025,
+      "source": "token"
+    },
+    "labelWeight": {
+      "value": 600,
+      "source": "token"
+    },
+    "controlPadding": {
+      "value": 18,
+      "source": "token"
+    },
+    "iconGap": {
+      "value": 8,
+      "source": "token"
+    }
+  },
+  "signature": {
+    "actions": {
+      "shadow": {
+        "value": "0 8px 24px #02081666",
+        "source": "token"
+      },
+      "borderWidth": {
+        "value": 1,
+        "source": "token"
+      },
+      "pressedOffset": {
+        "value": 1,
+        "source": "token"
+      }
+    },
+    "inputs": {
+      "shadow": {
+        "value": "inset 0 1px 0 #ffffff0a",
+        "source": "token"
+      },
+      "borderWidth": {
+        "value": 1,
+        "source": "token"
+      }
+    },
+    "selection": {
+      "shadow": {
+        "value": "none",
+        "source": "token"
+      },
+      "borderWidth": {
+        "value": 1,
+        "source": "token"
+      },
+      "pressedOffset": {
+        "value": 0,
+        "source": "token"
+      }
+    },
+    "navigation": {
+      "shadow": {
+        "value": "none",
+        "source": "token"
+      },
+      "borderWidth": {
+        "value": 1,
+        "source": "token"
+      },
+      "pressedOffset": {
+        "value": 0,
+        "source": "token"
+      }
+    },
+    "data-display": {
+      "shadow": {
+        "value": "0 12px 34px #02081633",
+        "source": "token"
+      },
+      "borderWidth": {
+        "value": 1,
+        "source": "token"
+      }
+    },
+    "overlays": {
+      "shadow": {
+        "value": "0 28px 70px #02081680",
+        "source": "token"
+      },
+      "borderWidth": {
+        "value": 1,
+        "source": "token"
+      }
+    },
+    "feedback": {
+      "shadow": {
+        "value": "0 16px 38px #02081655",
+        "source": "token"
+      },
+      "borderWidth": {
+        "value": 1,
+        "source": "token"
+      },
+      "accentWidth": {
+        "value": 3,
+        "source": "token"
+      }
+    }
+  }
+}
