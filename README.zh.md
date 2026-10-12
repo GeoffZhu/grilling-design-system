@@ -4,7 +4,8 @@
 
 [![skills.sh](https://skills.sh/b/GeoffZhu/grilling-design-system)](https://skills.sh/GeoffZhu/grilling-design-system)
 
-输入一张灵感图片，得到一套 UI 设计系统
+输入一张灵感图片，得到一套 UI 设计系统。
+
 本 skill 用于从零构建 SaaS 管理后台 或 市场营销页面，亦可用于已有系统优化。
 
 ## 安装
